@@ -1,9 +1,9 @@
 ; kos-silly-loader
-; version 0.0.2
-; This loader is quite simple.  It jumps to code that assumes
-; the kernel to be loaded starts at the first block past the boot
-; block (the second sector on the disk).  This
-; boot loader sucks.  Get over it.
+; version 0.0.3
+; This loader is quite simple.  It creates an IDT, a GDT, set the A20 gate,
+; probes for upper memory, relocates basic BIOS info, loads the next sector
+; off of the disk, then jumps to the new memory location.
+; This boot loader sucks.  Get over it.
 
 [bits 16]
 [org 0]
@@ -11,8 +11,15 @@ zero:
     jmp 07C0h:start         ; rigorize segment
 
 
+;;
+;; Reset segment selectors after jumping here to rigorize segment base address
+;; We do this because the BIOS may jump to any of a number of base addresses,
+;; as long as we're at 07C0h.  So we perform a jump to a location where 07C0h
+;; is the base address.
+;;
 start:
-    ; data segment and extra segment offset addrs here (0x07c0)
+    cli         ; disable interrupts
+
     mov ax, cs
     mov ds, ax
     mov es, ax
@@ -21,6 +28,23 @@ start:
 
     call PrintString
 
+
+;;
+;; Setup a local stack.  BIOS has done so, but using it is purportedly unpredictable
+;; The stack is at 0x9000:0 and is 8192 (0x2000) bytes large
+;;
+set_stack:
+    mov ax, 0x9000
+    mov es, ax
+    mov sp, 0x2000
+
+    sti             ; enable interrupts
+
+
+;;
+;; Using BIOS routines, read adjascent sector into memory (still at 0x1000:0), then jump
+;; to that location
+;;
 reset_drive:
     mov dl, 0           ; floppy drive 0
     mov ah, 0           ; int 13h 00h resets drive specified at dl
@@ -29,7 +53,7 @@ reset_drive:
 
 load_sector:
     mov ax, 1000h
-    mov es, ax          ; put data in segment 0x2000
+    mov es, ax          ; put data in segment 0x1000
     xor bx, bx          ; offset 0
     mov ah, 2           ; int 13h 02h reads sectors from a disk
     mov al, 1           ; read one sector
@@ -47,9 +71,6 @@ load_sector:
 failed_one_load:        ; ... otherwise, we failed to load the sector
     mov si, floppy_fail_msg
     jmp reset_drive
-;    dec dx              ; so, decrement our counter
-;    jz cannot_load      ; and if it reaches zero, give up
-;    jmp reset_drive     ; ... otherwise, reset drive and try again!
 
 cannot_load:
     mov si, floppy_fail_msg
@@ -66,9 +87,82 @@ reset_failure:
     call PrintString
     jmp $
 
-;switch:
-;    sti                 ; re-enable interrupts before jump
-;    jmp 0x2000:0x0000   ; jump to new kernel
+
+;;
+;; Create Interrupt Descriptor Table (IDT)
+;;
+create_idt:
+
+
+
+;;
+;; Create Global Descriptor Table (GDT)
+;;
+create_gdt:
+    lgdt [gdt_descriptor]
+
+
+
+;;
+;; Enable the A20 gate for full memory access.  Read this for
+;; gorey details: http://www.osdev.org/wiki/A20_Line.  The code
+;; is lifted from there.
+;;
+enable_A20:
+        cli
+
+        call    a20wait
+        mov     al,0xAD
+        out     0x64,al
+
+        call    a20wait
+        mov     al,0xD0
+        out     0x64,al
+
+        call    a20wait2
+        in      al,0x60
+        push    eax
+
+        call    a20wait
+        mov     al,0xD1
+        out     0x64,al
+
+        call    a20wait
+        pop     ax
+        or      al,2
+        out     0x60,al
+
+        call    a20wait
+        mov     al,0xAE
+        out     0x64,al
+
+        call    a20wait
+        sti
+        ret
+
+a20wait:
+        in      al,0x64
+        test    al,2
+        jnz     a20wait
+        ret
+
+
+a20wait2:
+        in      al,0x64
+        test    al,1
+        jz      a20wait2
+        ret
+
+
+
+;;
+;; Switch to 32-bit protected mode
+;;
+
+
+
+;;
+;; 
 
 
 ;; -------------
@@ -101,11 +195,64 @@ boot_msg:           db  "Silly Bootloader...", 13, 10, 0
 
 floppy_fail_msg:    db  "Floppy Read Failure!!", 13, 10, 0
 
-floppy_success_msg: db  "Read Sector 1 From Floppy", 13, 10, 0
+floppy_success_msg: db  "Read First Sector From Floppy", 13, 10, 0
 
 load_success_msg:   db  "(relocate successful)", 13, 10, 0
 
 reset_failure_msg:  db  "reset failed", 13, 10, 0
+
+
+;; -------------
+;; Data structures
+;; -------------
+    ;; Global Descriptor Table length, then address of GDT, will be fed to lgdt instruction
+gdt_descriptor:
+    dw end_gtd_entries - gdt_entries - 1    ; length of GDT
+    dd gdt_entries                          ; start address for GDT
+
+gdt_entries:
+    ;; Global Descriptor Table (http://www.osdever.net/bkerndev/Docs/gdt.htm)
+    ;; Each entry is 64-bits long, including:
+    ;;   16 bits  : limit 
+    ;;   24 bits  : base (low/middle)
+    ;;    8 bits  : access
+    ;;               - 1 bit     : present (always 1)
+    ;;                 2 bits    : privilege level (0 or 3)
+    ;;                 1 bit     : always 1
+    ;;                 1 bit     : segment is executable (i.e., is code segment)
+    ;;                 1 bit     : direction (for data) or conforming (for code)
+    ;;                 1 bit     : readable (code), writable (data)
+    ;;                 1 bit     : access (set to 0, but set by CPU)
+    ;;    8 bits  : flags
+    ;;               - 1 bit     : granularity (0 == 1 byte; 1 == 4KiB [page])
+    ;;               - 1 bit     : size (0 == 16bit; 1 == 32bit)
+    ;;               - [remainder are 1]
+    ;;    8 bits  : base (high)
+    ;;
+    ;; The first descriptor is the null descriptor, and can have any value
+    ;; but is generally set to all zeros
+
+
+    ; the null descriptor...
+    dw 0, 0, 0, 0
+
+
+    ; the code segment, contains all of addressable memory, makes this "flat"
+    ; model
+    dw 0xFFFF           ; limit (in 4KiB pages)
+    dw 0x0000           ; base low
+    dw 0x009A           ; base middle + present, priv 0, executable, writable
+    dw 0xCF00           ; page granularity, 32bit size + base high 
+    
+
+    ; the data segment, contains all of addressable memory
+    dw 0xFFFF           ; limit
+    dw 0x0000           ; base low
+    dw 0x0092           ; base middle + present, priv 0, non-exec, readable
+    dw 0xCF00           ; page granularity, 32bit size + base high
+
+end_gtd_entries:    ; used so that NASM can compute the length, in case I change it later
+
 
 end:
     TIMES 510-($-$$) DB 0 ; fill to 510 bytes, 0x1fe
