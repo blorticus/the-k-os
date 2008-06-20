@@ -1,6 +1,6 @@
 VM_DIR ?= /cygdrive/c/Documents\ and\ Settings/vwells/kos/vm
 GCC ?= /usr/bin/gcc
-INCLUDES := ./include
+INCLUDES := -I./include
 GCC_FLAGS ?= -fno-builtin -nostdinc -O -Wall
 
 floppy: first.bin boot.bin
@@ -13,6 +13,9 @@ boot.bin: kos-silly-loader.asm
 
 first.bin: first.asm
 	nasm -f bin -o first.bin first.asm
+
+vga.o: vga.c
+	gcc -c -o vga.o vga.c $(INCLUDES) 
 
 clean:
 	rm -f *.bin *.o *.flp
