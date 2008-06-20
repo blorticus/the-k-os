@@ -1,0 +1,19 @@
+MILESTONE 1:
+------------
+Primitive Bootloader, Step 1:
+Boot from first sector, and using BIOS interrupts, print "The K-OS".
+
+
+MILESTONE 2:
+------------
+Primitive Bootloader, Step 2:
+Boot from first sector, load adjascent sector to fixed offset, jmp to loaded
+code.  Loaded code print "The K-OS" using BIOS interrupts.
+
+
+MILESTONE 3:
+------------
+Primitive Bootloader, Step 3:
+Boot from first sector, load adjascent sector, create GDT, enable A20 
+addressing, switch to 32-bit protected mode, jmp to loaded code, and
+using B8000 raw, print "KOS".
