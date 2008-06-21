@@ -14,7 +14,9 @@ typedef struct vga_t {
     _U16 current_row;   /* current cursor location, row */
     _U16 current_col;   /*               ... and column */
 
-    _U8 vga_attrs;      /* VGA attributes */
+    _U8 color;          /* VGA attributes */
+
+    _U16* memptr;       /* VGA pointer */
 } vga_t;
 
 
