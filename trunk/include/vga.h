@@ -20,9 +20,13 @@ typedef struct vga_t {
 } vga_t;
 
 
-vga_t vga_init( void );
-void vga_putc( char c, vga_t );
-void vga_puts( char *s, vga_t );
+void vga_init( void );
+void vga_set_location( _U16 row, _U16 column );
+void vga_putc( char c );
+void vga_puts( char *s );
+
+void vga_scroll( void );
+void vga_simple_putc( char c, _U16 row, _U16 col );
 
 
 #endif
