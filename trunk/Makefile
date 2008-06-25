@@ -1,18 +1,21 @@
-VM_DIR ?= /cygdrive/c/Documents\ and\ Settings/vwells/kos/vm
+VM_DIR ?= /home/vwells/svn/the-k-os/vm
 GCC ?= /usr/bin/gcc
-INCLUDES := -I./include
-GCC_FLAGS ?= -fstrength-reduce -fomit-frame-pointer -finline-functions -fno-builtin -nostdinc -O -Wall
+FLOPPY_FILLER ?= /bin/false
+#FLOPPY_FILLER ?= $(VM_DIR)/copy_floppy.flp
 
-floppy: first.bin boot.bin
+INCLUDES := -I./include
+GCC_FLAGS := -fno-builtin -nostdinc -O -Wall
+
+floppy: kernel.bin boot.bin
 	dd if=boot.bin of=$(VM_DIR)/floppy.flp bs=512 count=1
-	dd if=first.bin of=$(VM_DIR)/floppy.flp bs=512 seek=1
-	dd if=$(VM_DIR)/copy_floppy.flp of=$(VM_DIR)/floppy.flp bs=512 seek=2 count=2878
+	dd if=kernel.bin of=$(VM_DIR)/floppy.flp bs=512 seek=1
+	dd if=$(FLOPPY_FILLER) of=$(VM_DIR)/floppy.flp bs=512 seek=2 count=2878
 
 boot.bin: kos-silly-loader.asm
 	nasm -f bin -o boot.bin kos-silly-loader.asm
 
 kernel.bin: start.o vga.o kmain.o
-	ld -T first.ld -o kernl.bin vga.o kmain.o start.o
+	ld -T kmain.ld -o kernel.bin vga.o kmain.o start.o
 
 start.o: first.asm
 	nasm -f elf -o start.o first.asm
