@@ -1,6 +1,6 @@
 VM_DIR ?= /home/vwells/svn/the-k-os/vm
 GCC ?= /usr/bin/gcc
-FLOPPY_FILLER ?= /bin/false
+FLOPPY_FILLER ?= /dev/zero
 #FLOPPY_FILLER ?= $(VM_DIR)/copy_floppy.flp
 
 INCLUDES := -I./include
@@ -18,7 +18,7 @@ kernel.bin: start.o vga.o kmain.o
 	ld -T kmain.ld -o kernel.bin vga.o kmain.o start.o
 
 start.o: first.asm
-	nasm -f elf -o start.o first.asm
+	nasm -f bin -o start.o first.asm
 
 kmain.o: kmain.c
 	gcc $(GCC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
