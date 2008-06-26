@@ -5,12 +5,11 @@
 
 vga_t KERNEL_VGA;
 
-
 void vga_simple_putc( char c, _U16 row, _U16 col ) {
     _U16* memptr;
 
     memptr = (_U16 *)VGA_BASE_MEM + row * 80 + col;
-    *memptr = c | 0x0007;
+    *memptr = 0x0f00 | (_U16)c;
 }
 
 
@@ -18,7 +17,7 @@ void vga_init( void ) {
     KERNEL_VGA.width = 80;
     KERNEL_VGA.height = 40;
     KERNEL_VGA.current_row = KERNEL_VGA.current_col = 0;
-    KERNEL_VGA.color = 0x0007;       /* ltgray on black */
+    KERNEL_VGA.color = 0x0700;       /* ltgray on black */
 
     KERNEL_VGA.memptr = (_U16 *)VGA_BASE_MEM; /* 2 bytes for each vga text slot entry, hence _U16 */
 }
