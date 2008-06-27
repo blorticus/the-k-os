@@ -21,7 +21,7 @@ typedef struct vga_t {
 
 
 void vga_init( void );
-void vga_set_location( _U16 row, _U16 column );
+void vga_set_location( _U8 row, _U8 column );
 void vga_putc( char c );
 void vga_puts( char *s );
 

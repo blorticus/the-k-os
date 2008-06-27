@@ -1,9 +1,13 @@
 #include <vga.h>
 #include <sys/types.h>
 
+/*
+ * RE-ENTRANT?      NO 
+ */
+
 #define VGA_BASE_MEM    0xB8000
 
-vga_t KERNEL_VGA;
+//vga_t KERNEL_VGA;
 
 void vga_simple_putc( char c, _U16 row, _U16 col ) {
     _U16* memptr;
@@ -13,50 +17,65 @@ void vga_simple_putc( char c, _U16 row, _U16 col ) {
 }
 
 
-void vga_init( void ) {
-    KERNEL_VGA.width = 80;
-    KERNEL_VGA.height = 40;
-    KERNEL_VGA.current_row = KERNEL_VGA.current_col = 0;
-    KERNEL_VGA.color = 0x0700;       /* ltgray on black */
+_U8 vga_color;
+_U8 vga_width;
+_U8 vga_height;
+_U8 vga_current_row;
+_U8 vga_current_col;
 
-    KERNEL_VGA.memptr = (_U16 *)VGA_BASE_MEM; /* 2 bytes for each vga text slot entry, hence _U16 */
+_U16* vga_memptr;
+
+#define VGA_ATTR ((_U16)(vga_color << 8));
+
+
+void vga_init( void ) {
+    vga_width        = 80;
+    vga_height       = 24;
+    vga_current_row  = 0;
+    vga_current_col  = 0;
+    vga_color        = 0x07;       /* ltgray on black */
 }
 
 
-void vga_set_location( _U16 row, _U16 column ) {
-    if (row >= KERNEL_VGA.height || column >= KERNEL_VGA.width)
+
+
+void vga_set_location( _U8 row, _U8 column ) {
+    if (row >= vga_height || column >= vga_width)
         return;
 
-    KERNEL_VGA.current_row = row;
-    KERNEL_VGA.current_col = column;
-
-    KERNEL_VGA.memptr = (_U16 *)VGA_BASE_MEM + (row * KERNEL_VGA.width) + column;
+    vga_current_row = row;
+    vga_current_col = column;
 }
 
 
 void vga_putc( char c ) {
-    if (c == '\r') {
-        KERNEL_VGA.current_col = 0;
-    }
-    else if (c == '\n') {
-        KERNEL_VGA.current_col = 0;
-        KERNEL_VGA.current_row++;
-    }
-    else if (c >= ' ') {
-        *KERNEL_VGA.memptr = c | KERNEL_VGA.color;
-        KERNEL_VGA.current_col++;
-    }
-
-    if (KERNEL_VGA.current_col >= KERNEL_VGA.width) {
-        KERNEL_VGA.current_row++;
-        KERNEL_VGA.current_col = KERNEL_VGA.current_col % KERNEL_VGA.width;
-    }
-    if (KERNEL_VGA.current_row >= KERNEL_VGA.height) {
-        vga_scroll();
-        KERNEL_VGA.current_row = KERNEL_VGA.height - 1;
-    }
-
-    KERNEL_VGA.memptr = (_U16 *)VGA_BASE_MEM + (KERNEL_VGA.current_row * KERNEL_VGA.width) + KERNEL_VGA.current_row;
+    vga_memptr = (_U16 *)VGA_BASE_MEM + (vga_current_row * vga_width) + vga_current_col;
+    *vga_memptr = c | VGA_ATTR;
+    vga_current_col++;
+     
+//     if (c == '\r') {
+//         KERNEL_VGA.current_col = 0;
+//     }
+//     else if (c == '\n') {
+//         KERNEL_VGA.current_col = 0;
+//         KERNEL_VGA.current_row++;
+//     }
+//     else if (c >= ' ') {
+// //        *((_U16 *)VGA_BASE_MEM + KERNEL_VGA.current_row * KERNEL_VGA.width + KERNEL_VGA.current_col) = c | VGA_ATTR;
+//         *((_U16 *)VGA_BASE_MEM + 8 * 80 + 0) = c | VGA_ATTR;
+// 
+//         if (++KERNEL_VGA.current_col >= KERNEL_VGA.width) {
+//             KERNEL_VGA.current_row++;
+//             KERNEL_VGA.current_col = 0;
+//         }
+//     }
+// 
+// //    if (KERNEL_VGA.current_row >= KERNEL_VGA.height) {
+// //        vga_scroll();
+// //        KERNEL_VGA.current_row = KERNEL_VGA.height - 1;
+// //    }
+// //
+// //    KERNEL_VGA.memptr = (_U16 *)VGA_BASE_MEM + (KERNEL_VGA.current_row * KERNEL_VGA.width) + KERNEL_VGA.current_row;
 }
 
 
@@ -67,16 +86,16 @@ void vga_puts( char *s ) {
 
 
 void vga_scroll( void ) {
-    _U16 i;
-
-    _U16* dst_ptr = (_U16 *)VGA_BASE_MEM;
-    _U16* src_ptr = (_U16 *)VGA_BASE_MEM + KERNEL_VGA.width;
-
-    /* inefficient 2byte-by-2byte copy */
-    for (i = 1; i < (KERNEL_VGA.height - 2) * KERNEL_VGA.width; i++)
-        *dst_ptr++ = *src_ptr++;
-
-    for (i = 0; i < KERNEL_VGA.width - 1; i++)
-        *dst_ptr = ' ' | KERNEL_VGA.color;
+//    _U16 i;
+//
+//    _U16* dst_ptr = (_U16 *)VGA_BASE_MEM;
+//    _U16* src_ptr = (_U16 *)VGA_BASE_MEM + KERNEL_VGA.width;
+//
+//    /* inefficient 2byte-by-2byte copy */
+//    for (i = 1; i < (KERNEL_VGA.height - 2) * KERNEL_VGA.width; i++)
+//        *dst_ptr++ = *src_ptr++;
+//
+//    for (i = 0; i < KERNEL_VGA.width - 1; i++)
+//        *dst_ptr = ' ' | VGA_ATTR;
 }
 
