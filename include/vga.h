@@ -24,6 +24,7 @@ void vga_init( void );
 void vga_set_location( _U8 row, _U8 column );
 void vga_putc( char c );
 void vga_puts( char *s );
+void vga_cls( void );
 
 void vga_scroll( void );
 void vga_simple_putc( char c, _U16 row, _U16 col );

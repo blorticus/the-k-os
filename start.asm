@@ -1,12 +1,10 @@
 [BITS 32]
 
-global start, silly_kos
+global start
 
 start:
 
 segments_set:
-;    mov ax, 08h
-;    mov cs, ax
     mov ax, 10h
     mov ds, ax
     mov es, ax
@@ -15,10 +13,11 @@ segments_set:
     mov ss, ax
     mov esp, sys_stack
 
-    extern kmain
-    call kmain
+;    extern kmain
+;    call kmain
 
     jmp $
+
 
 
 SECTION .bss

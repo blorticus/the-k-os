@@ -7,7 +7,6 @@
 
 #define VGA_BASE_MEM    0xB8000
 
-//vga_t KERNEL_VGA;
 
 void vga_simple_putc( char c, _U16 row, _U16 col ) {
     _U16* memptr;
@@ -54,28 +53,26 @@ void vga_putc( char c ) {
     vga_current_col++;
      
 //     if (c == '\r') {
-//         KERNEL_VGA.current_col = 0;
+//         vga_current_col = 0;
 //     }
 //     else if (c == '\n') {
-//         KERNEL_VGA.current_col = 0;
-//         KERNEL_VGA.current_row++;
+//         vga_current_col = 0;
+//         vga_current_row++;
 //     }
 //     else if (c >= ' ') {
-// //        *((_U16 *)VGA_BASE_MEM + KERNEL_VGA.current_row * KERNEL_VGA.width + KERNEL_VGA.current_col) = c | VGA_ATTR;
-//         *((_U16 *)VGA_BASE_MEM + 8 * 80 + 0) = c | VGA_ATTR;
-// 
-//         if (++KERNEL_VGA.current_col >= KERNEL_VGA.width) {
-//             KERNEL_VGA.current_row++;
-//             KERNEL_VGA.current_col = 0;
+//        vga_memptr = (_U16 *)VGA_BASE_MEM + (vga_current_row * vga_width) + vga_current_col;
+//        *vga_memptr = c | VGA_ATTR;
+
+//         if (++vga_current_col >= vga_width) {
+//             vga_current_row++;
+//             vga_current_col = 0;
 //         }
 //     }
 // 
-// //    if (KERNEL_VGA.current_row >= KERNEL_VGA.height) {
+// //    if (vga_current_row >= vga_height) {
 // //        vga_scroll();
-// //        KERNEL_VGA.current_row = KERNEL_VGA.height - 1;
+// //        vga_current_row = vga_height - 1;
 // //    }
-// //
-// //    KERNEL_VGA.memptr = (_U16 *)VGA_BASE_MEM + (KERNEL_VGA.current_row * KERNEL_VGA.width) + KERNEL_VGA.current_row;
 }
 
 
@@ -86,16 +83,29 @@ void vga_puts( char *s ) {
 
 
 void vga_scroll( void ) {
-//    _U16 i;
-//
-//    _U16* dst_ptr = (_U16 *)VGA_BASE_MEM;
-//    _U16* src_ptr = (_U16 *)VGA_BASE_MEM + KERNEL_VGA.width;
-//
-//    /* inefficient 2byte-by-2byte copy */
-//    for (i = 1; i < (KERNEL_VGA.height - 2) * KERNEL_VGA.width; i++)
-//        *dst_ptr++ = *src_ptr++;
-//
-//    for (i = 0; i < KERNEL_VGA.width - 1; i++)
-//        *dst_ptr = ' ' | VGA_ATTR;
+    _U16 i;
+
+    _U16* dst_ptr = (_U16 *)VGA_BASE_MEM;
+    _U16* src_ptr = (_U16 *)VGA_BASE_MEM + vga_width;
+
+    /* inefficient 2byte-by-2byte copy */
+    for (i = 1; i < (vga_height - 2) * vga_width; i++)
+        *dst_ptr++ = *src_ptr++;
+
+    for (i = 0; i < vga_width - 1; i++)
+        *dst_ptr = ' ' | VGA_ATTR;
 }
 
+
+
+void vga_cls( void ) {
+//    _U16 i;
+//
+//    vga_memptr = (_U16 *)VGA_BASE_MEM;
+//
+//    for (i = 0; i < vga_height * vga_width; i++)
+//        *vga_memptr = ' ' | VGA_ATTR;
+//
+//    vga_current_col = 0;
+//    vga_current_row = 0;
+}
