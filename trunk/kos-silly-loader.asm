@@ -56,9 +56,9 @@ reset_drive:
     jc reset_failure    ; if we failed...
 
 load_sector:
-    mov ax, 0x200
-    mov es, ax          ; put data 0x2000
-    xor bx, bx          ; offset 0 (so 0x2000:0)
+    mov ax, 0x1000
+    mov es, ax          ; put data at 1MB
+    xor bx, bx          ; offset 0
     mov ah, 2           ; int subcommand: int 13h 02h reads sectors from a disk
     mov al, 1           ; read one sector
     xor ch, ch          ; cylinder 0 (starts at 0)
@@ -184,8 +184,14 @@ to_32bit_pm:
 ;; Jump to relocated kernel
 ;;
 relocate:
+    mov ax, 10h
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov ss, ax
 ;    jmp 08h:2000h   ; REMEMBER: 0x08 is the first byte of the code selector in the GDT
-    jmp dword 08h:10000h
+    jmp dword 8:10000h
 
 
 
