@@ -184,7 +184,8 @@ to_32bit_pm:
 ;; Jump to relocated kernel
 ;;
 relocate:
-    jmp 08h:2000h   ; REMEMBER: 0x08 is the first byte of the code selector in the GDT
+;    jmp 08h:2000h   ; REMEMBER: 0x08 is the first byte of the code selector in the GDT
+    jmp dword 08h:10000h
 
 
 
