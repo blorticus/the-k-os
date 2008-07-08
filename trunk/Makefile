@@ -16,8 +16,8 @@ lfloppy: lkernel.bin boot.bin
 	dd if=kernel.bin of=$(VM_DIR)/floppy.flp bs=512 seek=1
 #	dd if=$(FLOPPY_FILLER) of=$(VM_DIR)/floppy.flp bs=512 seek=2 count=2878
 
-boot.bin: kos-silly-loader.asm
-	nasm -f bin -o boot.bin kos-silly-loader.asm
+boot.bin: boot/kos-silly-loader.asm
+	nasm -f bin -o boot.bin boot/kos-silly-loader.asm
 
 kernel.bin: start.o vga.o kmain.o kmain.ld
 	ld -T kmain.ld -o kernel.bin start.o kmain.o vga.o
@@ -31,8 +31,8 @@ start.o: start.asm
 kmain.o: kmain.c
 	gcc $(GCC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
 
-vga.o: scrn.c
-	gcc $(GCC_FLAGS) $(INCLUDES) -c -o vga.o scrn.c
+vga.o: vga.c
+	gcc $(GCC_FLAGS) $(INCLUDES) -c -o vga.o vga.c
 
 clean:
 	rm -f *.bin *.o *.flp *.s *.S
