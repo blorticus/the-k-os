@@ -31,8 +31,8 @@ start.o: start.asm
 kmain.o: kmain.c
 	gcc $(GCC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
 
-vga.o: vga.c
-	gcc $(GCC_FLAGS) $(INCLUDES) -c -o vga.o vga.c
+vga.o: scrn.c
+	gcc $(GCC_FLAGS) $(INCLUDES) -c -o vga.o scrn.c
 
 clean:
 	rm -f *.bin *.o *.flp *.s *.S

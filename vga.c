@@ -48,31 +48,33 @@ void vga_set_location( _U8 row, _U8 column ) {
 
 
 void vga_putc( char c ) {
-    vga_memptr = (_U16 *)VGA_BASE_MEM + (vga_current_row * vga_width) + vga_current_col;
-    *vga_memptr = c | VGA_ATTR;
-    vga_current_col++;
+//    vga_memptr = (_U16 *)VGA_BASE_MEM + (vga_current_row * vga_width) + vga_current_col;
+//    *vga_memptr = c | VGA_ATTR;
+//    vga_current_col++;
      
-//     if (c == '\r') {
-//         vga_current_col = 0;
-//     }
-//     else if (c == '\n') {
-//         vga_current_col = 0;
+     if (c == '\r') {
+         vga_current_col = 0;
+     }
+     else if (c == '\n') {
+         vga_current_col = 0;
 //         vga_current_row++;
-//     }
-//     else if (c >= ' ') {
-//        vga_memptr = (_U16 *)VGA_BASE_MEM + (vga_current_row * vga_width) + vga_current_col;
-//        *vga_memptr = c | VGA_ATTR;
-
+         *vga_memptr = c | VGA_ATTR;
+     }
+     else if (c >= ' ') {
+        vga_memptr = (_U16 *)VGA_BASE_MEM + (vga_current_row * vga_width) + vga_current_col;
+        *vga_memptr = c | VGA_ATTR;
+//
+        ++vga_current_col;
 //         if (++vga_current_col >= vga_width) {
 //             vga_current_row++;
 //             vga_current_col = 0;
 //         }
-//     }
-// 
-// //    if (vga_current_row >= vga_height) {
-// //        vga_scroll();
-// //        vga_current_row = vga_height - 1;
-// //    }
+     }
+ 
+//    if (vga_current_row >= vga_height) {
+//        vga_scroll();
+//        vga_current_row = vga_height - 1;
+//    }
 }
 
 
