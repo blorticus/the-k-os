@@ -1,4 +1,4 @@
-#include <vga.h>
+#include <b8000textmode.h>
 
 // 
 // 
@@ -23,18 +23,6 @@
 // void setup_idt( void ) {
 // 
 // }
-// 
-// 
-// #define VGA_BASE_MEM    0xB8000
-// 
-// 
-// void vga_simple_putc( char c, _U16 row, _U16 col ) {
-// //    _U16* memptr;
-// //
-// //    memptr = (_U16 *)VGA_BASE_MEM + row * 80 + col;
-// //    *memptr = 0x0f00 | (_U16)c;
-// }
-
 
 
 void kmain( void ) {
@@ -42,10 +30,10 @@ void kmain( void ) {
 //    setup_gdt();
 //    setup_idt();
 
-    vga_default_init();
-    vga_cls();
+    textmode_default_init();
+    textmode_cls();
 
-    vga_puts( "The K-OS is now loaded.\n\n\n" );
+    textmode_puts( "The K-OS is now loaded.\n\n\n" );
 
     for (;;) ;
 }
