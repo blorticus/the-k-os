@@ -24,8 +24,8 @@ lfloppy: lkernel.bin boot.bin
 boot.bin: boot/kos-silly-loader.asm
 	nasm -f bin -o boot.bin boot/kos-silly-loader.asm
 
-kernel.bin: start.o math.o vga.o kmain.o kmain.ld
-	ld -T kmain.ld -o kernel.bin start.o kmain.o math.o vga.o
+kernel.bin: start.o math.o b8000textmode.o kmain.o kmain.ld
+	ld -T kmain.ld -o kernel.bin start.o kmain.o math.o b8000textmode.o
 
 lkernel.bin: start.o kmain.o kmain.ld
 	ld -T kmain.ld -o kernel.bin start.o kmain.o
@@ -36,8 +36,8 @@ start.o: start.asm
 kmain.o: kmain.c
 	gcc $(GCC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
 
-vga.o: math.o vga.c
-	gcc $(GCC_FLAGS) $(INCLUDES) -c -o vga.o vga.c
+b8000textmode.o: math.o b8000textmode.c
+	gcc $(GCC_FLAGS) $(INCLUDES) -c -o b8000textmode.o b8000textmode.c
 
 math.o: math.c
 	gcc $(GCC_FLAGS) $(INCLUDES) -c -o math.o math.c
