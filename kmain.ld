@@ -1,6 +1,5 @@
-OUTPUT_FORMAT("binary")
+OUTPUT_FORMAT("elf32-i386")
 ENTRY(start)
-;phys = 0x0020000;
 phys = 0x00100000;
 SECTIONS
 {
