@@ -3,12 +3,7 @@
 #include <sys/asm.h>
 #include <math.h>
 
-/*
- * RE-ENTRANT?      NO 
- */
-
 #define TEXTMODE_BASE_MEM    0xB8000
-
 
 void textmode_simple_putc( char c, _U16 row, _U16 col ) {
     _U16* memptr;
@@ -35,9 +30,21 @@ void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, 
     textmode_current_col  = at_col;
     textmode_color        = (_U8)((bgcolor << 4) | fgcolor);
 
-    // The VGA I/O port 0x0a address activates/deactivates cursor (bit 5) and the cursor start register.
-    // We inactivate the cursor because it's kind of annoying to track by simply setting the entire 0x0a
-    // I/O port data to 1's
+    /*
+     * The VGA I/O port 0x3d4 looks first for "index" (indicating where data are to be written) and then "data", then "index", then
+     * "data", and so forth.  However, we can't really tell whether the port is currently awaiting data or index.  If we write in
+     * the wrong order, at best nothing happens, and at worst, terrible things.  I believe I've already seen this happen.  While we
+     * can't tell what it's waiting for, we can tell it to reset, so that it next expects "index".
+     * XXX: Without disabled interrupts, and interrupt handler could tromp on this.  However, in our current use, interrupts cannot be
+     *      enabled, so that'll have to wait
+     */
+    ioport_readb( 0x3da );  // only need to read from here; don't care about the result
+
+    /*
+     * The VGA I/O port 0x0a address activates/deactivates cursor (bit 5) and the cursor start register.
+     * We inactivate the cursor because it's kind of annoying to track by simply setting the entire 0x0a
+     * I/O port data to 1's
+     */
     ioport_writeb( 0x3d4, 0x0a );
     ioport_writeb( 0x3d5, 0x0f );
 }
