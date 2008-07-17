@@ -1,5 +1,6 @@
 #include <b8000textmode.h>
 #include <sys/types.h>
+#include <sys/asm.h>
 #include <math.h>
 
 /*
@@ -33,6 +34,12 @@ void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, 
     textmode_current_row  = at_row;
     textmode_current_col  = at_col;
     textmode_color        = (_U8)((bgcolor << 4) | fgcolor);
+
+    // The VGA I/O port 0x0a address activates/deactivates cursor (bit 5) and the cursor start register.
+    // We inactivate the cursor because it's kind of annoying to track by simply setting the entire 0x0a
+    // I/O port data to 1's
+    ioport_writeb( 0x3d4, 0x0a );
+    ioport_writeb( 0x3d5, 0x0f );
 }
 
 
