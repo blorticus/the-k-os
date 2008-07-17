@@ -26,7 +26,6 @@
 
 
 void kmain( void ) {
-    int i;
 //    setup_gdt();
 //    setup_idt();
 
