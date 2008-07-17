@@ -17,3 +17,10 @@ Primitive Bootloader, Step 3:
 Boot from first sector, load adjascent sector, create GDT, enable A20 
 addressing, switch to 32-bit protected mode, jmp to loaded code, and
 using B8000 raw, print "KOS".
+
+
+MILESTONE 4:
+------------
+GRUB Bootloader
+Provides kernel entry point and VGA B8000 textmode "driver"
+Prints "The K-OS has been loaded." at top left of screen after clearing the screen.
