@@ -46,8 +46,8 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o $(KMAIN_LD)
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o
+kernel.bin: start.o math.o b8000textmode.o kmain.o gdt.o $(KMAIN_LD)
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o gdt.o
 
 
 # TARGET: build asm kernel entry point
@@ -58,6 +58,10 @@ start.o: start.asm
 # TARGET: build C kmain() kernel entry point
 kmain.o: kmain.c
 	$(GCC) $(GCC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
+
+
+gdt.o: src/gdt.asm
+	$(ASM) -f elf -o gdt.o src/gdt.asm
 
 
 # TARGET: build textmode "driver" for B8000 memory access mode
