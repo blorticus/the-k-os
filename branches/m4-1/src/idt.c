@@ -1,5 +1,6 @@
 #include <idt.h>
 #include <sys/types.h>
+#include <vga.h>
 
 struct idt_table_entry {
     _U16 base_low_word;
@@ -12,3 +13,4 @@ struct idt_table_entry {
 struct idt_table_entry[256];   // IDT has 256 interrupts.  We don't have to define an entry for all slots, but we'll allocate
                                // for the whole table
 
+void _isr0( void ) { 
