@@ -16,11 +16,11 @@ MK_IMG_DISK ?= bin/mkimgdisk
 
 # -- COMPILER ARGS
 # --
-GCC ?= /usr/bin/gcc
+CC ?= /usr/bin/gcc
 LD ?= /usr/bin/ld
 ASM ?= /usr/bin/nasm
 INCLUDES := -I./include
-GCC_FLAGS := -fno-builtin -nostdinc -Wall
+CC_FLAGS := -fno-builtin -nostdinc -Wall
 
 
 # -- TARGET SYMBOLS
@@ -46,8 +46,8 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o gdt.o $(KMAIN_LD)
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o gdt.o
+kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) isrs.o irq.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o isrs.o irq.o
 
 
 # TARGET: build asm kernel entry point
@@ -57,21 +57,33 @@ start.o: start.asm
 
 # TARGET: build C kmain() kernel entry point
 kmain.o: kmain.c
-	$(GCC) $(GCC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
 
 
+# TARGET: build Global Descriptor Table routines
 gdt.o: src/gdt.asm
 	$(ASM) -f elf -o gdt.o src/gdt.asm
 
 
+# TARGET: build Interrupt Descriptor Table routines
+idt.o: src/idt.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o idt.o src/idt.c
+
+isrs.o: src/isrs.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o isrs.o src/isrs.c
+
+irq.o: src/irq.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o irq.o src/irq.c
+
+
 # TARGET: build textmode "driver" for B8000 memory access mode
 b8000textmode.o: math.o src/video/b8000textmode.c
-	$(GCC) $(GCC_FLAGS) $(INCLUDES) -c -o b8000textmode.o src/video/b8000textmode.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o b8000textmode.o src/video/b8000textmode.c
 
 
 # TARGET: build math library
 math.o: src/math.c
-	$(GCC) $(GCC_FLAGS) $(INCLUDES) -c -o math.o src/math.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o math.o src/math.c
 
 
 # TARGET: clean target, removes object and bin files

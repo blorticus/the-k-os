@@ -57,9 +57,23 @@ void textmode_set_location( _U8 row, _U8 column );
 void textmode_putc( char c );
 
 
+/* put a character on the screen using the configured fg and bg colors at the named row and column.  After, the
+ * current row and current column pointers are returned to their original location from before the call to this
+ * method.  Be aware that if this character put forces a scroll, the current row pointer is returned
+ * to its absolute position from before the scroll, meaning they will actually point one line before, lexically.
+ * If the supplied row is greater than the screen height, or the column is greater than the screen width, this
+ * method silently returns */
+void textmode_putc_at( char c, _U8 row, _U8 column );
+
+
 /* put a string to the screen using the configured fg and bg colors, starting at the current row and column, then
  * advance column by length of string (see textmode_putc()) */
 void textmode_puts( char *s );
+
+
+/* just like textmode_putc_at(), except it puts an entire string.  The same caveats about pointers and provided
+ * row/column apply */
+void textmode_puts_at( char* s, _U8 row, _U8 column );
 
 
 /* clear the screen (actually, fill it with spaces in the current fg/bg colors) */

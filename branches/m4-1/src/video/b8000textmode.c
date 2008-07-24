@@ -1,4 +1,4 @@
-#include <b8000textmode.h>
+#include <video/b8000textmode.h>
 #include <sys/types.h>
 #include <sys/asm.h>
 #include <math.h>
@@ -89,9 +89,43 @@ void textmode_putc( char c ) {
 }
 
 
+void textmode_putc_at( char c, _U8 row, _U8 col ) {
+    if (row >= textmode_height || col >= textmode_width)
+        return;
+
+    _U8 hold_row = textmode_current_row;
+    _U8 hold_col = textmode_current_col;
+
+    textmode_current_row = row;
+    textmode_current_col = col;
+
+    textmode_putc( c );
+
+    textmode_current_row = hold_row;
+    textmode_current_col = hold_col;
+}
+
+
 void textmode_puts( char *s ) {
     while (*s)
         textmode_putc( *s++ );
+}
+
+
+void textmode_puts_at( char* s, _U8 row, _U8 col ) {
+    if (row >= textmode_height || col >= textmode_width)
+        return;
+
+    _U8 hold_row = textmode_current_row;
+    _U8 hold_col = textmode_current_col;
+
+    textmode_current_row = row;
+    textmode_current_col = col;
+
+    textmode_puts( s );
+
+    textmode_current_row = hold_row;
+    textmode_current_col = hold_col;
 }
 
 
