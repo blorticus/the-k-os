@@ -187,3 +187,17 @@ void textmode_put_dec( unsigned int n ) {
 
     M_textmode_put_digit( n % 10 );
 }
+
+
+/* Given a single unsigned byte, textmode_putc its value as two hex digits */
+void textmode_put_hexbyte( _U8 byte ) {
+    if ((byte >> 4) < 10)
+        textmode_putc( (byte >> 4) + 48 );
+    else
+        textmode_putc( (byte >> 4) - 10 + 97 );
+
+    if ((byte & 0x0f) < 10)
+        textmode_putc( (byte & 0x0f) + 48 );
+    else
+        textmode_putc( (byte & 0x0f) - 10 + 97 );
+}

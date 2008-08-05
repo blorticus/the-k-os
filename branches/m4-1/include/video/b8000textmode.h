@@ -80,6 +80,10 @@ void textmode_puts_at( char* s, _U8 row, _U8 column );
 void textmode_cls( void );
 
 
+/* convert unsigned byte into two hex digits and textmode_putc() them */
+void textmode_put_hexbyte( _U8 byte );
+
+
 /*********
  * Testing methods
  **/

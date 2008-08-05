@@ -12,6 +12,7 @@
 VM_DIR ?= /home/vwells/svn/the-k-os/vm
 FLOPPY_FILLER ?= /dev/zero
 MK_IMG_DISK ?= bin/mkimgdisk
+MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 
 # -- COMPILER ARGS
@@ -33,6 +34,11 @@ imgdisk: kernel.bin
 	$(MK_IMG_DISK)
 
 
+# TARGET: build a bochs virtual floppy image
+bochs: kernel.bin
+	$(MK_BOCHS_IMG_DISK) -r
+
+
 # TARGET: build virtual image floppy when using custom (non-GRUB) bootloader
 silly-floppy: kernel.bin
 	dd if=boot.bin of=$(VM_DIR)/floppy.flp bs=512 count=1
@@ -46,8 +52,8 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) isrs.o irq.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o isrs.o irq.o
+kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o
 
 
 # TARGET: build asm kernel entry point
@@ -69,6 +75,14 @@ gdt.o: src/gdt.asm
 idt.o: src/idt.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o idt.o src/idt.c
 
+
+isr_handlers.o: src/isr_handlers.asm
+	$(ASM) -f elf -o isr_handlers.o src/isr_handlers.asm
+
+irq_handlers.o: src/irq_handlers.asm
+	$(ASM) -f elf -o irq_handlers.o src/irq_handlers.asm
+
+
 isrs.o: src/isrs.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o isrs.o src/isrs.c
 
@@ -84,6 +98,17 @@ b8000textmode.o: math.o src/video/b8000textmode.c
 # TARGET: build math library
 math.o: src/math.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o math.o src/math.c
+
+
+# TARGET: build basic keyboard driver
+keyboard.o: src/input/keyboard.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o keyboard.o src/input/keyboard.c
+
+
+# TARGET: assembly routines that cannot be macros
+asm.o: src/asm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o asm.o src/asm.c
+
 
 
 # TARGET: clean target, removes object and bin files
