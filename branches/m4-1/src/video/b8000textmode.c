@@ -35,7 +35,7 @@ void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, 
      * "data", and so forth.  However, we can't really tell whether the port is currently awaiting data or index.  If we write in
      * the wrong order, at best nothing happens, and at worst, terrible things.  I believe I've already seen this happen.  While we
      * can't tell what it's waiting for, we can tell it to reset, so that it next expects "index".
-     * XXX: Without disabled interrupts, and interrupt handler could tromp on this.  However, in our current use, interrupts cannot be
+     * XXX: Without disabled interrupts, an interrupt handler could tromp on this.  However, in our current use, interrupts cannot be
      *      enabled, so that'll have to wait
      */
     ioport_readb( 0x3da );  // only need to read from here; don't care about the result
@@ -71,6 +71,24 @@ void textmode_putc( char c ) {
     else if (c == '\n') {
         textmode_current_col = 0;
         textmode_current_row++;
+    }
+    else if (c == '\t') {
+        textmode_current_col += 4;
+    }
+    else if (c == '\b') {
+        if (textmode_current_col == 0) {
+            if (textmode_current_row > 0) {
+                textmode_current_row--;
+                textmode_current_col = textmode_width - 1;
+                textmode_memptr = (_U16 *)TEXTMODE_BASE_MEM + (textmode_current_row * textmode_width) + textmode_current_col;
+                *textmode_memptr = ' ' | TEXTMODE_ATTR;
+            }
+        }
+        else {
+            textmode_current_col--;
+            textmode_memptr = (_U16 *)TEXTMODE_BASE_MEM + (textmode_current_row * textmode_width) + textmode_current_col;
+            *textmode_memptr = ' ' | TEXTMODE_ATTR;
+        }
     }
     else if (c >= ' ') {
        textmode_memptr = (_U16 *)TEXTMODE_BASE_MEM + (textmode_current_row * textmode_width) + textmode_current_col;
