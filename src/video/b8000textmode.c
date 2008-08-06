@@ -1,14 +1,9 @@
-#include <b8000textmode.h>
+#include <video/b8000textmode.h>
 #include <sys/types.h>
 #include <sys/asm.h>
 #include <math.h>
 
-/*
- * RE-ENTRANT?      NO 
- */
-
 #define TEXTMODE_BASE_MEM    0xB8000
-
 
 void textmode_simple_putc( char c, _U16 row, _U16 col ) {
     _U16* memptr;
@@ -35,9 +30,21 @@ void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, 
     textmode_current_col  = at_col;
     textmode_color        = (_U8)((bgcolor << 4) | fgcolor);
 
-    // The VGA I/O port 0x0a address activates/deactivates cursor (bit 5) and the cursor start register.
-    // We inactivate the cursor because it's kind of annoying to track by simply setting the entire 0x0a
-    // I/O port data to 1's
+    /*
+     * The VGA I/O port 0x3d4 looks first for "index" (indicating where data are to be written) and then "data", then "index", then
+     * "data", and so forth.  However, we can't really tell whether the port is currently awaiting data or index.  If we write in
+     * the wrong order, at best nothing happens, and at worst, terrible things.  I believe I've already seen this happen.  While we
+     * can't tell what it's waiting for, we can tell it to reset, so that it next expects "index".
+     * XXX: Without disabled interrupts, an interrupt handler could tromp on this.  However, in our current use, interrupts cannot be
+     *      enabled, so that'll have to wait
+     */
+    ioport_readb( 0x3da );  // only need to read from here; don't care about the result
+
+    /*
+     * The VGA I/O port 0x0a address activates/deactivates cursor (bit 5) and the cursor start register.
+     * We inactivate the cursor because it's kind of annoying to track by simply setting the entire 0x0a
+     * I/O port data to 1's
+     */
     ioport_writeb( 0x3d4, 0x0a );
     ioport_writeb( 0x3d5, 0x0f );
 }
@@ -65,6 +72,24 @@ void textmode_putc( char c ) {
         textmode_current_col = 0;
         textmode_current_row++;
     }
+    else if (c == '\t') {
+        textmode_current_col += 4;
+    }
+    else if (c == '\b') {
+        if (textmode_current_col == 0) {
+            if (textmode_current_row > 0) {
+                textmode_current_row--;
+                textmode_current_col = textmode_width - 1;
+                textmode_memptr = (_U16 *)TEXTMODE_BASE_MEM + (textmode_current_row * textmode_width) + textmode_current_col;
+                *textmode_memptr = ' ' | TEXTMODE_ATTR;
+            }
+        }
+        else {
+            textmode_current_col--;
+            textmode_memptr = (_U16 *)TEXTMODE_BASE_MEM + (textmode_current_row * textmode_width) + textmode_current_col;
+            *textmode_memptr = ' ' | TEXTMODE_ATTR;
+        }
+    }
     else if (c >= ' ') {
        textmode_memptr = (_U16 *)TEXTMODE_BASE_MEM + (textmode_current_row * textmode_width) + textmode_current_col;
        *textmode_memptr = c | TEXTMODE_ATTR;
@@ -82,9 +107,43 @@ void textmode_putc( char c ) {
 }
 
 
+void textmode_putc_at( char c, _U8 row, _U8 col ) {
+    if (row >= textmode_height || col >= textmode_width)
+        return;
+
+    _U8 hold_row = textmode_current_row;
+    _U8 hold_col = textmode_current_col;
+
+    textmode_current_row = row;
+    textmode_current_col = col;
+
+    textmode_putc( c );
+
+    textmode_current_row = hold_row;
+    textmode_current_col = hold_col;
+}
+
+
 void textmode_puts( char *s ) {
     while (*s)
         textmode_putc( *s++ );
+}
+
+
+void textmode_puts_at( char* s, _U8 row, _U8 col ) {
+    if (row >= textmode_height || col >= textmode_width)
+        return;
+
+    _U8 hold_row = textmode_current_row;
+    _U8 hold_col = textmode_current_col;
+
+    textmode_current_row = row;
+    textmode_current_col = col;
+
+    textmode_puts( s );
+
+    textmode_current_row = hold_row;
+    textmode_current_col = hold_col;
 }
 
 
@@ -145,4 +204,18 @@ void textmode_put_dec( unsigned int n ) {
     }
 
     M_textmode_put_digit( n % 10 );
+}
+
+
+/* Given a single unsigned byte, textmode_putc its value as two hex digits */
+void textmode_put_hexbyte( _U8 byte ) {
+    if ((byte >> 4) < 10)
+        textmode_putc( (byte >> 4) + 48 );
+    else
+        textmode_putc( (byte >> 4) - 10 + 97 );
+
+    if ((byte & 0x0f) < 10)
+        textmode_putc( (byte & 0x0f) + 48 );
+    else
+        textmode_putc( (byte & 0x0f) - 10 + 97 );
 }
