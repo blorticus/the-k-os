@@ -24,3 +24,10 @@ MILESTONE 4:
 GRUB Bootloader
 Provides kernel entry point and VGA B8000 textmode "driver"
 Prints "The K-OS has been loaded." at top left of screen after clearing the screen.
+
+
+MILESTONE 5:
+------------
+IDT, IRQs, ISRs, Skeleton for Keyboard Driver
+Provides IDT, remaps IRQ interrupts, adds handlers for all exceptions, and handlers for all IRQs
+Adds the skeleton of a keyboard driver
