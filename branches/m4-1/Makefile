@@ -17,9 +17,9 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 # -- COMPILER ARGS
 # --
-CC ?= /usr/bin/gcc
-LD ?= /usr/bin/ld
-ASM ?= /usr/bin/nasm
+CC := /usr/bin/gcc
+LD := /usr/bin/ld
+ASM := /usr/bin/nasm
 INCLUDES := -I./include
 CC_FLAGS := -fno-builtin -nostdinc -Wall
 
