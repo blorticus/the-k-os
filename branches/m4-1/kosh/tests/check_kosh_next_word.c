@@ -73,6 +73,42 @@ START_TEST (testing_next_word)
 
     fail_unless( strcmp( n, "" ) == 0,
                  "string with only tab fed to new_word() does not return null" );
+
+    /* now test for multiple word iteration */
+    next_word( " this\tis\na \t simple sentence.  \n  \t ", n, 99 );
+
+    fail_unless( strcmp( n, "this" ) == 0,
+                 "first call to next_word() w/ multiple words does not return first word" );
+
+    next_word( NULL, n, 99 );
+
+    fail_unless( strcmp( n, "is" ) == 0,
+                 "second call to next_word() w/ multiple words does not return second word" );
+
+    next_word( NULL, n, 99 );
+
+    fail_unless( strcmp( n, "a" ) == 0,
+                 "third call to next_word() w/ multiple words does not return third word" );
+
+    next_word( NULL, n, 99 );
+
+    fail_unless( strcmp( n, "simple" ) == 0,
+                 "fourth call to next_word() w/ multiple words does not return fourth word" );
+
+    next_word( NULL, n, 99 );
+
+    fail_unless( strcmp( n, "sentence." ) == 0,
+                 "fifth call to next_word() w/ multiple words does not return fifth word" );
+
+    next_word( NULL, n, 99 );
+
+    fail_unless( strcmp( n, "" ) == 0,
+                 "first call to next_word() after consuming all word tokens does not return empty string" );
+
+    next_word( NULL, n, 99 );
+
+    fail_unless( strcmp( n, "" ) == 0,
+                 "second call to next_word() after consuming all word tokens does not return empty string" );
 }
 END_TEST
 
