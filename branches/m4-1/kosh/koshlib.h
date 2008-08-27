@@ -45,7 +45,7 @@ char* next_word( char* str, char* buffer, u32 limit );
 
 /* look to see if regname matches a register name in any mix of case.  If so, return the 'register_name' value; otherwise, if it does
  * not match a register name, return -1. */
-//int match_register( const char* regname );
+int match_register( const char* regname );
 
 
 /* Parses a command "word" (no whitespace permitted) and determines whether it is memory location or a register name (or neither).
