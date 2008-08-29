@@ -6,11 +6,10 @@
 #define NULL '\0'
 
 int strcmp( const char *s1, const char *s2 );
-
-#if defined (TESTING)
-int strncmp( const char *s1, const char *s2, _size_t n );
-#else
 int strncmp( const char *s1, const char *s2, size_t n );
-#endif
+
+/* convert string to all lower-case or all upper-case; english only.  Return number of characters changed */
+int strntolower( char *s, size_t n );
+int strntoupper( char *s, size_t n );
 
 #endif

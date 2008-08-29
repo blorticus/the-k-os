@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <lcheck.h>
 #include <stdlib.h>
+#include <string.h>
 
 lcheck_suite* create_suite( const char* name ) {
     lcheck_suite* s = (lcheck_suite*)malloc( sizeof( lcheck_suite ) );
 
-    s->name = name;
+    s->name = (char*)name;
     s->tests_run = 0;
     s->tests_failed = 0;
 
@@ -33,5 +34,31 @@ int conclude_suite( lcheck_suite* s ) {
     free( s );
 
     return r;
+}
+
+
+int __strncmp( const char *s1, const char *s2, unsigned int n ) {
+    return strncmp( s1, s2, (size_t)n );
+}
+
+
+char* __strcat_realloc( const char* dest, const char* src ) {
+    int dl = strlen( dest );
+    int sl = strlen( src  );
+
+    char* temp = (char*)malloc( sizeof( char ) * (dl + sl) );
+    char* tp = temp;
+
+    char* dp = (char*)dest;
+
+    while (*dp)
+        *tp++ = *dp++;
+
+    while (*src)
+        *tp++ = *src++;
+
+    *tp = '\0';
+
+    return temp;
 }
 

@@ -4,7 +4,7 @@ CC := /usr/bin/gcc
 LD := /usr/bin/ld
 AR := /usr/bin/ar
 INCLUDES := -I.
-CC_FLAGS := -Wall -O2
+CC_FLAGS := -Wall -g
 
 
 # TARGET: build lcheck.a library

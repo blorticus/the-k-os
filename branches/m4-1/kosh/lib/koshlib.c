@@ -1,5 +1,4 @@
 #include <kosh/koshlib.h>
-#include <kterm.h>
 #include <sys/types.h>
 #include <string.h>
 
@@ -153,7 +152,7 @@ int match_register( const char* regname ) {
                 return ESP;
         }
         else {
-            // XXX: check for EFLAGS
+            // if (strncmp( tolower( regname ),  XXX: stopped here
         }
     }
     else if (regname[0] == 'F' || regname[0] == 'f') {
@@ -226,77 +225,64 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
 
 
 kosh_instruction* input_to_instruction( char* input ) {
-    return NULL;
-//    kosh_instruction instruction;
-//    char* after_command;
-//
-//    after_command = next_word( input, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-//
-//    if (token_buffer[0] == NULL) {
-//        instruction.command = _EMPTY_;
-//        instruction.error   = NULL;
-//    }
-//    else if (strcmp( token_buffer, "exit" ) == 0) {
-//        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-//        if (token_buffer[0] != NULL) {
-//            instruction.command = _ERROR_;
-//            instruction.error   = "Extra Input After Command";
-//        }
-//        else {
-//            instruction.command = EXIT;
-//        }
-//    }
-//    else if (strcmp( token_buffer, "peek" ) == 0) {
-//        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-//        if (token_buffer[0] == NULL) {
-//            instruction.command = _ERROR_;
-//            instruction.error   = "peek <mem|reg>";
-//        }
-//        else {
-//            if (extract_reg_or_mem( token_buffer, &kosh_instruction ) == 0) {
-//                kosh_instruction.command = _ERROR_;
-//                kosh_instruction.error   = "peek <mem|reg>";
-//            }
-//            // otherwise, extract_reg_or_mem() has changed kosh_instruction
-//        }
-//    }
-//    else if (strcmp( token_buffer, "poke" ) == 0) {
-//        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-//        if (token_buffer[0] == NULL) {
-//            instruction.command = _ERROR_;
-//            instruction.error   = "peek <mem|reg>";
-//        }
-//        else {
-//            if (extract_reg_or_mem( token_buffer, &kosh_instruction ) == 0) {
-//                instruction.command = _ERROR_;
-//                instruction.error   = "peek <mem|reg>";
-//            }
-//            // otherwise, extract_reg_or_mem() has changed kosh_instruction
-//    }
-//    else if (strcmp( token_buffer, "echo" ) == 0) {
-//        while (*after_command = ' ' || *after_command == '\t' || *after_command == '\n')
-//            after_command++;
-//
-//        instruction.command                = ECHO;
-//        instruction.remaining_command_line = after_command;
-//    }
-//    else {
-//        instruction.command = _ERROR_;
-//        instruction.error   = "Invalid Command";
-//    }
-//
-//    return &kosh_instruction;
-}
+    kosh_instruction instruction;
+    char* after_command;
 
+    after_command = next_word( input, token_buffer, TOKEN_BUFFER_SIZE - 1 );
 
-kosh_instruction* prompt( void ) {
-    kosh_instruction* instruction = NULL;
+    if (token_buffer[0] == NULL) {
+        instruction.command = _EMPTY_;
+        instruction.error   = NULL;
+    }
+    else if (strcmp( token_buffer, "exit" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] != NULL) {
+            instruction.command = _ERROR_;
+            instruction.error   = "Extra Input After Command";
+        }
+        else {
+            instruction.command = EXIT;
+        }
+    }
+    else if (strcmp( token_buffer, "peek" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] == NULL) {
+            instruction.command = _ERROR_;
+            instruction.error   = "peek <mem|reg>";
+        }
+        else {
+            if (extract_reg_or_mem( token_buffer, &kosh_instruction ) == 0) {
+                kosh_instruction.command = _ERROR_;
+                kosh_instruction.error   = "peek <mem|reg>";
+            }
+            // otherwise, extract_reg_or_mem() has changed kosh_instruction
+        }
+    }
+    else if (strcmp( token_buffer, "poke" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] == NULL) {
+            instruction.command = _ERROR_;
+            instruction.error   = "peek <mem|reg>";
+        }
+        else {
+            if (extract_reg_or_mem( token_buffer, &kosh_instruction ) == 0) {
+                instruction.command = _ERROR_;
+                instruction.error   = "peek <mem|reg>";
+            }
+            // otherwise, extract_reg_or_mem() has changed kosh_instruction
+    }
+    else if (strcmp( token_buffer, "echo" ) == 0) {
+        while (*after_command = ' ' || *after_command == '\t' || *after_command == '\n')
+            after_command++;
 
-    while (instruction == NULL) {
-        _puts( "KoSH> " );
-        _fgets( input_buffer, INPUT_BUFFER_SIZE );
-        instruction = input_to_instruction( input_buffer );
+        instruction.command                = ECHO;
+        instruction.remaining_command_line = after_command;
+    }
+    else {
+        instruction.command = _ERROR_;
+        instruction.error   = "Invalid Command";
     }
 
-    return instruction;
+    return &kosh_instruction;
 }
+

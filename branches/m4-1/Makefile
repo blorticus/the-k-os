@@ -21,7 +21,7 @@ CC := /usr/bin/gcc
 LD := /usr/bin/ld
 ASM := /usr/bin/nasm
 INCLUDES := -I./include
-CC_FLAGS := -fno-builtin -nostdinc -Wall
+CC_FLAGS := -fno-builtin -nostdinc -Wall -g
 
 
 # -- TARGET SYMBOLS
@@ -108,6 +108,11 @@ keyboard.o: src/input/keyboard.c
 # TARGET: assembly routines that cannot be macros
 asm.o: src/asm.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o asm.o src/asm.c
+
+
+# TARGET: string.h methods
+string.o: src/string.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o string.o src/string.c
 
 
 
