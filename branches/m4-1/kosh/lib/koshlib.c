@@ -156,8 +156,8 @@ int match_register( const char* regname ) {
                 return ESP;
         }
         else {
-            strntolower( (char*)regname, 7 );
-            if (strcmp( regname, "eflags" ) == 0)
+            if ((regname[1] == 'f' || regname[1] == 'F') && (regname[2] == 'l' || regname[2] == 'L') &&  (regname[3] == 'a' || regname[3] == 'A') &&
+                (regname[4] == 'g' || regname[4] == 'G') && (regname[5] == 's' || regname[5] == 'S'))
                 return EFLAGS;
         }
     }

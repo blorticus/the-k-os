@@ -15,6 +15,17 @@
 //int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
 
 
+void _test_for_reg( lcheck_suite* s, const char* test_value, register_name rn ) {
+    kosh_instruction i;
+
+    fail_unless( s, extract_reg_or_mem( (char*)test_value, &i ),
+                 __strcat_realloc( "extract_reg_or_mem() returns false value for ", test_value ) );
+
+    fail_unless( s, i.reg == rn,
+                 __strcat_realloc( "extract_reg_or_mem() fails compare for", test_value ) );
+}
+
+
 int main( void ) {
     lcheck_suite* s;
 
@@ -65,6 +76,39 @@ int main( void ) {
 
     fail_unless( s, i[6].memory_location == 0x135a0,
                  "extract_reg_or_mem() failed to set memaddr to 0x135a0 when value is 0x00135a0" );
+
+    _test_for_reg( s, "al", AL );
+    _test_for_reg( s, "AH", AH );
+    _test_for_reg( s, "Bl", BL );
+    _test_for_reg( s, "bH", BH );
+    _test_for_reg( s, "cl", CL );
+    _test_for_reg( s, "CH", CH );
+    _test_for_reg( s, "Dl", DL );
+    _test_for_reg( s, "dH", DH );
+    _test_for_reg( s, "ax", AX );
+    _test_for_reg( s, "BX", BX );
+    _test_for_reg( s, "cX", CX );
+    _test_for_reg( s, "DX", DX );
+    _test_for_reg( s, "EAX", EAX );
+    _test_for_reg( s, "ebx", EBX );
+    _test_for_reg( s, "eDx", EDX );
+    _test_for_reg( s, "EcX", ECX );
+    _test_for_reg( s, "eDX", EDX );
+    _test_for_reg( s, "ss", SS );
+    _test_for_reg( s, "CS", CS );
+    _test_for_reg( s, "eS", ES );
+    _test_for_reg( s, "fS", FS );
+    _test_for_reg( s, "Gs", GS );
+    _test_for_reg( s, "Si", SI );
+    _test_for_reg( s, "DI", DI );
+    _test_for_reg( s, "esI", ESI );
+    _test_for_reg( s, "Edi", EDI );
+    _test_for_reg( s, "bP", BP );
+    _test_for_reg( s, "EBP", EBP );
+    _test_for_reg( s, "sp", SP );
+    _test_for_reg( s, "EsP", ESP );
+    _test_for_reg( s, "EflAgs", EFLAGS );
+
 
     fail_unless( s, !extract_reg_or_mem( "", &j[0] ),
                  "extract_reg_or_mem() returns true value when passed empty string" );
