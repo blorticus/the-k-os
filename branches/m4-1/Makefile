@@ -130,6 +130,6 @@ veryclean:
 
 # TARGET: clean-up this directory and subdirectories by recursively calling 'make clean'
 .PHONY: distclean
-distclean:
+distclean: clean
 	$(MAKE) -C kosh clean
 	$(MAKE) -C lcheck clean
