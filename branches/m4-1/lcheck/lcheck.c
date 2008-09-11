@@ -62,3 +62,7 @@ char* __strcat_realloc( const char* dest, const char* src ) {
     return temp;
 }
 
+
+int __strlen( const char* s ) {
+    return strlen( s );
+}

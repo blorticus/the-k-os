@@ -1,24 +1,27 @@
 CC := /usr/bin/gcc
 CC_FLAGS := -Wall -g
-INCLUDES :=  -I../../lcheck -I../.. -I../../include
-LIBS := -L../../lcheck -llcheck
-INCOBJS := ../koshlib.o
+INCLUDES :=  -I.. -I../../lcheck -I../.. -I../../include
+LIBS := -L../../lcheck -llcheck -L.. -lkoshlib
 MAKE := /usr/bin/make
 
-check_all: check_kosh_next_word.t check_kosh_match_register.t
+check_all: check_kosh_next_word.t check_kosh_match_register.t check_kosh_extract_reg_or_mem.t
 	@echo
 	@./check_kosh_next_word.t
 	@./check_kosh_match_register.t
+	@./check_kosh_extract_reg_or_mem.t
 	@echo
 
-check_kosh_match_register.t: check_kosh_match_register.c koshlib.o liblcheck.a
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o check_kosh_match_register.t check_kosh_match_register.c $(INCOBJS) $(LIBS)
+check_kosh_extract_reg_or_mem.t: check_kosh_extract_reg_or_mem.c libkoshlib.a liblcheck.a
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o check_kosh_extract_reg_or_mem.t check_kosh_extract_reg_or_mem.c $(LIBS)
 
-check_kosh_next_word.t: check_kosh_next_word.c koshlib.o liblcheck.a
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o check_kosh_next_word.t check_kosh_next_word.c $(INCOBJS) $(LIBS)
+check_kosh_match_register.t: check_kosh_match_register.c libkoshlib.a liblcheck.a
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o check_kosh_match_register.t check_kosh_match_register.c $(LIBS)
 
-koshlib.o: 
-	$(MAKE) -C .. koshlib.o
+check_kosh_next_word.t: check_kosh_next_word.c libkoshlib.a liblcheck.a
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o check_kosh_next_word.t check_kosh_next_word.c $(LIBS)
+
+libkoshlib.a: 
+	$(MAKE) -C .. libkoshlib.a
 
 liblcheck.a:
 	$(MAKE) -C ../../lcheck liblcheck.a

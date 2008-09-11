@@ -20,7 +20,7 @@ typedef enum {
     _EMPTY_,        // no command supplied
     EXIT,           // currently, this means halt the system
     PEEK,           // memory location or register name
-    EHCO,           // echo a string
+    ECHO,           // echo a string
     POKE            // memory location or register name
 } kosh_base_command;
 
@@ -53,6 +53,10 @@ typedef struct {
  * NULL string.  If 'str' is NULL, then the next_word in the most recent non-NULL 'str' entry is searched again.  (this works
  * like strtok()).  Result is written to 'buffer', and a pointer to first character after 'buffer' word in 'str' is returned. */
 char* last_searched = NULL;
+
+
+/* this will be localized later, but for now, represents the current instruction */
+kosh_instruction g_instruction;
 
 char* next_word( char* str, char* buffer, _U32 limit ) {
     int i;
@@ -152,7 +156,9 @@ int match_register( const char* regname ) {
                 return ESP;
         }
         else {
-            // if (strncmp( tolower( regname ),  XXX: stopped here
+            strntolower( (char*)regname, 7 );
+            if (strcmp( regname, "eflags" ) == 0)
+                return EFLAGS;
         }
     }
     else if (regname[0] == 'F' || regname[0] == 'f') {
@@ -186,8 +192,10 @@ int match_register( const char* regname ) {
  * the bounds of the type 'memaddr', instruction.error will be set and zero will be returned.
  */
 int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
-    if (word == NULL || word[0] == NULL)
+    if (word == NULL || word[0] == NULL) {
+        instruction->error = "Empty Word Provided";
         return 0;
+    }
 
     // memory locations must be hex, and must start with 0x
     memaddr memloc      = 0;
@@ -214,75 +222,93 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
                 instruction->error = "Memory Location Out-of-Bounds";
                 return 0;
             }
+            word++;
         }
+
+        instruction->memory_location = memloc;
         return 1;
     }
     else {    // is a register or is invalid
+        int r = match_register( word );
+
+        if (r == -1) {
+            instruction->error = "Invalid Memory Location or Register Name";
+            return 0;
+        }
+        else {
+            instruction->reg = r;
+            return 1;
+        }
     }
 
-    return 1;
+    instruction->error = "Invalid Memory Location or Register Name";
+    return 0;
 }
 
 
 kosh_instruction* input_to_instruction( char* input ) {
-    kosh_instruction instruction;
+    /* right now, no malloc() or equivalent, so use global var */
+//    kosh_instruction instruction;  /* right now, no malloc() or equivalent, so use global var */
+    kosh_instruction* instruction = &g_instruction;
+
     char* after_command;
 
     after_command = next_word( input, token_buffer, TOKEN_BUFFER_SIZE - 1 );
 
     if (token_buffer[0] == NULL) {
-        instruction.command = _EMPTY_;
-        instruction.error   = NULL;
+        instruction->command = _EMPTY_;
+        instruction->error   = NULL;
     }
     else if (strcmp( token_buffer, "exit" ) == 0) {
         next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
         if (token_buffer[0] != NULL) {
-            instruction.command = _ERROR_;
-            instruction.error   = "Extra Input After Command";
+            instruction->command = _ERROR_;
+            instruction->error   = "Extra Input After Command";
         }
         else {
-            instruction.command = EXIT;
+            instruction->command = EXIT;
         }
     }
     else if (strcmp( token_buffer, "peek" ) == 0) {
         next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
         if (token_buffer[0] == NULL) {
-            instruction.command = _ERROR_;
-            instruction.error   = "peek <mem|reg>";
+            instruction->command = _ERROR_;
+            instruction->error   = "peek <mem|reg>";
         }
         else {
-            if (extract_reg_or_mem( token_buffer, &kosh_instruction ) == 0) {
-                kosh_instruction.command = _ERROR_;
-                kosh_instruction.error   = "peek <mem|reg>";
+            if (extract_reg_or_mem( token_buffer, instruction ) == 0) {
+                instruction->command = _ERROR_;
+                instruction->error   = "peek <mem|reg>";
             }
-            // otherwise, extract_reg_or_mem() has changed kosh_instruction
+            // otherwise, extract_reg_or_mem() has changed instruction
         }
     }
     else if (strcmp( token_buffer, "poke" ) == 0) {
         next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
         if (token_buffer[0] == NULL) {
-            instruction.command = _ERROR_;
-            instruction.error   = "peek <mem|reg>";
+            instruction->command = _ERROR_;
+            instruction->error   = "peek <mem|reg>";
         }
         else {
-            if (extract_reg_or_mem( token_buffer, &kosh_instruction ) == 0) {
-                instruction.command = _ERROR_;
-                instruction.error   = "peek <mem|reg>";
+            if (extract_reg_or_mem( token_buffer, instruction ) == 0) {
+                instruction->command = _ERROR_;
+                instruction->error   = "peek <mem|reg>";
             }
-            // otherwise, extract_reg_or_mem() has changed kosh_instruction
+            // otherwise, extract_reg_or_mem() has changed instruction
+        }
     }
     else if (strcmp( token_buffer, "echo" ) == 0) {
-        while (*after_command = ' ' || *after_command == '\t' || *after_command == '\n')
+        while ((*after_command = ' ') || (*after_command == '\t') || (*after_command == '\n'))
             after_command++;
 
-        instruction.command                = ECHO;
-        instruction.remaining_command_line = after_command;
+        instruction->command                = ECHO;
+        instruction->remaining_command_line = after_command;
     }
     else {
-        instruction.command = _ERROR_;
-        instruction.error   = "Invalid Command";
+        instruction->command = _ERROR_;
+        instruction->error   = "Invalid Command";
     }
 
-    return &kosh_instruction;
+    return instruction;
 }
 

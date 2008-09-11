@@ -126,3 +126,10 @@ clean:
 .PHONY: veryclean
 veryclean:
 	rm -f *.bin *.o *.flp *.img *.s *.S
+
+
+# TARGET: clean-up this directory and subdirectories by recursively calling 'make clean'
+.PHONY: distclean
+distclean:
+	$(MAKE) -C kosh clean
+	$(MAKE) -C lcheck clean

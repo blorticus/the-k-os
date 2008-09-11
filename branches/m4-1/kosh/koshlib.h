@@ -9,7 +9,7 @@ typedef enum {
     _EMPTY_,        // no command supplied
     EXIT,           // currently, this means halt the system
     PEEK,           // memory location or register name
-    EHCO,           // echo a string
+    ECHO,           // echo a string
     POKE            // memory location or register name
 } kosh_base_command;
 
