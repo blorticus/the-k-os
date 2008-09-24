@@ -2,6 +2,11 @@
 #include <sys/types.h>
 #include <string.h>
 
+
+/* Generally speaking, the procedure flow in this module isn't very tight because responsibilities
+ * are not cleanly and clearly delineated.  It might be valuable to restructure such that separation
+ * is clearer */
+
 /* for input from prompt */
 #define INPUT_BUFFER_SIZE   100
 
@@ -226,6 +231,8 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
         }
 
         instruction->memory_location = memloc;
+        instruction->flags |= KOSH_INSTRUCTION_FLAG_MEMADDR_SET & ~KOSH_INSTRUCTION_FLAG_REG_SET;
+        //instruction->flags &= ~KOSH_INSTRUCTION_FLAG_REG_SET;
         return 1;
     }
     else {    // is a register or is invalid
@@ -237,6 +244,8 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
         }
         else {
             instruction->reg = r;
+            instruction->flags |= KOSH_INSTRUCTION_FLAG_REG_SET & ~KOSH_INSTRUCTION_FLAG_MEMADDR_SET;
+            //instruction->flags &= ~KOSH_INSTRUCTION_FLAG_MEMADDR_SET;
             return 1;
         }
     }
@@ -248,10 +257,18 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
 
 kosh_instruction* input_to_instruction( char* input ) {
     /* right now, no malloc() or equivalent, so use global var */
-//    kosh_instruction instruction;  /* right now, no malloc() or equivalent, so use global var */
+//    kosh_instruction instruction;  /* right now, no malloc() or equivalent, so we cannot return a pointer to this variable.  Thus, use global var */
     kosh_instruction* instruction = &g_instruction;
 
+    instruction->flags = 0x00;
+    instruction->error = "";
+    instruction->command = _EMPTY_;
+
     char* after_command;
+
+    if (input == NULL) {
+        return instruction;
+    }
 
     after_command = next_word( input, token_buffer, TOKEN_BUFFER_SIZE - 1 );
 
@@ -280,7 +297,10 @@ kosh_instruction* input_to_instruction( char* input ) {
                 instruction->command = _ERROR_;
                 instruction->error   = "peek <mem|reg>";
             }
-            // otherwise, extract_reg_or_mem() has changed instruction
+            else {
+                instruction->command = PEEK;
+                /* extract_reg_or_mem sets instruction->flags and instruction->memory_address || instruction->reg */
+            }
         }
     }
     else if (strcmp( token_buffer, "poke" ) == 0) {
@@ -294,11 +314,14 @@ kosh_instruction* input_to_instruction( char* input ) {
                 instruction->command = _ERROR_;
                 instruction->error   = "peek <mem|reg>";
             }
-            // otherwise, extract_reg_or_mem() has changed instruction
+            else {
+                instruction->command = POKE;
+                /* extract_reg_or_mem sets instruction->flags and instruction->memory_address || instruction->reg */
+            }
         }
     }
     else if (strcmp( token_buffer, "echo" ) == 0) {
-        while ((*after_command = ' ') || (*after_command == '\t') || (*after_command == '\n'))
+        while ((*after_command == ' ') || (*after_command == '\t') || (*after_command == '\n'))
             after_command++;
 
         instruction->command                = ECHO;
@@ -311,4 +334,3 @@ kosh_instruction* input_to_instruction( char* input ) {
 
     return instruction;
 }
-

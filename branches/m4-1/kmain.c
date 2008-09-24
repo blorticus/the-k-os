@@ -6,6 +6,8 @@
 #include <input/keyboard.h>
 
 void kmain( void ) {
+    u16 c;
+
     create_gdt();
 //    create_idt();
 
@@ -21,5 +23,8 @@ void kmain( void ) {
     textmode_cls();
     textmode_puts( "The K-OS is now loaded.\n\n\n" );
 
-    for (;;) ;
+    for (;;) {
+        if (c = read_next_key_stroke())
+            textmode_putc( (char)c );
+    }
 }

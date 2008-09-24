@@ -42,6 +42,11 @@ int __strncmp( const char *s1, const char *s2, unsigned int n ) {
 }
 
 
+int __strcmp( const char *s1, const char *s2 ) {
+    return strcmp( s1, s2 );
+}
+
+
 char* __strcat_realloc( const char* dest, const char* src ) {
     int dl = strlen( dest );
     int sl = strlen( src  );

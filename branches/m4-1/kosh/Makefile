@@ -17,11 +17,8 @@ libkoshlib.a: koshlib.o
 koshlib.o: lib/koshlib.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o koshlib.o -c lib/koshlib.c
 
-kosh: kosh.o
-	$(LD) -o kosh kosh.o
-
-kosh.o: src/kosh.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o kosh.o -c src/kosh.c
+kosh: src/kosh.c libkoshlib.a
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o kosh src/kosh.c -L. -lkoshlib
 
 
 .PHONY: clean

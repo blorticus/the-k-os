@@ -32,7 +32,13 @@ typedef struct {
     memaddr                 memory_location;
     char*                   remaining_command_line;
     const char*             error;
+    u8                      flags;
 } kosh_instruction;
+
+
+/* the flags for kosh_instruction */
+#define KOSH_INSTRUCTION_FLAG_MEMADDR_SET       0x01
+#define KOSH_INSTRUCTION_FLAG_REG_SET           0x02
 
 
 /* parses 'str' looking for the next sequence of characters that end with NULL or whitespace, up to 'limit' number

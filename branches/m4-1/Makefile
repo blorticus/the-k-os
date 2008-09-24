@@ -120,6 +120,7 @@ string.o: src/string.c
 .PHONY: clean
 clean:
 	rm -f *.bin *.o
+	rm -f src/*.bin src/*.o
 
 
 # TARGET: clean-up after debugging, removes bin, object, vm and gas asm files
