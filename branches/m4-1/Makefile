@@ -20,7 +20,7 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 CC := /usr/bin/gcc
 LD := /usr/bin/ld
 ASM := /usr/bin/nasm
-INCLUDES := -I./include
+INCLUDES := -I./include -I./include/stdlib
 CC_FLAGS := -fno-builtin -nostdinc -Wall -g
 
 
@@ -52,8 +52,23 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o
+kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+
+
+# TARGET: pseudo target for libkoshlib.a
+libkoshlib.a:
+	$(MAKE) -C kosh libkoshlib.a
+
+
+# TARGET: pseudo target for kosh.o
+kosh.o:
+	$(MAKE) -C kosh kosh.o
+
+
+# TARGET: pseudo target for libstdlib.a
+libstd.a:
+	$(MAKE) -C src/stdlib libstd.a
 
 
 # TARGET: build asm kernel entry point
@@ -95,6 +110,11 @@ b8000textmode.o: math.o src/video/b8000textmode.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o b8000textmode.o src/video/b8000textmode.c
 
 
+# TARGET: build primitive terminal library
+kterm.o: src/video/kterm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kterm.o src/video/kterm.c
+
+
 # TARGET: build math library
 math.o: src/math.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o math.o src/math.c
@@ -134,3 +154,5 @@ veryclean:
 distclean: clean
 	$(MAKE) -C kosh clean
 	$(MAKE) -C lcheck clean
+	$(MAKE) -C src/stdlib clean
+	$(MAKE) -C tests clean

@@ -1,5 +1,5 @@
 #include <kosh/koshlib.h>
-#include <kterm.h>
+#include <video/kterm.h>
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -8,11 +8,24 @@ char input_buffer[INPUT_BUFFER_SIZE];
 kosh_instruction* prompt( void ) {
     kosh_instruction* instruction;
 
-    do {
+    for ( ;; ) {
         kterm_puts( "KoSH> " );
-        kterm_fgets( input_buffer, INPUT_BUFFER_SIZE );
+        kterm_readline( input_buffer, INPUT_BUFFER_SIZE );
         instruction = input_to_instruction( input_buffer );
-    } while (instruction->command == _ERROR_ || instruction->command == _EMPTY_);
+
+        if (instruction->command == _ERROR_) {
+            kterm_puts( "ERROR: " );
+            kterm_puts( instruction->error );
+            kterm_putc( '\n' );
+        }
+        else if (instruction->command == _EMPTY_) {
+            kterm_puts( "_EMPTY_" );
+            kterm_puts( "\n" );
+        }
+        else {
+            break;
+        }
+    }
 
     return instruction;
 }
@@ -30,6 +43,7 @@ int main( void ) {
         switch (next_instruction->command) {
             case ECHO:
                 kterm_puts( next_instruction->remaining_command_line );  /* will include inputed newline */
+                kterm_putc( '\n' );
                 break;
 
             case PEEK:

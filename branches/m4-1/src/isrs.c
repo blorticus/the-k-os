@@ -1,5 +1,6 @@
 #include <idt.h>
 #include <video/b8000textmode.h>
+#include <kstruct.h>
 
 /* This is a very repetitive function... it's not hard, it's
 *  just annoying. As you can see, we set the first 32 entries
@@ -44,7 +45,14 @@ void isrs_install()
     idt_set_gate( 29, (_U32)isr29, 0x08, 0x8E );
     idt_set_gate( 30, (_U32)isr30, 0x08, 0x8E );
     idt_set_gate( 31, (_U32)isr31, 0x08, 0x8E );
+
+    idt_set_gate( 128, (_U32)isr128, 0x08, 0x8E );
 }
+
+
+void system_soft_interrupt( struct regs* r ) {
+}
+
 
 /* This is a simple string array. It contains the message that
 *  corresponds to each and every exception. We get the correct

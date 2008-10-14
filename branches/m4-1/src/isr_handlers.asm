@@ -33,6 +33,8 @@ global isr29
 global isr30
 global isr31
 
+global isr128
+
 ;  0: Divide By Zero Exception
 isr0:
     cli
@@ -250,6 +252,35 @@ isr31:
     push byte 0
     push byte 31
     jmp isr_common_stub
+
+
+extern system_soft_interrupt
+isr128:
+    cli
+    push byte 0
+    push byte 128
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+    mov eax, esp
+    push eax
+    mov eax, system_soft_interrupt
+    call eax
+    pop eax
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+    add esp, 8
+    iret
 
 
 ; We call a C function in here. We need to let the assembler know
