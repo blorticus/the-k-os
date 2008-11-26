@@ -30,7 +30,7 @@ _U8 is_shifted = 0;
 //
 
 /* count of characters to enqueue from keyboard in circular buffer,  CANNOT BE LARGER THAN 2**16 - 1 */
-#define KEYBOARD_QUEUE_SIZE     100
+#define KEYBOARD_QUEUE_SIZE     10240
 
 //
 ///* Scancode circular queue struct */
@@ -56,13 +56,16 @@ void keyboard_handler( struct regs *r ) {
 
     scancode = ioport_readb( 0x60 );
 
-    /* if the top is immediately before the bottom, then consider the queue full -- though it is one less than full */
-    /* the top pointer MUST BE moved last.  If this handler is interrupted by the reader, the reader will advance the bottom pointer.  The
-     * relationship between the two pointers determines whether the queue is full (well, often full - 1) */
-    if (((keyboard_buffer_queue.top + 1) % keyboard_buffer_queue.limit) != keyboard_buffer_queue.bottom) {   /* that is, the queue isn't full */
-        keyboard_buffer_queue.slots[keyboard_buffer_queue.top + 1] = scancode;
-        keyboard_buffer_queue.top = (keyboard_buffer_queue.top + 1) % keyboard_buffer_queue.limit;
-    }
+    keyboard_buffer_queue.slots[keyboard_buffer_queue.top++] = scancode;
+
+//    /* if the top is immediately before the bottom, then consider the queue full -- though it is one less than full */
+//    /* the top pointer MUST BE moved last.  If this handler is interrupted by the reader, the reader will advance the bottom pointer.  The
+//     * relationship between the two pointers determines whether the queue is full (well, often full - 1) */
+//    if (((keyboard_buffer_queue.top + 1) % keyboard_buffer_queue.limit) != keyboard_buffer_queue.bottom) {   /* that is, the queue isn't full */
+//        keyboard_buffer_queue.slots[keyboard_buffer_queue.top + 1] = scancode;
+//        keyboard_buffer_queue.top = (keyboard_buffer_queue.top + 1) % keyboard_buffer_queue.limit;
+//    }
+
 }
 
 
@@ -94,15 +97,17 @@ u16 read_next_key_stroke( void ) {
 
     char c = '\0';
 
-    int next_slot;
+//    int next_slot;
     if (keyboard_buffer_queue.bottom == keyboard_buffer_queue.top)    /* queue is empty */
         return 0x0000;
 
 
     /* ASSERT: keyboard_buffer_queue is not empty */
-    next_slot = (keyboard_buffer_queue.bottom + 1) % keyboard_buffer_queue.limit;
-    scancode = keyboard_buffer_queue.slots[next_slot];
-    keyboard_buffer_queue.bottom = next_slot;  /* this advance MUST happen after the scancode is dequeued */
+//    next_slot = (keyboard_buffer_queue.bottom + 1) % keyboard_buffer_queue.limit;
+//    scancode = keyboard_buffer_queue.slots[next_slot];
+//    keyboard_buffer_queue.bottom = next_slot;  /* this advance MUST happen after the scancode is dequeued */
+
+    scancode = keyboard_buffer_queue.slots[keyboard_buffer_queue.bottom++];
 
     /* we now have the next scancode */
     switch (scancode) {
