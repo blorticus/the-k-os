@@ -33,7 +33,8 @@
 /* Scancode circular queue struct */
 typedef struct {
     u16*            slots;
-    u16             limit;      /* MUST BE < MAX(s16) - 1, this is the number of the last slot, and thus, is sizeof( slots ) - 1 */
+    u16             size;       /* number of slots */
+    u16             adjust;     /* MAX(top) % size, or the new offset for top when it wraps to 0 */
     s16             top;        /* index of last character written to queue */
     s16             bottom;     /* index of last character read from queue */
 } ScCQueue;

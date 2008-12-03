@@ -76,6 +76,14 @@ void textmode_puts( char *s );
 void textmode_puts_at( char* s, _U8 row, _U8 column );
 
 
+/* put an unsigned integer */
+void textmode_puti( unsigned int i );
+
+
+/* just like textmode_puti, but at a particular row and column */
+void textmode_puti_at( unsigned int i, u8 row, u8 column );
+
+
 /* clear the screen (actually, fill it with spaces in the current fg/bg colors) */
 void textmode_cls( void );
 
