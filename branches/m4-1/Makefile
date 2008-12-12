@@ -52,8 +52,8 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 # TARGET: pseudo target for libkoshlib.a
@@ -79,6 +79,11 @@ start.o: start.asm
 # TARGET: build C kmain() kernel entry point
 kmain.o: kmain.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
+
+
+# TARGET: build multiboot routines
+multiboot.o: src/multiboot.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o multiboot.o src/multiboot.c
 
 
 # TARGET: build Global Descriptor Table routines

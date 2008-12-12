@@ -10,3 +10,4 @@ int getchar( void ) {
             if ((char)c)    /* it is possible to just be a meta character, so we discard those */
                 return (int)((char)c);  /* lower half is the character */
 }
+

@@ -26,7 +26,9 @@ typedef enum {
     EXIT,           // currently, this means halt the system
     PEEK,           // memory location or register name
     ECHO,           // echo a string
-    POKE            // memory location or register name
+    POKE,           // memory location or register name
+    DUMPREGS,       // dump primary registers
+    BIOS            // dump bios area
 } kosh_base_command;
 
 typedef enum {
@@ -326,6 +328,26 @@ kosh_instruction* input_to_instruction( char* input ) {
 
         instruction->command                = ECHO;
         instruction->remaining_command_line = after_command;
+    }
+    else if (strcmp( token_buffer, "regs" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] != NULL) {
+            instruction->command = _ERROR_;
+            instruction->error   = "Extra Input After Command";
+        }
+        else {
+            instruction->command = DUMPREGS;
+        }
+    }
+    else if (strcmp( token_buffer, "bios" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] != NULL) {
+            instruction->command = _ERROR_;
+            instruction->error   = "Extra Input After Command";
+        }
+        else {
+            instruction->command = BIOS;
+        }
     }
     else {
         instruction->command = _ERROR_;

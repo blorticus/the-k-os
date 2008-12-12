@@ -10,7 +10,9 @@ typedef enum {
     EXIT,           // currently, this means halt the system
     PEEK,           // memory location or register name
     ECHO,           // echo a string
-    POKE            // memory location or register name
+    POKE,           // memory location or register name
+    DUMPREGS,       // dump important memory registers
+    BIOS            // dump bios area of memory
 } kosh_base_command;
 
 typedef enum {

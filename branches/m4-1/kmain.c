@@ -5,12 +5,12 @@
 #include <irq.h>
 #include <input/keyboard.h>
 #include <stdio.h>
+#include <multiboot.h>
 
 void kmain( void ) {
-//    u16 c;
+    multiboot_relocate();
 
     create_gdt();
-//    create_idt();
 
     idt_install();
     isrs_install();
