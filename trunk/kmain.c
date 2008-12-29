@@ -4,10 +4,13 @@
 #include <idt.h>
 #include <irq.h>
 #include <input/keyboard.h>
+#include <stdio.h>
+#include <multiboot.h>
 
 void kmain( void ) {
+    multiboot_relocate();
+
     create_gdt();
-//    create_idt();
 
     idt_install();
     isrs_install();
@@ -20,6 +23,10 @@ void kmain( void ) {
 
     textmode_cls();
     textmode_puts( "The K-OS is now loaded.\n\n\n" );
+
+    main();  /* call into KoSH */
+
+    textmode_puts( "System Halted." );
 
     for (;;) ;
 }

@@ -64,6 +64,12 @@ void textmode_set_location( _U8 row, _U8 column ) {
 }
 
 
+int textmode_putchar( int c ) {
+    textmode_putc( (unsigned char)c );
+    return c;
+}
+
+
 void textmode_putc( char c ) {
     if (c == '\r') {
         textmode_current_col = 0;
@@ -145,6 +151,45 @@ void textmode_puts_at( char* s, _U8 row, _U8 col ) {
     textmode_current_row = hold_row;
     textmode_current_col = hold_col;
 }
+
+
+/* static buffer for the decimal string, and a pointer to the first element in 'c' where a valid digit exists, since we'll build this backwards */
+char int_buff[11];
+
+void textmode_puti( unsigned int i ) {
+    int_buff[10] = '\0';
+
+    u8 last_digit = 10;
+
+    if (i == 0)
+        int_buff[--last_digit] = '0';
+    else
+        while (i) {
+            int_buff[--last_digit] = '0' + (i % 10);
+            i = i / 10;
+        }
+
+    textmode_puts( (char*)(int_buff + last_digit) );
+}
+
+
+/* just like textmode_puti, but at a particular row and column */
+void textmode_puti_at( unsigned int i, u8 row, u8 col ) {
+    if (row >= textmode_height || col >= textmode_width)
+        return;
+
+    _U8 hold_row = textmode_current_row;
+    _U8 hold_col = textmode_current_col;
+
+    textmode_current_row = row;
+    textmode_current_col = col;
+
+    textmode_puti( i );
+
+    textmode_current_row = hold_row;
+    textmode_current_col = hold_col;
+}
+
 
 
 void textmode_scroll( void ) {

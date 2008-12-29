@@ -17,11 +17,11 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 # -- COMPILER ARGS
 # --
-CC ?= /usr/bin/gcc
-LD ?= /usr/bin/ld
-ASM ?= /usr/bin/nasm
-INCLUDES := -I./include
-CC_FLAGS := -fno-builtin -nostdinc -Wall
+CC := /usr/bin/gcc
+LD := /usr/bin/ld
+ASM := /usr/bin/nasm
+INCLUDES := -I./include -I./include/stdlib
+CC_FLAGS := -fno-builtin -nostdinc -Wall -g
 
 
 # -- TARGET SYMBOLS
@@ -52,8 +52,26 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o
+kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+
+
+cprintf.o:
+	$(MAKE) -C src/stdlib cprintf.o
+
+# TARGET: pseudo target for libkoshlib.a
+libkoshlib.a:
+	$(MAKE) -C kosh libkoshlib.a
+
+
+# TARGET: pseudo target for kosh.o
+kosh.o:
+	$(MAKE) -C kosh kosh.o
+
+
+# TARGET: pseudo target for libstdlib.a
+libstd.a:
+	$(MAKE) -C src/stdlib libstd.a
 
 
 # TARGET: build asm kernel entry point
@@ -64,6 +82,11 @@ start.o: start.asm
 # TARGET: build C kmain() kernel entry point
 kmain.o: kmain.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
+
+
+# TARGET: build multiboot routines
+multiboot.o: src/multiboot.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o multiboot.o src/multiboot.c
 
 
 # TARGET: build Global Descriptor Table routines
@@ -95,6 +118,11 @@ b8000textmode.o: math.o src/video/b8000textmode.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o b8000textmode.o src/video/b8000textmode.c
 
 
+# TARGET: build primitive terminal library
+kterm.o: src/video/kterm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kterm.o src/video/kterm.c
+
+
 # TARGET: build math library
 math.o: src/math.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o math.o src/math.c
@@ -110,14 +138,29 @@ asm.o: src/asm.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o asm.o src/asm.c
 
 
+# TARGET: string.h methods
+string.o: src/string.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o string.o src/string.c
+
+
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
 clean:
 	rm -f *.bin *.o
+	rm -f src/*.bin src/*.o
 
 
 # TARGET: clean-up after debugging, removes bin, object, vm and gas asm files
 .PHONY: veryclean
 veryclean:
 	rm -f *.bin *.o *.flp *.img *.s *.S
+
+
+# TARGET: clean-up this directory and subdirectories by recursively calling 'make clean'
+.PHONY: distclean
+distclean: clean
+	$(MAKE) -C kosh clean
+	$(MAKE) -C lcheck clean
+	$(MAKE) -C src/stdlib clean
+	$(MAKE) -C tests clean
