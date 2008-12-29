@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <video/b8000textmode.h>
 #include <sys/asm.h>
-#include <sys/structs.h>
+//#include <sys/structs.h>
 
 
 char us101_scancodes[] = {
@@ -44,7 +44,7 @@ void keyboard_handler( struct regs *r ) {
 //    INT_BITFIELD |= INT_BF_KB_QUEUED_OUTPUT;  // tell kernel main loop that keyboard data are waiting
 
     int scancode;
-    u16 write_to;
+//    u16 write_to;
 
     scancode = ioport_readb( 0x60 );
 

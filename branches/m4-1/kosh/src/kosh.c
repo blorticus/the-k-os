@@ -1,6 +1,7 @@
 #include <kosh/koshlib.h>
 #include <video/kterm.h>
 #include <multiboot.h>
+#include <stdio.h>
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -10,18 +11,15 @@ kosh_instruction* prompt( void ) {
     kosh_instruction* instruction;
 
     for ( ;; ) {
-        kterm_puts( "KoSH> " );
+        kterm_printf( "KoSH> " );
         kterm_readline( input_buffer, INPUT_BUFFER_SIZE );
         instruction = input_to_instruction( input_buffer );
 
         if (instruction->command == _ERROR_) {
-            kterm_puts( "ERROR: " );
-            kterm_puts( instruction->error );
-            kterm_putc( '\n' );
+            kterm_printf( "ERROR: %s\n", instruction->error );
         }
         else if (instruction->command == _EMPTY_) {
-            kterm_puts( "_EMPTY_" );
-            kterm_puts( "\n" );
+            kterm_printf( "_EMPTY_\n" );
         }
         else {
             break;
@@ -40,13 +38,12 @@ kosh_instruction* prompt( void ) {
 void puts_bios_drive_info( u32 drive_info ) {
     u8 drive = (u8)(drive_info >> 24);
 
-    kterm_puts( "drive " ); kterm_puth( drive );
-    kterm_puts( " [" ); 
-    kterm_puts( drive == 0x00 ? "fd0" : (drive == 0x01 ? "fd1" : (drive == 0x80 ? "hd0" : (drive == 0x81 ? "hd1" : "unknown"))) );
-    kterm_puts( "], partition " );
-    kterm_puth( (u8)(drive_info >> 16 ) ); kterm_puts( ":" );
-    kterm_puth( (u8)(drive_info >> 8  ) ); kterm_puts( ":" );
-    kterm_puth( (u8)(drive_info       ) );
+    kterm_printf( "drive %x [%s], partition %x:%x:%x",
+                        drive,
+                        (drive == 0x00 ? "fd0" : (drive == 0x01 ? "fd1" : (drive == 0x80 ? "hd0" : (drive == 0x81 ? "hd1" : "unknown")))),
+                        (u8)(drive_info >> 16),
+                        (u8)(drive_info >> 8), 
+                        (u8)(drive_info) );
 }
 
 
@@ -156,10 +153,16 @@ int main( void ) {
 
             case BIOS:
                 mri = retrieve_multiboot_relocate_info();
-                kterm_puts( "lower mem = " ); kterm_puti( mri->mem_lower_size_kB ); kterm_putc( '\n' );
-                kterm_puts( "upper mem = " ); kterm_puti( mri->mem_upper_size_kB ); kterm_putc( '\n' );
-                kterm_puts( "cmdline   = " ); kterm_puts( mri->cmdline_ptr       ); kterm_putc( '\n' );
-                kterm_puts( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_putc( '\n' );
+                kterm_printf( "lower mem = %i\n", mri->mem_lower_size_kB );
+                kterm_printf( "upper mem = %i\n", mri->mem_upper_size_kB );
+                kterm_printf( "total mem = %i MB\n", (((mri->mem_lower_size_kB + mri->mem_upper_size_kB) / 1000) + 1) );
+                kterm_printf( "cmdline   = %s\n", mri->cmdline_ptr       );
+                kterm_printf( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_printf( "\n" );
+
+//                kterm_puts( "lower mem = " ); kterm_puti( mri->mem_lower_size_kB ); kterm_putc( '\n' );
+//                kterm_puts( "upper mem = " ); kterm_puti( mri->mem_upper_size_kB ); kterm_putc( '\n' );
+//                kterm_puts( "cmdline   = " ); kterm_puts( mri->cmdline_ptr       ); kterm_putc( '\n' );
+//                kterm_puts( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_putc( '\n' );
 //    u32 mods_count;
 //    void* mods_addr;
 //    void* syms[4];

@@ -64,6 +64,12 @@ void textmode_set_location( _U8 row, _U8 column ) {
 }
 
 
+int textmode_putchar( int c ) {
+    textmode_putc( (unsigned char)c );
+    return c;
+}
+
+
 void textmode_putc( char c ) {
     if (c == '\r') {
         textmode_current_col = 0;

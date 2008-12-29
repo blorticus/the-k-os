@@ -1,6 +1,6 @@
 CC := /usr/bin/gcc
 CC_FLAGS := -fno-builtin -nostdinc -Wall -g
-INCLUDES := -I../include -I..
+INCLUDES := -I../include -I.. -I../include/stdlib
 TEST_INCLUDES := -I../include -I..
 TEST_LIBS := -lcheck -L. -lkoshlib
 TEST_CC_FLAGS := -Wall -g -DTESTING

@@ -92,6 +92,10 @@ void textmode_cls( void );
 void textmode_put_hexbyte( _U8 byte );
 
 
+/* like libc putchar() */
+int textmode_putchar( int c );
+
+
 /*********
  * Testing methods
  **/

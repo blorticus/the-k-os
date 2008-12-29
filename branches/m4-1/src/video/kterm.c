@@ -18,6 +18,11 @@ void kterm_putc( char c ) {
 }
 
 
+int kterm_putchar( int c ) {
+    return textmode_putchar( c );
+}
+
+
 void kterm_puti( u32 i ) {
     textmode_puti( i );
 }
