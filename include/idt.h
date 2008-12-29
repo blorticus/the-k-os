@@ -47,5 +47,7 @@ void isr29( void );
 void isr30( void );
 void isr31( void );
 
+void isr128( void );
+
 
 #endif
