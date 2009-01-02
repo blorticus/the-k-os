@@ -8,10 +8,6 @@ static void itoa( char* buf, long value, unsigned int base ) {
     char* sbuf = buf;
 
     if (base == 16) {
-        sbuf[0] = '0';
-        sbuf[1] = 'x';
-        i = 2;
-
         /* In this case, look at the high order bits, shifting them left until all leading nibbles of 0 are gone.
          * Then, continue shifting nibbles, converting them into their proper representation.  Handle the special
          * case where the value is zero */
@@ -45,7 +41,7 @@ static void itoa( char* buf, long value, unsigned int base ) {
         sbuf[i--] = '\0';
     }
 
-    int j = sbuf[0] == '-' ? 1 : (base == 16 ? 2 : 0);  // skip negative sign if there is one, or '0x' if this is hex
+    int j = sbuf[0] == '-' ? 1 : 0;
 
     char t;
     for( ; j < i; j++, i--) {
