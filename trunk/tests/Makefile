@@ -1,4 +1,5 @@
-GCC := /usr/bin/gcc
+#TOOLBIN := /usr/bin
+#GCC := $(TOOLBIN)/gcc
 CC_FLAGS := -g -Wall
 INCLUDES := -I../include -I../lcheck -I../include/stdlib
 LIBS := -L../lcheck -llcheck

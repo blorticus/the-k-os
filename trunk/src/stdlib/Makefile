@@ -1,9 +1,8 @@
-# -- COMPILER ARGS
-# --
-CC := /usr/bin/gcc
-LD := /usr/bin/ld
+#TOOLBIN := /usr/bin
+#CC := $(TOOLBIN)/gcc
+#LD := $(TOOLBIN)/ld
 ASM := /usr/bin/nasm
-AR := /usr/bin/ar
+#AR := $(TOOLBIN)/ar
 INCLUDES := -I../../include -I../../include/stdlib
 CC_FLAGS := -fno-builtin -nostdinc -Wall -g
 

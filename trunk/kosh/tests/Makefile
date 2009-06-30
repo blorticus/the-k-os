@@ -1,8 +1,9 @@
-CC := /usr/bin/gcc
+#TOOLBIN := /usr/bin
+#CC := $(TOOLBIN)/gcc
 CC_FLAGS := -Wall -g
 INCLUDES :=  -I.. -I../../lcheck -I../.. -I../../include
 LIBS := -L../../lcheck -llcheck -L.. -lkoshlib
-MAKE := /usr/bin/make
+#MAKE := /usr/bin/make
 
 check_all: check_kosh_next_word.t check_kosh_match_register.t check_kosh_extract_reg_or_mem.t check_kosh_input_to_instruction.t
 	@echo
