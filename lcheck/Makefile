@@ -1,8 +1,7 @@
-# -- COMPILER ARGS
-# --
-CC := /usr/bin/gcc
-LD := /usr/bin/ld
-AR := /usr/bin/ar
+#TOLLBIN := /usr/bin
+#CC := $(TOOLBIN)/gcc
+#LD := $(TOOLBIN)/ld
+#AR := $(TOOLBIN)/ar
 INCLUDES := -I.
 CC_FLAGS := -Wall -g
 

@@ -17,11 +17,13 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 # -- COMPILER ARGS
 # --
-CC := /usr/bin/gcc
-LD := /usr/bin/ld
+#TOOLBIN := /usr/bin
+#CC := $(TOOLBIN)/gcc
+#LD := $(TOOLBIN)/ld
 ASM := /usr/bin/nasm
 INCLUDES := -I./include -I./include/stdlib
 CC_FLAGS := -fno-builtin -nostdinc -Wall -g
+MAKEFLAGS=-e
 
 
 # -- TARGET SYMBOLS
