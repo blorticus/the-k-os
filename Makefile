@@ -17,9 +17,6 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 # -- COMPILER ARGS
 # --
-#TOOLBIN := /usr/bin
-#CC := $(TOOLBIN)/gcc
-#LD := $(TOOLBIN)/ld
 ASM := /usr/bin/nasm
 INCLUDES := -I./include -I./include/stdlib
 CC_FLAGS := -fno-builtin -nostdinc -Wall -g
@@ -29,6 +26,11 @@ MAKEFLAGS=-e
 # -- TARGET SYMBOLS
 # --
 KMAIN_LD := link/kmain.ld
+
+
+# TARGET: build kernel image
+kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -51,11 +53,6 @@ silly-floppy: kernel.bin
 # TARGET: build custom first-stage bootloader
 boot.bin: boot/kos-silly-loader.asm
 	$(ASM) -f bin -o boot.bin boot/kos-silly-loader.asm
-
-
-# TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 cprintf.o:
