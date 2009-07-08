@@ -12,7 +12,8 @@ typedef enum {
     ECHO,           // echo a string
     POKE,           // memory location or register name
     DUMPREGS,       // dump important memory registers
-    BIOS            // dump bios area of memory
+    BIOS,           // dump bios area of memory
+    HELP            // print help
 } kosh_base_command;
 
 typedef enum {
