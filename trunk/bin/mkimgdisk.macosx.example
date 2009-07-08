@@ -9,7 +9,9 @@
 # This version requires MacFuse and fuse-ext2
 
 echo "Mounting virtual image..."
-/usr/local/bin/fuse-ext2 vm/ext2.flp mnt -o force
+/usr/local/bin/fuse-ext2 vm/ext2.img mnt -o force
+
+sleep 1
 
 echo "Copying kernel..."
 cp kernel.bin mnt

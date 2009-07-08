@@ -21,8 +21,8 @@ void kmain( void ) {
     // MUST happen after texmode initalization since isrs/irqs currently may use this mode
     enable_interrupts();
 
-    textmode_cls();
-    textmode_puts( "The K-OS is now loaded.\n\n\n" );
+//    textmode_cls();
+//    textmode_puts( "The K-OS is now loaded.\n\n\n" );
 
     main();  /* call into KoSH */
 

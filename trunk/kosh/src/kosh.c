@@ -151,6 +151,14 @@ int main( void ) {
                 kterm_puts( "dumpregs\n" );
                 break;
 
+            case HELP:
+                kterm_puts( " echo <text>       - repeat <text>\n" );
+                kterm_puts( " peek <reg|mem>    - see value at register <reg> or memory location 0x<mem>\n" );
+                kterm_puts( " poke <reg|mem>    - change value at register <reg> or memory location 0x<mem>\n" );
+                kterm_puts( " regs              - dump all register values\n" );
+                kterm_puts( " bios              - prints out relocated bios values\n" );
+                break;
+
             case BIOS:
                 mri = retrieve_multiboot_relocate_info();
                 kterm_printf( "lower mem = %i\n", mri->mem_lower_size_kB );
