@@ -2,10 +2,25 @@
 #include <video/kterm.h>
 #include <multiboot.h>
 #include <stdio.h>
+#include <sys/types.h>
 
 #define INPUT_BUFFER_SIZE   100
 
 char input_buffer[INPUT_BUFFER_SIZE];
+
+struct regs {
+    u16 ax;
+    u32 eax;
+    u16 ds;
+    u16 ss;
+};
+
+void dummy(struct regs r) {
+    kterm_printf("ss:  %x\n", r.ss);
+    kterm_printf("ds:  %x\n", r.ds);
+    kterm_printf("eax: %x\n", r.eax);
+    kterm_printf("ax:  %x\n", r.ax);
+}
 
 kosh_instruction* prompt( void ) {
     kosh_instruction* instruction;
@@ -149,6 +164,18 @@ int main( void ) {
 
             case DUMPREGS:
                 kterm_puts( "dumpregs\n" );
+                asm("push %ss;");
+                asm("push %ds;");
+                asm("pushl %eax;");
+                asm("push %ax;");
+                //asm("pusha %al;");
+                //asm("push %ah;");
+                typedef void (*fp)(void);
+                fp f;
+                f = (fp) dummy;
+                f();
+                //*f = &dummy;
+                //*f();
                 break;
 
             case HELP:
