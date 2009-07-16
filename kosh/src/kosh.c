@@ -9,17 +9,15 @@
 char input_buffer[INPUT_BUFFER_SIZE];
 
 struct regs {
-    u16 ax;
     u32 eax;
     u16 ds;
     u16 ss;
-};
+}__attribute__((packed));
 
-void dummy(struct regs r) {
+void dumpregs(struct regs r) {
     kterm_printf("ss:  %x\n", r.ss);
     kterm_printf("ds:  %x\n", r.ds);
     kterm_printf("eax: %x\n", r.eax);
-    kterm_printf("ax:  %x\n", r.ax);
 }
 
 kosh_instruction* prompt( void ) {
@@ -164,18 +162,14 @@ int main( void ) {
 
             case DUMPREGS:
                 kterm_puts( "dumpregs\n" );
+                asm("movl $0x12312312, %eax");
                 asm("push %ss;");
                 asm("push %ds;");
                 asm("pushl %eax;");
-                asm("push %ax;");
-                //asm("pusha %al;");
-                //asm("push %ah;");
                 typedef void (*fp)(void);
                 fp f;
-                f = (fp) dummy;
+                f = (fp) dumpregs;
                 f();
-                //*f = &dummy;
-                //*f();
                 break;
 
             case HELP:
@@ -194,26 +188,6 @@ int main( void ) {
                 kterm_printf( "cmdline   = %s\n", mri->cmdline_ptr       );
                 kterm_printf( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_printf( "\n" );
 
-//                kterm_puts( "lower mem = " ); kterm_puti( mri->mem_lower_size_kB ); kterm_putc( '\n' );
-//                kterm_puts( "upper mem = " ); kterm_puti( mri->mem_upper_size_kB ); kterm_putc( '\n' );
-//                kterm_puts( "cmdline   = " ); kterm_puts( mri->cmdline_ptr       ); kterm_putc( '\n' );
-//                kterm_puts( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_putc( '\n' );
-//    u32 mods_count;
-//    void* mods_addr;
-//    void* syms[4];
-//    u32 mmap_length;
-//    void* mmap_addr;
-//    u32 drives_length;
-//    void* drives_addr;
-//    void* config_table;
-//    char* boot_loader_name;
-//    void* apm_table;
-//    u32 vbe_control_info;
-//    u32 vbe_mode_info;
-//    u16 vbe_mode;
-//    u16 vbe_interface_seg;
-//    u16 vbe_interface_off;
-//    u16 vbe_interface_len;
                 break;
 
             default:
