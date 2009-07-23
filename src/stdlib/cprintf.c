@@ -1,58 +1,69 @@
 #include <stdio.h>
+#include <video/kterm.h>
 
 /* Given a particular number base (currently 10 and 16 are supported), convert 'value' into its ascii numeric representation.
- * Place the acsii representation in 'buf', which will be null terminated */
-static void itoa( char* buf, long value, unsigned int base ) {
+ * Place the acsii representation in 'buf', which will be null terminated.  If 'max_len' greater than characters needed to
+ * fulfill request (not including the training null), the state of 'buf' will be undefined and the return value will be 0.
+ * Returns length of string in 'buf' */
+static unsigned int itoa( const char* buf, long value, unsigned int base, unsigned short max_len ) {
     int i = 0;
     unsigned char v;
-    char* sbuf = buf;
+    char* sbuf = (char*)buf;
+    unsigned int count = 0;
 
+    /* fill buffer with required characters in reverse order, then pad out required number of spaces.  Finally, reverse
+     * the buffer */
     if (base == 16) {
-        sbuf[0] = '0';
-        sbuf[1] = 'x';
-        i = 2;
+        /* In this case, mask all but the lowest order 4 bits, extract its value, then shift 4 bits to the right.  Have to handle
+         * value of 0 in a special way, because we ignore leading zeroes */
+        do {
+            if (--max_len < 0)
+                return 0;
 
-        /* In this case, look at the high order bits, shifting them left until all leading nibbles of 0 are gone.
-         * Then, continue shifting nibbles, converting them into their proper representation.  Handle the special
-         * case where the value is zero */
-        if (value == 0) {
-            sbuf[i++] = '0'; sbuf[i] = '\0';
-            return;
-        }
-
-        while (value) {
             v = value & 0x0f;
             sbuf[i++] = v < 10 ? '0' + v : 'a' + (v - 10);
-            value = value >> 4;
-        }
+            count++;
+            /* this must be cast to force the bit-shift operator to fill with zeros from the left */
+            value = (unsigned long)value >> 4;
+        } while (value);
 
-        sbuf[i--] = '\0';
+        sbuf[i] = '\0';
     }
     else {  // ASSERT: base must equal 10
         /* In this case, mod by 10, then integer divide by 10 until value is zero.  This means we're working
          * backwards through this, so we'll have to reverse the buffer when we're done.  Also, we may need to
          * add a sign */
         if (value < 0) {
+            if (--max_len < 1)
+                return 0;
+
             sbuf[i++] = '-';
+            count++;
             value *= -1;  // silly way to make absolute value, and inline asm would be faster, but...
         }
 
         do {
+            if (--max_len < 0)
+                return 0;
+
             sbuf[i++] = '0' + (value % 10);
+            count++;
             value /= 10;
         } while (value);
 
-        sbuf[i--] = '\0';
+        sbuf[i] = '\0';
     }
 
-    int j = sbuf[0] == '-' ? 1 : (base == 16 ? 2 : 0);  // skip negative sign if there is one, or '0x' if this is hex
+    int j = sbuf[0] == '-' ? 1 : 0;  // skip negative sign if there is one
 
     char t;
-    for( ; j < i; j++, i--) {
+    for( i-- ; j < i ; j++, i--) {  // i-- because i points at \0
         t = sbuf[j];
         sbuf[j] = sbuf[i];
         sbuf[i] = t;
     }
+
+    return count;
 }
 
 
@@ -66,14 +77,18 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
 
     long l;
     char c;
+    unsigned int count;
+    int padding;
     const char* s;
 
     while (*p) {
+        padding = 0;
         if (*p != '%') {
             putchar_f( *p++ );
             printed_chars++;
         }
         else {
+            inner:
             switch (*++p) {
                 case '%':
                     putchar_f( '%' );
@@ -85,9 +100,12 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
                     l = (long)*next_vararg;
                     next_vararg++;
                     s = buf;
-                    itoa( buf, l, 10 );
+                    count = itoa( buf, l, 10, 19 );
 
-                    goto print_string;
+                    if (count > 0) {
+                        padding -= count; 
+                        goto print_string;
+                    }
 
                     break;
 
@@ -95,9 +113,12 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
                     l = (long)*next_vararg;
                     next_vararg++;
                     s = buf;
-                    itoa( buf, l, 16 );
+                    count = itoa( buf, l, 16, 19 );
 
-                    goto print_string;
+                    if (count > 0) {
+                        padding -= count;
+                        goto print_string;
+                    }
 
                     break;
 
@@ -113,13 +134,30 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
                     next_vararg++;
 
                     print_string:
-                    while (*s) {
-                        putchar_f( *s++ );
-                        printed_chars++;
-                    }
+                        while (padding-- > 0) {
+                            putchar_f( ' ' );
+                            printed_chars++;
+                        }
+
+                        while (*s) {
+                            putchar_f( *s++ );
+                            printed_chars++;
+                        }
 
                     break;
-                    
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    padding = padding * 10 + (*p - '0'); 
+                    goto inner;
             }
 
             p++;  // advance beyond format char
