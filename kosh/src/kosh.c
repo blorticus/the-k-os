@@ -9,15 +9,25 @@
 char input_buffer[INPUT_BUFFER_SIZE];
 
 struct regs {
+    // EAX, ECX, EDX, EBX, original ESP, EBP, ESI, and EDI
+    u32 edi;
+    u32 esi;
+    u32 ebp;
+    u32 esp;
+    u32 ebx;
+    u32 edx;
+    u32 ecx;
     u32 eax;
+    u16 gs;
+    u16 fs;
+    u16 es;
     u16 ds;
     u16 ss;
-}__attribute__((packed));
+}; //__attribute__((packed));
 
 void dumpregs(struct regs r) {
-    kterm_printf("ss:  %x\n", r.ss);
-    kterm_printf("ds:  %x\n", r.ds);
-    kterm_printf("eax: %x\n", r.eax);
+    kterm_printf("eax = %8x    ebx = %8x    ecx = %8x    edx = %8x\nesp = %8x    ebp = %8x    esi = %8x    edi = %8x\nss  = %8x    ds  = %8x    es  = %8x    fs  = %8x\ngs  = %8x\n",
+                 r.eax, r.ebx, r.ecx, r.edx, r.esp, r.ebp, r.esi, r.edi, r.ss, r.ds, r.es, r.fs, r.gs );
 }
 
 kosh_instruction* prompt( void ) {
@@ -162,10 +172,15 @@ int main( void ) {
 
             case DUMPREGS:
                 kterm_puts( "dumpregs\n" );
-                asm("movl $0x12312312, %eax");
-                asm("push %ss;");
-                asm("push %ds;");
-                asm("pushl %eax;");
+                asm("movl $0x12345678, %eax");
+                asm("movl $0xffccffee, %ecx");
+                asm("movl $0xdead, %edx");
+                asm("pushw %ss");
+                asm("pushw %ds");
+                asm("pushw %es");
+                asm("pushw %fs");
+                asm("pushw %gs");
+                asm("pusha");
                 typedef void (*fp)(void);
                 fp f;
                 f = (fp) dumpregs;
