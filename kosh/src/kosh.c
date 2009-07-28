@@ -181,8 +181,8 @@ int main( void ) {
                         kterm_printf( "  -- size = %d, base_addr = %x:%x, length = %d:%d, type = %d\n",
                                       next_mmap_entry->entry_size, next_mmap_entry->base_addr_high, next_mmap_entry->base_addr_low,
                                       next_mmap_entry->length_high, next_mmap_entry->length_low, next_mmap_entry->type );
-                        next_mmap_entry++;
-                        traversed += 24;
+                        traversed += next_mmap_entry->entry_size + 4;   // +4 because of the size, which isn't part of entry
+                        next_mmap_entry = (u8*)next_mmap_entry + next_mmap_entry->entry_size + 4;
                       }
                 }
 
