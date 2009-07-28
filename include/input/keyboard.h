@@ -40,7 +40,7 @@ typedef struct {
 } ScCQueue;
 
 
-u16 read_next_key_stroke( void );
+u16 read_next_key_stroke( u16* scancodes );
 void keyboard_irq_install();
 
 

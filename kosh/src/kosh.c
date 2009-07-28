@@ -23,7 +23,7 @@ struct regs {
     u16 es;
     u16 ds;
     u16 ss;
-}; //__attribute__((packed));
+}__attribute__((packed));
 
 void dumpregs(struct regs r) {
     kterm_printf("eax = %8x    ebx = %8x    ecx = %8x    edx = %8x\nesp = %8x    ebp = %8x    esi = %8x    edi = %8x\nss  = %8x    ds  = %8x    es  = %8x    fs  = %8x\ngs  = %8x\n",
@@ -93,32 +93,6 @@ void puts_bios_drive_info( u32 drive_info ) {
 #define M_GR_ESP(var)      ({ asm volatile( "movl %%esp, %0;" : "=r"(var) ); })
 #define M_GR_SP(var)       ({ asm volatile( "movw %%sp,  %0;" : "=r"(var) ); })
 
-/* relocated data by multiboot loader */
-/*
-struct multi_boot_info {
-    u32 flags;
-    u32 mem_lower_size_kB;
-    u32 mem_upper_size_kB;
-    char* cmdline_ptr;
-    u32 mods_count;
-    void* mods_addr;
-    void* syms[4];
-    u32 mmap_length;
-    void* mmap_addr;
-    u32 drives_length;
-    void* drives_addr;
-    void* config_table;
-    char* boot_loader_name;
-    void* apm_table;
-    u32 vbe_control_info;
-    u32 vbe_mode_info;
-    u16 vbe_mode;
-    u16 vbe_interface_seg;
-    u16 vbe_interface_off;
-    u16 vbe_interface_len;
-};
-*/
-
 
 int main( void ) {
     kosh_instruction* next_instruction;
@@ -171,10 +145,6 @@ int main( void ) {
                 break;
 
             case DUMPREGS:
-                kterm_puts( "dumpregs\n" );
-                asm("movl $0x12345678, %eax");
-                asm("movl $0xffccffee, %ecx");
-                asm("movl $0xdead, %edx");
                 asm("pushw %ss");
                 asm("pushw %ds");
                 asm("pushw %es");
@@ -202,6 +172,19 @@ int main( void ) {
                 kterm_printf( "total mem = %i MB\n", (((mri->mem_lower_size_kB + mri->mem_upper_size_kB) / 1000) + 1) );
                 kterm_printf( "cmdline   = %s\n", mri->cmdline_ptr       );
                 kterm_printf( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_printf( "\n" );
+                kterm_printf( "number of mmap entries = %d bytes starting at %x\n", mri->mmap_length, mri->mmap_addr );
+                struct multiboot_mmap_entry* next_mmap_entry = (struct multiboot_mmap_entry*)mri->mmap_addr;
+                u32 traversed = 0;
+
+                if (mri->mmap_length) {
+                      while (traversed < mri->mmap_length) {
+                        kterm_printf( "  -- size = %d, base_addr = %x:%x, length = %d:%d, type = %d\n",
+                                      next_mmap_entry->entry_size, next_mmap_entry->base_addr_high, next_mmap_entry->base_addr_low,
+                                      next_mmap_entry->length_high, next_mmap_entry->length_low, next_mmap_entry->type );
+                        next_mmap_entry++;
+                        traversed += 24;
+                      }
+                }
 
                 break;
 

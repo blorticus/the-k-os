@@ -82,7 +82,13 @@ void keyboard_handler( struct regs *r ) {
 u8 G_meta_keys = 0x00;
 
 
-u16 read_next_key_stroke( void ) {
+/* Read the next key stroke.  The upper byte of the return value is the meta key setting (see bit masks above).  The lower byte
+ * of the return value is the ASCII character corresponding to the character produced (which will be shifted if either shift
+ * key is depressed).  'scancodes' contains the raw scan codes.  This may be one or two bytes long.  It will normally be one byte,
+ * but some keys produce two one byte sequences (that is, they are preceded by an "escape" character).  If there is only one byte,
+ * the upper half will be 0x00.
+ */
+u16 read_next_key_stroke( u16* scancodes ) {
     u16 scancode;
 
     char c = '\0';
@@ -94,6 +100,7 @@ u16 read_next_key_stroke( void ) {
     /* ASSERT: this never wraps because of its adjustment in the isr */
     scancode = keyboard_buffer_queue.slots[keyboard_buffer_queue.bottom++ % keyboard_buffer_queue.size];  
 
+    *scancodes = scancode;
 
     /* we now have the next scancode */
     switch (scancode) {
