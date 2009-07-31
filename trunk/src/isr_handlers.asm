@@ -258,7 +258,7 @@ extern system_soft_interrupt
 isr128:
     cli
     push byte 0
-    push byte 128
+    push word 128
     pusha
     push ds
     push es

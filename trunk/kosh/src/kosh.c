@@ -172,7 +172,7 @@ int main( void ) {
                 kterm_printf( "total mem = %i MB\n", (((mri->mem_lower_size_kB + mri->mem_upper_size_kB) / 1000) + 1) );
                 kterm_printf( "cmdline   = %s\n", mri->cmdline_ptr       );
                 kterm_printf( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_printf( "\n" );
-                kterm_printf( "number of mmap entries = %d bytes starting at %x\n", mri->mmap_length, mri->mmap_addr );
+                kterm_printf( "length of mmap entries = %d bytes starting at %x\n", mri->mmap_length, mri->mmap_addr );
                 struct multiboot_mmap_entry* next_mmap_entry = (struct multiboot_mmap_entry*)mri->mmap_addr;
                 u32 traversed = 0;
 
@@ -182,7 +182,7 @@ int main( void ) {
                                       next_mmap_entry->entry_size, next_mmap_entry->base_addr_high, next_mmap_entry->base_addr_low,
                                       next_mmap_entry->length_high, next_mmap_entry->length_low, next_mmap_entry->type );
                         traversed += next_mmap_entry->entry_size + 4;   // +4 because of the size, which isn't part of entry
-                        next_mmap_entry = (u8*)next_mmap_entry + next_mmap_entry->entry_size + 4;
+                        next_mmap_entry = (struct multiboot_mmap_entry*)((u8*)next_mmap_entry + next_mmap_entry->entry_size + 4);
                       }
                 }
 

@@ -50,7 +50,7 @@ void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, 
 }
 
 
-void textmode_default_init( void ) {
+void textmode_init_default( void ) {
     textmode_init( 80, 25, 0, 0, black, light_gray );
 }
 

@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <multiboot.h>
 
+int main( void );
+
 void kmain( void ) {
     multiboot_relocate();
 
@@ -17,7 +19,7 @@ void kmain( void ) {
     irq_install();
     keyboard_irq_install();
 
-    textmode_default_init();
+    textmode_init_default();
     // MUST happen after texmode initalization since isrs/irqs currently may use this mode
     enable_interrupts();
 

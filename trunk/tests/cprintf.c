@@ -26,7 +26,7 @@ int main( void ) {
     lcheck_suite* s;
     int c;
 
-    s = create_suite( "strntolower" );
+    s = create_suite( "cprintf" );
 
     reset_putchar_buf();
     c = cprintf( t_putchar, "" );
@@ -84,10 +84,19 @@ int main( void ) {
     reset_putchar_buf();
     c = cprintf( t_putchar, "%x", x );
 
-    fail_unless( s, __strncmp( (const char*)local_buf, "0xab34", 100 ) == 0,
-                 "To cprintf, single %x, one var (value 0xab34), buffer is correct" );
-    fail_unless( s, c == 6,
-                 "To cprintf, single %x, one var (value 0xab34), count is correct" );
+    fail_unless( s, __strncmp( (const char*)local_buf, "ab34", 100 ) == 0,
+                 "To cprintf, single %x, one var (value ab34), buffer is correct" );
+    fail_unless( s, c == 4,
+                 "To cprintf, single %x, one var (value ab34), count is correct" );
+
+    reset_putchar_buf();
+    c = cprintf( t_putchar, "%x", (long)-3456789 );
+
+    fail_unless( s, __strncmp( (const char*)local_buf, "ffcb40eb", 100 ) == 0,
+                 "To cprintf, single %x, one value (value -3456789), buffer is correct" );
+    fail_unless( s, c == 8,
+                 "To cprintf, single %x, one value (value -3456789), count is correct" );
+
 
     reset_putchar_buf();
     c = cprintf( t_putchar, "%s", "this is the %% time\n" );
@@ -101,18 +110,18 @@ int main( void ) {
     reset_putchar_buf();
     c = cprintf( t_putchar, "1a%%23%i-%x%i,%s%d<>%%%x%s%c\n", -234, x, p, "this", 1576342, 0x0, str, 'a' );
 
-    fail_unless( s, __strncmp( (const char*)local_buf, "1a%23-234-0xab340,this1576342<>%0x0foo bara\n", 100 ) == 0,
+    fail_unless( s, __strncmp( (const char*)local_buf, "1a%23-234-ab340,this1576342<>%0foo bara\n", 100 ) == 0,
                  "To cprintf, string w/ percent expansions for %, i, x, d, s, c, varargs w/ vars, buffer is correct" );
-    fail_unless( s, c == 44,
-                 "To cprintf, string w/ percent expansions for %, i, x, d, s, c, count is 44" );
+    fail_unless( s, c == 40,
+                 "To cprintf, string w/ percent expansions for %, i, x, d, s, c, count is 40" );
 
     reset_putchar_buf();
     c = local_printf( "1a%%23%i-%x%i,%s%d<>%%%x%s%c\n", -234, x, p, "this", 1576342, 0x0, str, 'a' );
 
-    fail_unless( s, __strncmp( (const char*)local_buf, "1a%23-234-0xab340,this1576342<>%0x0foo bara\n", 100 ) == 0,
+    fail_unless( s, __strncmp( (const char*)local_buf, "1a%23-234-ab340,this1576342<>%0foo bara\n", 100 ) == 0,
                  "To cprintf, string w/ percent expansions for %, i, x, d, s, c, varargs w/ vars, using macro, buffer is correct" );
-    fail_unless( s, c == 44,
-                 "To cprintf, string w/ percent expansions for %, i, x, d, s, c, using macro, count is 44" );
+    fail_unless( s, c == 40,
+                 "To cprintf, string w/ percent expansions for %, i, x, d, s, c, using macro, count is 40" );
 
 
     return conclude_suite( s );

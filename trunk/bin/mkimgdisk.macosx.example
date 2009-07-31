@@ -13,8 +13,30 @@ echo "Mounting virtual image..."
 
 sleep 1
 
-echo "Copying kernel..."
+if [ ! -f mnt/kernel.bin ]; then
+    echo "No kernel.bin on disk, probably not mounted"
+    exit 1
+fi
+
+rm mnt/kernel.bin
+
+if [ -f mnt/kernel.bin ]; then
+    echo "Failed to remove kernel.bin on disk"
+    exit 2
+fi
+
 cp kernel.bin mnt
+
+if [ ! -f mnt/kernel.bin ]; then
+    echo "Failed to copy kernel.bin to disk"
+    exit 1
+fi
+
+export FILESIZE=`ls -l mnt/kernel.bin | perl -pe 's/ +/\t/g' | cut -f 5`
+if [[ "$FILESIZE" -lt 1 ]]; then
+    echo "kernel.bin zero size"
+    exit 1
+fi
 
 echo "Unmounting virutal image..."
 umount -f mnt

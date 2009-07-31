@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 void kterm_create( void ) {
-    textmode_default_init();     
+    textmode_init_default();     
     textmode_cls();
 }
 

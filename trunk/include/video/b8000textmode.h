@@ -44,7 +44,7 @@ void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, 
 
 
 /* default initalization.  Sets screen to 80 x 25, row and column to 0 (upper left) and light_gray on black */
-void textmode_default_init( void );
+void textmode_init_default( void );
 
 
 /* sets the location for the next character written.  row and column start at zero and may be up to height - 1 or
