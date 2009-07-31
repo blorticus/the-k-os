@@ -11,15 +11,17 @@ exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t
 	@./kterm_readline.t
 
 
-kterm_readline.t: kterm_readline.c liblcheck.a string.o kterm.o
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o kterm_readline.t kterm_readline.c ../string.o ../kterm.o $(LIBS)
+kterm_readline.t: test_kterm_readline.c liblcheck.a string.o kterm.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o kterm_readline.t test_kterm_readline.c ../string.o ../kterm.o $(LIBS)
 
-strntolower.t: string.o strntolower.c liblcheck.a libstd.a
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o strntolower.t strntolower.c ../string.o $(LIBS)
+strntolower.t: string.o test_strntolower.c liblcheck.a libstd.a
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o strntolower.t test_strntolower.c ../string.o $(LIBS)
 
-cprintf.t: cprintf.c liblcheck.a cprintf.o
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o cprintf.t cprintf.c ../src/stdlib/cprintf.o $(LIBS)
+cprintf.t: test_cprintf.c liblcheck.a cprintf.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o cprintf.t test_cprintf.c ../src/stdlib/cprintf.o $(LIBS)
 
+kmalloc.t: test_kmalloc.c liblcheck.a kmalloc.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o kmalloc.t test_kmalloc.c ../src/memory/kmalloc.o $(LIBS)
 
 
 liblcheck.a:
@@ -39,6 +41,9 @@ cprintf.o:
 
 kterm.o:
 	$(MAKE) -C .. kterm.o
+
+kmalloc.o:
+	$(MAKE) -C ../src/memory kmalloc.o
 
 
 .PHONY: clean

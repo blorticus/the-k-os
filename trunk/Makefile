@@ -164,6 +164,7 @@ notest-distclean: veryclean
 	$(MAKE) -C kosh clean
 	$(MAKE) -C lcheck clean
 	$(MAKE) -C src/stdlib clean
+	$(MAKE) -C src/memory clean
 	
 
 
