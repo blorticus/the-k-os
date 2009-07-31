@@ -158,10 +158,16 @@ veryclean:
 	rm -f *.bin *.o *.flp *.img *.s *.S
 
 
-# TARGET: clean-up this directory and subdirectories by recursively calling 'make clean'
-.PHONY: distclean
-distclean: clean
+# TARGET: do nearly full clean, but skip test directory (which must call this target when it builds items)
+.PHONY: notest-distclean
+notest-distclean: veryclean
 	$(MAKE) -C kosh clean
 	$(MAKE) -C lcheck clean
 	$(MAKE) -C src/stdlib clean
+	
+
+
+# TARGET: clean-up this directory and subdirectories by recursively calling 'make clean'
+.PHONY: distclean
+distclean: notest-distclean
 	$(MAKE) -C tests clean

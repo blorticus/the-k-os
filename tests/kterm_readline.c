@@ -57,10 +57,11 @@ void textmode_putc( char c ) {
 
 
 /* these are just covers for functions needed by kterm */
-void textmode_default_init() {}
+void textmode_init_default() {}
 void textmode_cls() {}
 void textmode_puts( const char* s ) {}
-
+void textmode_putchar( char c ) {}
+void textmode_puti( int i ) {}
 
 int main( void ) {
     lcheck_suite* s;
@@ -120,9 +121,9 @@ int main( void ) {
     textmode_putc_receiver_rewind();
     seed_getchar( "This\b\b\b\bthis Is the!2 end Of tHE\b\b # wOrLd%\n" );
     kterm_readline( readline_buffer, 100 );
-    fail_unless( s, strcmp( readline_buffer, "this Is the!2 end Of t # w0rLd%" ) == 0,
+    fail_unless( s, strcmp( readline_buffer, "this Is the!2 end Of t # wOrLd%" ) == 0,
                  "kterm_readline() fails to set buffer to correct string when spaces and backspaces used" );
-    fail_unless( s, strcmp( getc_recv, "This\b\b\b\bthis Is the!2 end Of tHE\b\b # w0rLd%\n" ) == 0,
+    fail_unless( s, strcmp( getc_recv, "This\b\b\b\bthis Is the!2 end Of tHE\b\b # wOrLd%\n" ) == 0,
                  "kterm_readline() puts fails to set putc buffer to proper value when spaces and backspaces used" );
 
     return conclude_suite( s );

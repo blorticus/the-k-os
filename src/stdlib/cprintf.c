@@ -17,7 +17,7 @@ static unsigned int itoa( const char* buf, long value, unsigned int base, unsign
         /* In this case, mask all but the lowest order 4 bits, extract its value, then shift 4 bits to the right.  Have to handle
          * value of 0 in a special way, because we ignore leading zeroes */
         do {
-            if (--max_len < 0)
+            if (max_len-- == 0)
                 return 0;
 
             v = value & 0x0f;
@@ -43,7 +43,7 @@ static unsigned int itoa( const char* buf, long value, unsigned int base, unsign
         }
 
         do {
-            if (--max_len < 0)
+            if (max_len-- == 0)
                 return 0;
 
             sbuf[i++] = '0' + (value % 10);
