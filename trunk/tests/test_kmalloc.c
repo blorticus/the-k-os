@@ -45,12 +45,12 @@ static void make_four_mmap_entries( u32 first_addr_offset, u32 first_length, u32
 }
 
 
-#define CHUNK_OFFSET(x) ((struct free_mem_element*)((u8*)memory_chunk + x))
+#define CHUNK_OFFSET(x) ((struct kmalloc_mem_element*)((u8*)memory_chunk + x))
 
 int main( void ) {
     lcheck_suite* s;
     int i;
-    struct free_mem_element* e;
+    struct kmalloc_mem_element* e;
 
     s = create_suite( "kmalloc" );
 
@@ -58,37 +58,130 @@ int main( void ) {
     for (i = 0; i < MEMORY_CHUNK_LENGTH; i++)
         memory_chunk[i] = '\0';
 
-    // PASS 1: break memory chunk into four areas.  Make the kernel map to an area inside the second; third is reserved and fourth is too small to include
+    // TEST 1: break memory chunk into four areas.  Make the kernel map to an area inside the second; third is reserved and fourth is too small to include
     make_four_mmap_entries( 0, 200, 1, 500, 1000, 1, 1500, 500, 2, 2005, 5, 1 );
 
     initialize_kmalloc( mmap, sizeof(mmap) - 16, (memaddr)memory_chunk + 600, (memaddr)memory_chunk + 700 );  // mmap length doesn't include the size element
 
-    e = (struct free_mem_element*)kmalloc_get_head();
+    e = (struct kmalloc_mem_element*)kmalloc_get_head();
 
-    fail_unless( s, e != NULL,                                      "PASS 1: head is not null" );
-    fail_unless( s, e == (struct free_mem_element*)memory_chunk,    "PASS 1: head is start of memory chunk" );
-    fail_unless( s, e->length == 200,                               "PASS 1: head element length 200" );
-    fail_unless( s, e->prev_element == NULL,                        "PASS 1: prev_element is null" );
+    fail_unless( s, e != NULL,                                          "TEST 1: head is not null" );
+    fail_unless( s, e == (struct kmalloc_mem_element*)memory_chunk,     "TEST 1: head is start of memory chunk" );
+    fail_unless( s, e->length == 200,                                   "TEST 1: head element length 200" );
+    fail_unless( s, e->prev_element == NULL,                            "TEST 1: head prev_element is null" );
 
-    struct free_mem_element* second = e->next_element;
-    fail_unless( s, second == CHUNK_OFFSET(500),                    "PASS 1: second offset correct" );
-    fail_unless( s, second->length == 100,                          "PASS 1: second element length is 200" );
-    fail_unless( s, second->prev_element == e,                      "PASS 1: second element previous element is same as head" );
+    struct kmalloc_mem_element* second = e->next_element;
+    fail_unless( s, second == CHUNK_OFFSET(500),                        "TEST 1: second offset correct" );
+    fail_unless( s, second->length == 100,                              "TEST 1: second element length is 200" );
+    fail_unless( s, second->prev_element == e,                          "TEST 1: second element previous element is same as head" );
 
-    struct free_mem_element* third = second->next_element;
-    fail_unless( s, third == CHUNK_OFFSET(701),                     "PASS 1: third offset correct" );
-    fail_unless( s, third->length == 799,                           "PASS 1: third length correct" );
-    fail_unless( s, third->prev_element == second,                  "PASS 1: third previous is second" );
-    fail_unless( s, third->next_element == NULL,                    "PASS 1: third next is NULL" );
+    struct kmalloc_mem_element* third = second->next_element;
+    fail_unless( s, third == CHUNK_OFFSET(701),                         "TEST 1: third offset correct" );
+    fail_unless( s, third->length == 799,                               "TEST 1: third length correct" );
+    fail_unless( s, third->prev_element == second,                      "TEST 1: third previous is second" );
+    fail_unless( s, third->next_element == NULL,                        "TEST 1: third next is NULL" );
 
-    // break memory chunk into four areas.  Make the kernel map to an area starting in the first, ending in the second
-    
+    // TEST 2: break memory chunk into four areas.  Make the kernel map to an area starting in the first, ending in the second.  Fourth is
+    // reserved
+    for (i = 0; i < MEMORY_CHUNK_LENGTH; i++)
+        memory_chunk[i] = '\0';
 
-    // break memory chunk into four areas.  Make the kernel map to an area exactly matching the third
+    make_four_mmap_entries( 200, 500, 1, 800, 500, 1, 1300, 200, 1, 1700, 100, 2 );
 
-    // break memory chunk into four areas.  Make the kernel start before the second, ending in the second
+    initialize_kmalloc( mmap, sizeof(mmap) - 16, (memaddr)memory_chunk + 500, (memaddr)memory_chunk + 950 );
 
-    // break memory chunk into four areas.  Make the kernel start within the second, ending after the second
+    e = (struct kmalloc_mem_element*)kmalloc_get_head();
+
+    fail_unless( s, e != NULL,                                          "TEST 2: head is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(200),                             "TEST 2: head is 200 bytes past start of memory chunk" );
+    fail_unless( s, e->length == 300,                                   "TEST 2: head element length 300" );
+    fail_unless( s, e->prev_element == NULL,                            "TEST 2: head prev_element is null" );
+
+    second = e->next_element;
+    fail_unless( s, second == CHUNK_OFFSET(951),                        "TEST 2: second offset correct" );
+    fail_unless( s, second->length == 349,                              "TEST 2: second element length is 349" );
+    fail_unless( s, second->prev_element == e,                          "TEST 2: second element previous element is same as head" );
+
+    third = second->next_element;
+    fail_unless( s, third == CHUNK_OFFSET(1300),                        "TEST 2: third offset correct" );
+    fail_unless( s, third->length == 200,                               "TEST 2: third length correct" );
+    fail_unless( s, third->prev_element == second,                      "TEST 2: third previous is second" );
+    fail_unless( s, third->next_element == NULL,                        "TEST 2: third next is NULL" );
+
+    // TEST 3: break memory chunk into four areas.  Make the kernel map to an area exactly matching the third
+    for (i = 0; i < MEMORY_CHUNK_LENGTH; i++)
+        memory_chunk[i] = '\0';
+
+    make_four_mmap_entries( 200, 500, 1, 800, 500, 1, 1300, 200, 1, 1700, 100, 2 );
+
+    initialize_kmalloc( mmap, sizeof(mmap) - 16, (memaddr)memory_chunk + 1300, (memaddr)memory_chunk + 1499 );
+
+    e = (struct kmalloc_mem_element*)kmalloc_get_head();
+
+    fail_unless( s, e != NULL,                                          "TEST 3: head is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(200),                             "TEST 3: head is 200 bytes past start of memory chunk" );
+    fail_unless( s, e->length == 500,                                   "TEST 3: head element length 500" );
+    fail_unless( s, e->prev_element == NULL,                            "TEST 3: head prev_element is null" );
+
+    second = e->next_element;
+    fail_unless( s, second == CHUNK_OFFSET(800),                        "TEST 3: second offset correct" );
+    fail_unless( s, second->length == 500,                              "TEST 3: second element length is 500" );
+    fail_unless( s, second->prev_element == e,                          "TEST 3: second element previous element is same as head" );
+    fail_unless( s, second->next_element == NULL,                       "TEST 3: second element next element is NULL" );
+
+    // TEST 4: allocate three memory segments from the blocks.  Verify that they are all marked as allocated, and others remain unallocated
+    char* cp = kmalloc( 50 );    // should allocate from first block
+    int*  ip = kmalloc( 400 );   // should allocate from first block
+    long* lp = kmalloc( 160 );   // should allocate from second block
+    char* rp = kmalloc( 350 );   // should not allocate
+
+    fail_unless( s, cp != NULL,                                         "TEST 4: c is not NULL" );
+    fail_unless( s, ip != NULL,                                         "TEST 4: i is not NULL" );
+    fail_unless( s, lp != NULL,                                         "TEST 4: l is not NULL" );
+    fail_unless( s, rp == NULL,                                         "TEST 4: r is NULL" );
+
+    // real length of a block is the header plus the allocated size
+    #define ES (sizeof(struct kmalloc_mem_element))
+
+    e = (struct kmalloc_mem_element*)kmalloc_get_head();
+    fail_unless( s, e != NULL,                                          "TEST 4: head is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(200),                             "TEST 4: head is 200 bytes past start of memory chunk" );
+    fail_unless( s, e->length == 50,                                    "TEST 4: head element length is 50" );
+    fail_unless( s, e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG,            "TEST 4: head element is marked as allocated" );
+    fail_unless( s, e->prev_element == NULL,                            "TEST 4: head prev_element is NULL" );
+
+    struct kmalloc_mem_element* prev = e;
+    e = prev->next_element;
+    fail_unless( s, e != NULL,                                          "TEST 4: second element is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(ES + 250),                        "TEST 4: second element is 250 + 1 header len bytes past start of memory chunk" );
+    fail_unless( s, e->length == 400,                                   "TEST 4: second element length is 400" );
+    fail_unless( s, e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG,            "TEST 4: second element is maked as allocated" );
+    fail_unless( s, e->prev_element == prev,                            "TEST 4: second element prev_element is head" );
+
+    prev = e;
+    e = prev->next_element;
+    fail_unless( s, e != NULL,                                          "TEST 4: third element is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(ES + ES + 650),                   "TEST 4: third element is 650 + 2 header len bytes past start of memory chunk" );
+    fail_unless( s, e->length == 50 - ES - ES,                          "TEST 4: third element length is 50 - 2 header lengths" );
+    fail_unless( s, !(e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG),         "TEST 4: third element is maked as unallocated" );
+    fail_unless( s, e->prev_element == prev,                            "TEST 4: third element prev_element is second" );
+
+    prev = e;
+    e = prev->next_element;
+    fail_unless( s, e != NULL,                                          "TEST 4: fourth element is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(800),                             "TEST 4: fourth element is 800 bytes past start of memory chunk" );
+    fail_unless( s, e->length == 160,                                   "TEST 4: fourth element length is 160" );
+    fail_unless( s, e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG,            "TEST 4: fourth element is maked as allocated" );
+    fail_unless( s, e->prev_element == prev,                            "TEST 4: fourth element prev_element is third" );
+
+    prev = e;
+    e = prev->next_element;
+    fail_unless( s, e != NULL,                                          "TEST 4: fifth element is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(ES + 960),                        "TEST 4: fifth element is 960 + 1 header len bytes past start of memory chunk" );
+    fail_unless( s, e->length == 340 - ES,                              "TEST 4: fifth element length is 340 - 1 header len" );
+    fail_unless( s, !(e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG),         "TEST 4: fifth element is maked as unallocated" );
+    fail_unless( s, e->prev_element == prev,                            "TEST 4: fifth element prev_element is fourth" );
+    fail_unless( s, e->next_element == NULL,                            "TEST 4: fiften element next_element is NULL" );
 
     return conclude_suite( s );
 }

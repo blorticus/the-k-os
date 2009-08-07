@@ -4,11 +4,12 @@ CC_FLAGS := -g -Wall
 INCLUDES := -I../include -I../lcheck -I../include/stdlib
 LIBS := -L../lcheck -llcheck
 
-exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t
+exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kmalloc.t
 	$(MAKE) -C .. notest-distclean
 	@./cprintf.t
 	@./strntolower.t
 	@./kterm_readline.t
+	@./kmalloc.t
 
 
 kterm_readline.t: test_kterm_readline.c liblcheck.a string.o kterm.o
