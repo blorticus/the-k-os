@@ -20,13 +20,17 @@ void* kmalloc( size_t size );
 void free( void* ptr );
 
 
-struct free_mem_element {
-    u32 length;
-    struct free_mem_element* prev_element;
-    struct free_mem_element* next_element;
-};
+#define KMALLOC_ALLOCATED_BLOCK_FLAG     0x01    // flag set to true if block has been allocated
 
-const struct free_mem_element* kmalloc_get_head( void );
+struct kmalloc_mem_element {
+    u32 length;
+    u8  flags;
+    struct kmalloc_mem_element* prev_element;
+    struct kmalloc_mem_element* next_element;
+    u16 crc;
+}__attribute__((packed));
+
+const struct kmalloc_mem_element* kmalloc_get_head( void );
 
 
 #endif
