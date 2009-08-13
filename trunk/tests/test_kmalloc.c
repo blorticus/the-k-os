@@ -10,6 +10,23 @@ unsigned char* memory_chunk[MEMORY_CHUNK_LENGTH];
 struct multiboot_mmap_entry mmap[4];
 
 
+/* find count of free block in 'free' and allocated blocks in 'allocated' based on kmalloc structure starting at 'head' */
+void find_block_count( const struct kmalloc_mem_element* head, unsigned int* free, unsigned int* allocated ) {
+    struct kmalloc_mem_element* e = (struct kmalloc_mem_element*)head;
+
+    *free = 0;
+    *allocated = 0;
+
+    while (e != NULL) {
+        if (e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG)
+            *allocated = *allocated + 1;
+        else
+            *free = *free + 1;
+        e = e->next_element;
+    }
+}
+
+
 // Fill in all four 'mmap' entries.  *_addr_offset is the offset from the start of 'memory_chunk'; *_length is the block length.  *_type is the multiboot block type.
 static void make_four_mmap_entries( u32 first_addr_offset, u32 first_length, u32 first_type,
                                     u32 second_addr_offset, u32 second_length, u32 second_type,
@@ -183,5 +200,60 @@ int main( void ) {
     fail_unless( s, e->prev_element == prev,                            "TEST 4: fifth element prev_element is fourth" );
     fail_unless( s, e->next_element == NULL,                            "TEST 4: fiften element next_element is NULL" );
 
+    unsigned int free;
+    unsigned int allocated;
+
+    // TEST 5: free random pointer location inside middle block.  This should change nothing in block allocations.  Then
+    //         free middle block and verify blocks.  Then free first block, and make sure first and second are re-joined.
+    //         Finally, free last block, and verify that they are re-joined
+    // At this point, blocks should be: | Allocated (cp) | Allocated (ip) | Unall | -- gap -- | Allocated (lp) | Unall |
+    //                                  +----------------+----------------+-------+           +----------------+-------+
+    find_block_count( kmalloc_get_head(), &free, &allocated );
+    fail_unless( s, free == 2 && allocated == 3,                        "TEST 5: two free and 3 allocated block" );
+
+    kfree( ip + 8 );
+
+    find_block_count( kmalloc_get_head(), &free, &allocated );
+    fail_unless( s, free == 2 && allocated == 3,                        "TEST 5: after invalid free(), still two free and 3 allocated block" );
+
+    kfree( ip );
+
+    find_block_count( kmalloc_get_head(), &free, &allocated );
+    fail_unless( s, free == 2 && allocated == 2,                        "TEST 5: after free() on middle block, 2 free and 2 allocated block" );
+
+    kfree( ip );
+
+    find_block_count( kmalloc_get_head(), &free, &allocated );
+    fail_unless( s, free == 2 && allocated == 2,                        "TEST 5: attempt to free() on same block changes nothing" );
+
+    kfree( cp );
+
+    find_block_count( kmalloc_get_head(), &free, &allocated );
+    fail_unless( s, free == 2 && allocated == 1,                        "TEST 5: after free() on first block, 2 free and 1 allocated" );
+
+    kfree( lp );
+
+    find_block_count( kmalloc_get_head(), &free, &allocated );
+    fail_unless( s, free == 2 && allocated == 0,                        "TEST 5: after free() on last block, 2 free and 0 allocated" );
+
+    e = (struct kmalloc_mem_element*)kmalloc_get_head();
+    fail_unless( s, e != NULL,                                          "TEST 5: head is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(200),                             "TEST 5: head is 200 bytes past start of memory chunk" );
+    fail_unless( s, e->length == 500,                                   "TEST 5: head element length is 500" );
+    fail_unless( s, !(e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG),         "TEST 5: head element is marked as unallocated" );
+    fail_unless( s, e->prev_element == NULL,                            "TEST 5: head prev_element is NULL" );
+
+    prev = e;
+    e = prev->next_element;
+    fail_unless( s, e != NULL,                                          "TEST 5: second element is not null" );
+    fail_unless( s, e == CHUNK_OFFSET(800),                             "TEST 5: second element is 800 bytes past start of chunk" );
+    fail_unless( s, e->length == 500,                                   "TEST 5: second element length is 500" );
+    fail_unless( s, !(e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG),         "TEST 5: second element is maked as unallocated" );
+    fail_unless( s, e->prev_element == prev,                            "TEST 5: second element prev_element is head" );
+    fail_unless( s, e->next_element == NULL,                            "TEST 5: second element next_element is NULL" );
+
+    
+
     return conclude_suite( s );
+
 }
