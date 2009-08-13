@@ -17,7 +17,7 @@ void* kmalloc( size_t size );
 
 /* Free allocation referenced by 'ptr'.  If 'ptr' does not reference the start
  * of an allocated block, do nothing */
-void free( void* ptr );
+void kfree( void* ptr );
 
 
 #define KMALLOC_ALLOCATED_BLOCK_FLAG     0x01    // flag set to true if block has been allocated

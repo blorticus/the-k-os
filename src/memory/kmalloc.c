@@ -17,6 +17,9 @@ struct kmalloc_mem_element* KMALLOC_HEAD = NULL;
 // XXX: haven't yet implemented CRC computation function, so for now, use a magic number
 #define FAKE_CRC_CALCULATOR(header) (0xDEAD)
 
+#define SET_BLOCK_ALLOCATED(header)     (header->flags |= KMALLOC_ALLOCATED_BLOCK_FLAG)
+#define SET_BLOCK_UNALLOCATED(header)   (header->flags = header->flags & ~(KMALLOC_ALLOCATED_BLOCK_FLAG))
+
 static struct kmalloc_mem_element* kmalloc_add_block( memaddr start_of_block, u32 block_length, struct kmalloc_mem_element* last_block_added ) {
     struct kmalloc_mem_element* this_block = (struct kmalloc_mem_element*)start_of_block;
     this_block->length = block_length;
@@ -86,7 +89,8 @@ void* kmalloc( size_t size ) {
         // ASSERT: found a matching block
         // If the block is equal to or only slightly larger than the required size, convert the entire block to allocated
         if (e->length <= size + MIN_BLOCK_SIZE) {
-            e->flags |= KMALLOC_ALLOCATED_BLOCK_FLAG;
+            //e->flags |= KMALLOC_ALLOCATED_BLOCK_FLAG;
+            SET_BLOCK_ALLOCATED(e);
             return (void*)((u8*)e + sizeof( struct kmalloc_mem_element ));
         }
         // Block is bigger than desired size, so split block into allocated and unallocated blocks
@@ -95,11 +99,13 @@ void* kmalloc( size_t size ) {
             new_block->length = e->length - size - sizeof(struct kmalloc_mem_element);
             new_block->next_element = e->next_element;
             new_block->prev_element = e;
-            new_block->flags = new_block->flags & ~(KMALLOC_ALLOCATED_BLOCK_FLAG);
+            //new_block->flags = new_block->flags & ~(KMALLOC_ALLOCATED_BLOCK_FLAG);
+            SET_BLOCK_UNALLOCATED(new_block);
             new_block->crc = FAKE_CRC_CALCULATOR(new_block);
 
             e->length = size;
-            e->flags |= KMALLOC_ALLOCATED_BLOCK_FLAG;
+            //e->flags |= KMALLOC_ALLOCATED_BLOCK_FLAG;
+            SET_BLOCK_ALLOCATED(e);
             if (e->next_element != NULL)
                 e->next_element->prev_element = new_block;
             e->next_element = new_block;
@@ -117,14 +123,46 @@ void* kmalloc( size_t size ) {
 }
 
 
-void free( void* ptr ) {
+void kfree( void* ptr ) {
     struct kmalloc_mem_element* header = ptr - sizeof( struct kmalloc_mem_element );
-    if (header->crc == FAKE_CRC_CALCULATOR(header)) {
-        // Assume this is a valid block because CRC matches.  See if adjacent blocks are continguous and free
-//        if (header->prev_element != NULL && (memaddr)(header->prev_element) + header->prev_element->length + 
-        
-//        header->flags = header->flags & ~(KMALLOC_ALLOCATED_BLOCK_FLAG);
-//        header->crc = FAKE_CRC_CALCULATOR(header);
+    struct kmalloc_mem_element* other  = NULL;
+
+    if (header->crc == FAKE_CRC_CALCULATOR(header) && header->flags & KMALLOC_ALLOCATED_BLOCK_FLAG) {
+        // Four possible conditions: next block is adjacent to this block and unallocated, so should be combined with this block;
+        //  previous block is adjacent to this block and unallocated, so this block should be combined with that block;
+        //  both previous and next block are adjacent and unallocated, so this and next should be combined with previous;
+        //  or only this block is unallocated
+        if (header->next_element != NULL && !(header->next_element->flags & KMALLOC_ALLOCATED_BLOCK_FLAG) && header->next_element == (struct kmalloc_mem_element*)((u8*)header + sizeof( struct kmalloc_mem_element ) + header->length)) {
+            if (header->prev_element != NULL && !(header->prev_element->flags & KMALLOC_ALLOCATED_BLOCK_FLAG) && header->prev_element == (struct kmalloc_mem_element*)((u8*)header - header->length - sizeof( struct kmalloc_mem_element ))) {
+                other = header->prev_element;
+                other->length += header->length + header->next_element->length + (2 * sizeof(struct kmalloc_mem_element));
+                other->next_element = header->next_element->next_element;
+                if (other->next_element != NULL)
+                    other->next_element->prev_element = other;
+                other->crc = FAKE_CRC_CALCULATOR(other);
+            }
+            else {
+                other = header->next_element;
+                header->length += other->length + sizeof(struct kmalloc_mem_element);
+                header->next_element = other->next_element;
+                if (header->next_element != NULL)
+                    header->next_element->prev_element = header;
+                SET_BLOCK_UNALLOCATED(header);
+                header->crc = FAKE_CRC_CALCULATOR(header);
+            }
+        }
+        else if (header->prev_element != NULL && header->prev_element->flags & !(KMALLOC_ALLOCATED_BLOCK_FLAG) && header->prev_element == (struct kmalloc_mem_element*)((u8*)header - header->length - sizeof( struct kmalloc_mem_element ))) {
+            other = header->prev_element;
+            other->length += header->length + sizeof(struct kmalloc_mem_element);
+            other->next_element = header->next_element;
+            if (other->next_element != NULL)
+                other->next_element->prev_element = other;
+            other->crc = FAKE_CRC_CALCULATOR(other);
+        }
+        else {
+            SET_BLOCK_UNALLOCATED(header);
+            header->crc = FAKE_CRC_CALCULATOR(header);
+        }
     }
 }
 
