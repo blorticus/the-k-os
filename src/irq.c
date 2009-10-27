@@ -1,6 +1,8 @@
 #include <idt.h>
 #include <sys/asm.h>
 #include <irq.h>
+#include <video/kterm.h>
+#include <video/b8000textmode.h>
 
 /* These are own ISRs that point to our special IRQ handler
 *  instead of the regular 'fault_handler' function */
@@ -20,6 +22,20 @@ extern void irq12();
 extern void irq13();
 extern void irq14();
 extern void irq15();
+
+static u8 DO_INTERRUPT_DIAG = 0;
+static u8 DIAG_COUNTER = 0;
+
+/* turn on interrupt diagnostic routine */
+void irq_set_diag( u8 count ) {
+    DO_INTERRUPT_DIAG = 1;
+    DIAG_COUNTER = count;
+}
+
+void irq_unset_diag() {
+    DO_INTERRUPT_DIAG = 0;
+    DIAG_COUNTER = 0;
+}
 
 /* This array is actually an array of function pointers. We use
 *  this to handle custom IRQ handlers for a given IRQ */
@@ -109,6 +125,12 @@ void irq_handler(struct regs *r)
     handler = irq_routines[r->int_no - 32];
     if (handler)
     {
+//        if (DO_INTERRUPT_DIAG) {
+//            kterm_printf( "\b\b\b%3d", r->int_no );
+//            if (--DIAG_COUNTER == 0)
+//                irq_unset_diag();
+//        }
+
         handler(r);
     }
 
