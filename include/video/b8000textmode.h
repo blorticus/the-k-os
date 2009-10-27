@@ -32,6 +32,18 @@ enum TEXTMODE_COLOR
 };
 
 
+typedef struct b8000_textmode_viewport {
+    u8 start_col;
+    u8 end_col;
+    u8 width;
+    u8 start_row;
+    u8 end_row;
+    u8 height;
+    u8 current_row;
+    u8 current_col;
+    u8 color;
+} b8000_textmode_viewport;
+
 
 /*********
  * Public methods
@@ -40,7 +52,7 @@ enum TEXTMODE_COLOR
 /* initialize video mode, setting screen to width x height, initializing pointer to at_row and at_col
  * (both start at zero, and can be width - 1 or height - 1) and setting the character color to bgcolor
  * (background) and fgcolor (foreground) */
-void textmode_init( _U8 width, _U8 height, _U8 at_row, _U8 at_col, _U8 bgcolor, _U8 fgcolor );
+void textmode_init( u8 width, u8 height, u8 at_row, u8 at_col, u8 bgcolor, u8 fgcolor );
 
 
 /* default initalization.  Sets screen to 80 x 25, row and column to 0 (upper left) and light_gray on black */
@@ -49,12 +61,13 @@ void textmode_init_default( void );
 
 /* sets the location for the next character written.  row and column start at zero and may be up to height - 1 or
  * width - 1, respectively */
-void textmode_set_location( _U8 row, _U8 column );
+void textmode_set_location( u8 row, u8 column );
 
 
 /* put a character on the screen using the configured fg and bg colors, and the current row and column, then
  * advance column by one (which may cause row to advance and reset column to zero.  May also cause scrolling) */
 void textmode_putc( char c );
+void textmode_putc_vp( b8000_textmode_viewport* vp, char c );
 
 
 /* put a character on the screen using the configured fg and bg colors at the named row and column.  After, the
@@ -63,7 +76,7 @@ void textmode_putc( char c );
  * to its absolute position from before the scroll, meaning they will actually point one line before, lexically.
  * If the supplied row is greater than the screen height, or the column is greater than the screen width, this
  * method silently returns */
-void textmode_putc_at( char c, _U8 row, _U8 column );
+void textmode_putc_at( char c, u8 row, u8 column );
 
 
 /* put a string to the screen using the configured fg and bg colors, starting at the current row and column, then
@@ -73,7 +86,7 @@ void textmode_puts( char *s );
 
 /* just like textmode_putc_at(), except it puts an entire string.  The same caveats about pointers and provided
  * row/column apply */
-void textmode_puts_at( char* s, _U8 row, _U8 column );
+void textmode_puts_at( char* s, u8 row, u8 column );
 
 
 /* put an unsigned integer */
@@ -86,10 +99,11 @@ void textmode_puti_at( unsigned int i, u8 row, u8 column );
 
 /* clear the screen (actually, fill it with spaces in the current fg/bg colors) */
 void textmode_cls( void );
+void textmode_cls_vp( b8000_textmode_viewport* vp );
 
 
 /* convert unsigned byte into two hex digits and textmode_putc() them */
-void textmode_put_hexbyte( _U8 byte );
+void textmode_put_hexbyte( u8 byte );
 
 
 /* like libc putchar() */
@@ -101,12 +115,6 @@ int textmode_putchar( int c );
  **/
 void textmode_put_dec( unsigned int n ); /* convert int to string output */
 
-
-/*********
- * Internal methods
- **/
-void textmode_scroll( void );
-void textmode_simple_putc( char c, _U16 row, _U16 col );
 
 
 #endif

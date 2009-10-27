@@ -8,6 +8,25 @@ void kterm_create( void ) {
 }
 
 
+/* Create a secondary output window below the main kterm window.  Output can be redirected
+ * there via 'kterm_secondary_window_printf'.  A line of dashes (---) will be drawn between
+ * the main window and the secondary window.  If the 'rows' for secondary window plus the
+ * dash line row will leave the main window with fewer than one rows, 'rows' will be reduced
+ * enough to allow at least one row for the main window.  On create, the main window will be
+ * scrolled by 'rows' plus 1.
+ */
+void kterm_activate_secondary_window( u8 rows ) {
+
+}
+
+
+/* Remove the secondary window, but leave main window text where it was before removal.
+ * However, expand scroll length for the main window to the entire frame size. */
+void kterm_remove_secondary_window( void ) {
+
+}
+
+
 void kterm_puts( const char* str ) {
     textmode_puts( (char*)str );
 }
