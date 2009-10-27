@@ -13,6 +13,7 @@ typedef enum {
     POKE,           // memory location or register name
     DUMPREGS,       // dump important memory registers
     BIOS,           // dump bios area of memory
+    INTDIAG,        // interrupt diagnostic
     HELP            // print help
 } kosh_base_command;
 
