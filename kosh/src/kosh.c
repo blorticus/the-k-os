@@ -163,6 +163,7 @@ int main( void ) {
                 kterm_puts( " poke <reg|mem>    - change value at register <reg> or memory location 0x<mem>\n" );
                 kterm_puts( " regs              - dump all register values\n" );
                 kterm_puts( " bios              - prints out relocated bios values\n" );
+                kterm_puts( " int               - activates interrupt diagnostics\n" );
                 break;
 
             case BIOS:
@@ -186,6 +187,10 @@ int main( void ) {
                       }
                 }
 
+                break;
+
+            case INTDIAG:
+                kterm_puts( "\nSTART DIAG ... " );
                 break;
 
             default:

@@ -28,6 +28,7 @@ typedef enum {
     ECHO,           // echo a string
     POKE,           // memory location or register name
     DUMPREGS,       // dump primary registers
+    INTDIAG,        // interrupt diagnostics
     BIOS            // dump bios area
 } kosh_base_command;
 
@@ -357,6 +358,16 @@ kosh_instruction* input_to_instruction( char* input ) {
         }
         else {
             instruction->command = HELP;
+        }
+    }
+    else if (strcmp( token_buffer, "int" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] != NULL) {
+            instruction->command = HELP;
+            instruction->error   = "Extra Input After Command";
+        }
+        else {
+            instruction->command = INTDIAG;
         }
     }
     else {
