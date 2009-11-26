@@ -59,6 +59,10 @@ void textmode_init( u8 width, u8 height, u8 at_row, u8 at_col, u8 bgcolor, u8 fg
 void textmode_init_default( void );
 
 
+/* create a viewport, which is a perspective on the screen.  This will affect srolling and screen clearing. */
+void textmode_configure_simple_viewport( b8000_textmode_viewport* vp, u8 start_row, u8 end_row, u8 current_row, u8 current_col );
+
+
 /* sets the location for the next character written.  row and column start at zero and may be up to height - 1 or
  * width - 1, respectively */
 void textmode_set_location( u8 row, u8 column );
@@ -82,6 +86,7 @@ void textmode_putc_at( char c, u8 row, u8 column );
 /* put a string to the screen using the configured fg and bg colors, starting at the current row and column, then
  * advance column by length of string (see textmode_putc()) */
 void textmode_puts( char *s );
+void textmode_puts_vp( b8000_textmode_viewport* vp, char *s );
 
 
 /* just like textmode_putc_at(), except it puts an entire string.  The same caveats about pointers and provided
@@ -108,6 +113,11 @@ void textmode_put_hexbyte( u8 byte );
 
 /* like libc putchar() */
 int textmode_putchar( int c );
+
+
+/* scroll text in a viewport.  First form scrolls one line; second allows scrolling more than one row */
+void textmode_scroll_vp( b8000_textmode_viewport* vp );
+void textmode_multi_scroll_vp( b8000_textmode_viewport* vp, u8 scroll_rows );
 
 
 /*********

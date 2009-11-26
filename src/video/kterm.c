@@ -2,8 +2,22 @@
 #include <sys/types.h>
 #include <stdio.h>
 
+
+b8000_textmode_viewport* default_vp;
+b8000_textmode_viewport split_top_vp;
+b8000_textmode_viewport split_bottom_vp;
+b8000_textmode_viewport split_line_vp;
+
+
 void kterm_create( void ) {
     textmode_init_default();     
+
+    default_vp = retrieve_default_viewport();
+
+    textmode_configure_simple_viewport( &split_top_vp,     0, 32,  0, 0 );
+    textmode_configure_simple_viewport( &split_line_vp,   33, 33, 33, 0 );
+    textmode_configure_simple_viewport( &split_bottom_vp, 34, 39, 34, 0 );
+
     textmode_cls();
 }
 
@@ -16,7 +30,9 @@ void kterm_create( void ) {
  * scrolled by 'rows' plus 1.
  */
 void kterm_activate_secondary_window( u8 rows ) {
+    short i;
 
+    textmode_puts_vp( &split_line_vp, "---------------------------------------------------------------------------" );
 }
 
 
