@@ -2,44 +2,9 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-
-b8000_textmode_viewport* default_vp;
-b8000_textmode_viewport split_top_vp;
-b8000_textmode_viewport split_bottom_vp;
-b8000_textmode_viewport split_line_vp;
-
-
 void kterm_create( void ) {
     textmode_init_default();     
-
-    default_vp = retrieve_default_viewport();
-
-    textmode_configure_simple_viewport( &split_top_vp,     0, 32,  0, 0 );
-    textmode_configure_simple_viewport( &split_line_vp,   33, 33, 33, 0 );
-    textmode_configure_simple_viewport( &split_bottom_vp, 34, 39, 34, 0 );
-
     textmode_cls();
-}
-
-
-/* Create a secondary output window below the main kterm window.  Output can be redirected
- * there via 'kterm_secondary_window_printf'.  A line of dashes (---) will be drawn between
- * the main window and the secondary window.  If the 'rows' for secondary window plus the
- * dash line row will leave the main window with fewer than one rows, 'rows' will be reduced
- * enough to allow at least one row for the main window.  On create, the main window will be
- * scrolled by 'rows' plus 1.
- */
-void kterm_activate_secondary_window( u8 rows ) {
-    short i;
-
-    textmode_puts_vp( &split_line_vp, "---------------------------------------------------------------------------" );
-}
-
-
-/* Remove the secondary window, but leave main window text where it was before removal.
- * However, expand scroll length for the main window to the entire frame size. */
-void kterm_remove_secondary_window( void ) {
-
 }
 
 

@@ -32,22 +32,27 @@ enum TEXTMODE_COLOR
 };
 
 
-typedef struct b8000_textmode_viewport {
-    u8 start_col;
-    u8 end_col;
+typedef struct b8000_textmode_window {
     u8 width;
-    u8 start_row;
-    u8 end_row;
-    u8 height;
-    u8 current_row;
-    u8 current_col;
-    u8 color;
-} b8000_textmode_viewport;
+    u16 attrs;
+    u16* pos;
+    u16* first_pos;
+    u16* last_pos;
+} B8000_TEXTMODE_WINDOW;
 
 
 /*********
  * Public methods
  **/
+
+void init_textmode_window( B8000_TEXTMODE_WINDOW* w, u8 start_row, u8 window_height, u8 window_width, u8 colors );
+void textmode_window_scroll( B8000_TEXTMODE_WINDOW* w );
+void textmode_window_putc( B8000_TEXTMODE_WINDOW* w, unsigned char c );
+void textmode_window_set_pos( B8000_TEXTMODE_WINDOW* w, u8 row, u8 col );
+void textmode_window_cls( B8000_TEXTMODE_WINDOW* w );
+void textmode_window_puts( B8000_TEXTMODE_WINDOW* w, char* s );
+
+
 
 /* initialize video mode, setting screen to width x height, initializing pointer to at_row and at_col
  * (both start at zero, and can be width - 1 or height - 1) and setting the character color to bgcolor
@@ -59,52 +64,22 @@ void textmode_init( u8 width, u8 height, u8 at_row, u8 at_col, u8 bgcolor, u8 fg
 void textmode_init_default( void );
 
 
-/* create a viewport, which is a perspective on the screen.  This will affect srolling and screen clearing. */
-void textmode_configure_simple_viewport( b8000_textmode_viewport* vp, u8 start_row, u8 end_row, u8 current_row, u8 current_col );
-
-
-/* sets the location for the next character written.  row and column start at zero and may be up to height - 1 or
- * width - 1, respectively */
-void textmode_set_location( u8 row, u8 column );
-
-
 /* put a character on the screen using the configured fg and bg colors, and the current row and column, then
  * advance column by one (which may cause row to advance and reset column to zero.  May also cause scrolling) */
 void textmode_putc( char c );
-void textmode_putc_vp( b8000_textmode_viewport* vp, char c );
-
-
-/* put a character on the screen using the configured fg and bg colors at the named row and column.  After, the
- * current row and current column pointers are returned to their original location from before the call to this
- * method.  Be aware that if this character put forces a scroll, the current row pointer is returned
- * to its absolute position from before the scroll, meaning they will actually point one line before, lexically.
- * If the supplied row is greater than the screen height, or the column is greater than the screen width, this
- * method silently returns */
-void textmode_putc_at( char c, u8 row, u8 column );
 
 
 /* put a string to the screen using the configured fg and bg colors, starting at the current row and column, then
  * advance column by length of string (see textmode_putc()) */
 void textmode_puts( char *s );
-void textmode_puts_vp( b8000_textmode_viewport* vp, char *s );
-
-
-/* just like textmode_putc_at(), except it puts an entire string.  The same caveats about pointers and provided
- * row/column apply */
-void textmode_puts_at( char* s, u8 row, u8 column );
 
 
 /* put an unsigned integer */
 void textmode_puti( unsigned int i );
 
 
-/* just like textmode_puti, but at a particular row and column */
-void textmode_puti_at( unsigned int i, u8 row, u8 column );
-
-
 /* clear the screen (actually, fill it with spaces in the current fg/bg colors) */
 void textmode_cls( void );
-void textmode_cls_vp( b8000_textmode_viewport* vp );
 
 
 /* convert unsigned byte into two hex digits and textmode_putc() them */
@@ -114,10 +89,7 @@ void textmode_put_hexbyte( u8 byte );
 /* like libc putchar() */
 int textmode_putchar( int c );
 
-
-/* scroll text in a viewport.  First form scrolls one line; second allows scrolling more than one row */
-void textmode_scroll_vp( b8000_textmode_viewport* vp );
-void textmode_multi_scroll_vp( b8000_textmode_viewport* vp, u8 scroll_rows );
+void textmode_scroll( void );
 
 
 /*********
