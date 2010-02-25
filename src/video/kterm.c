@@ -2,29 +2,48 @@
 #include <sys/types.h>
 #include <stdio.h>
 
+u8 KTERM_SCREEN_HEIGHT;
+u8 KTERM_SCREEN_WIDTH;
+
+typedef struct kterm_window {
+    B8000_TEXTMODE_WINDOW* tm_win;
+} kterm_window;
+
+typedef kterm_window* KTERM_WINDOW;
+
+kterm_window rw;
+KTERM_WINDOW root_window = &rw;
+
+void kterm_init( u8 screen_height, u8 screen_width ) {
+    KTERM_SCREEN_HEIGHT = screen_height;
+    KTERM_SCREEN_WIDTH  = screen_width;
+
+    init_textmode_window( root_window->tm_win, 1, screen_height, screen_width, make_b8000_colors( light_gray, black ) );
+}
+
 void kterm_create( void ) {
-    textmode_init_default();     
-    textmode_cls();
+    kterm_init( 25, 80 );
+    textmode_window_cls( root_window->tm_win );
 }
 
 
 void kterm_puts( const char* str ) {
-    textmode_puts( (char*)str );
+    textmode_window_puts( root_window->tm_win, (char*)str );
 }
 
 
 void kterm_putc( char c ) {
-    textmode_putc( c );
+    textmode_window_putc( root_window->tm_win, c );
 }
 
 
 int kterm_putchar( int c ) {
-    return textmode_putchar( c );
+    return textmode_window_putchar( root_window->tm_win, c );
 }
 
 
 void kterm_puti( u32 i ) {
-    textmode_puti( i );
+    textmode_window_puti( root_window->tm_win, i );
 }
 
 
@@ -95,6 +114,6 @@ void kterm_readline( char* buffer, unsigned int size ) {
 
 
 void kterm_cls( void ) {
-    textmode_cls();
+    textmode_window_cls( root_window->tm_win );
 }
 
