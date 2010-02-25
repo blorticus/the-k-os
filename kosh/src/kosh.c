@@ -118,7 +118,13 @@ int main( void ) {
 
                     switch (next_instruction->reg) {
                         case EAX: M_GR_EAX(regval32); kterm_puts( " eax = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
+                        case EBX: M_GR_EBX(regval32); kterm_puts( " ebx = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
+                        case ECX: M_GR_ECX(regval32); kterm_puts( " ecx = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
+                        case EDX: M_GR_EDX(regval32); kterm_puts( " edx = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
                         case AX:  M_GR_AX (regval16); kterm_puts( " ax  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
+                        case BX:  M_GR_BX (regval16); kterm_puts( " bx  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
+                        case CX:  M_GR_CX (regval16); kterm_puts( " cx  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
+                        case DX:  M_GR_DX (regval16); kterm_puts( " dx  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
                         case AL:  M_GR_AL (regval8);  kterm_puts( " al  = " ); kterm_puth( regval8  ); kterm_putc( '\n' ); break;
                         case AH:  M_GR_AH (regval8);  kterm_puts( " ah  = " ); kterm_puth( regval8  ); kterm_putc( '\n' ); break;
                         case SS:  M_GR_SS (regval16); kterm_puts( " ss  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
