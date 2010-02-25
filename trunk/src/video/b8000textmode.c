@@ -54,16 +54,16 @@ void textmode_window_putc( B8000_TEXTMODE_WINDOW* w, unsigned char c ) {
     }
     else if (c == '\n') {
         w->pos += (w->width - ((w->pos - w->first_pos) % w->width));
-        //w->pos = w->first_pos + (ROW_OF(w) * w->width);
-//        w->pos = ((u32)w->pos / (u32)(w->width * 16)) * w->width * 16;  // essentially, advance to start of next row
     }
     else if (c == '\t') {
         for (i = 0; i < 4; i++)
             textmode_window_putc( w, ' ' );
     }
     else if (c == '\b') {
-        if (w->pos > w->first_pos)
+        if (w->pos > w->first_pos) {
             w->pos--;
+            WRITE_CHAR_AT( (w->attrs | (u16)' '), w->pos );
+        }
     }
     else if (c >= ' ') {
         WRITE_CHAR_AT( (w->attrs | (u16)c), w->pos );
@@ -90,6 +90,76 @@ void textmode_window_cls( B8000_TEXTMODE_WINDOW* w ) {
 void textmode_window_puts( B8000_TEXTMODE_WINDOW* w, char* s ) {
        while (*s)
         textmode_window_putc( w, *s++ );
+}
+
+
+int textmode_window_putchar( B8000_TEXTMODE_WINDOW* w, int c ) {
+    textmode_window_putc( w, (unsigned char)c );
+    return c;
+}
+
+
+/* static buffer for the decimal string, and a pointer to the first element in 'c' where a valid digit exists, since we'll build this backwards */
+char int_buff[11];
+
+void textmode_window_puti( B8000_TEXTMODE_WINDOW* w, unsigned int i ) {
+    int_buff[10] = '\0';
+
+    u8 last_digit = 10;
+
+    if (i == 0)
+        int_buff[--last_digit] = '0';
+    else
+        while (i) {
+            int_buff[--last_digit] = '0' + (i % 10);
+            i = i / 10;
+        }
+
+    textmode_window_puts( w, (char*)(int_buff + last_digit) );
+}
+
+
+#define M_textmode_put_digit(w,X)                       \
+    switch (X) {                                        \
+        case 0: textmode_window_putc(w,'0'); break;     \
+        case 1: textmode_window_putc(w,'1'); break;     \
+        case 2: textmode_window_putc(w,'2'); break;     \
+        case 3: textmode_window_putc(w,'3'); break;     \
+        case 4: textmode_window_putc(w,'4'); break;     \
+        case 5: textmode_window_putc(w,'5'); break;     \
+        case 6: textmode_window_putc(w,'6'); break;     \
+        case 7: textmode_window_putc(w,'7'); break;     \
+        case 8: textmode_window_putc(w,'8'); break;     \
+        case 9: textmode_window_putc(w,'9');            \
+    }
+ 
+
+void textmode_window_put_dec( B8000_TEXTMODE_WINDOW* w, unsigned int n ) {
+    int i, j;
+
+    for (i = 9; i > 0; i--) {
+        j = upow( 10, i );
+        if (n >= j) {
+            M_textmode_put_digit( w, n / j );
+            j = n % j;
+        }
+    }
+
+    M_textmode_put_digit( w, n % 10 );
+}
+
+
+/* Given a single unsigned byte, textmode_putc its value as two hex digits */
+void textmode_window_put_hexbyte( B8000_TEXTMODE_WINDOW* w, u8 byte ) {
+    if ((byte >> 4) < 10)
+        textmode_window_putc( w, (byte >> 4) + 48 );
+    else
+        textmode_window_putc( w, (byte >> 4) - 10 + 97 );
+
+    if ((byte & 0x0f) < 10)
+        textmode_window_putc( w, (byte & 0x0f) + 48 );
+    else
+        textmode_window_putc( w, (byte & 0x0f) - 10 + 97 );
 }
 
 
@@ -129,7 +199,7 @@ void textmode_set_location( u8 row, u8 column ) {
 
 
 int textmode_putchar( int c ) {
-    textmode_putc( (unsigned char)c );
+    textmode_window_putc( &default_window, (unsigned char)c );
     return c;
 }
 
@@ -141,27 +211,12 @@ void textmode_putc( char c ) {
 
 void textmode_puts( char *s ) {
     while (*s)
-        textmode_putc( *s++ );
+        textmode_window_putc( &default_window, *s++ );
 }
 
 
-/* static buffer for the decimal string, and a pointer to the first element in 'c' where a valid digit exists, since we'll build this backwards */
-char int_buff[11];
-
 void textmode_puti( unsigned int i ) {
-    int_buff[10] = '\0';
-
-    u8 last_digit = 10;
-
-    if (i == 0)
-        int_buff[--last_digit] = '0';
-    else
-        while (i) {
-            int_buff[--last_digit] = '0' + (i % 10);
-            i = i / 10;
-        }
-
-    textmode_puts( (char*)(int_buff + last_digit) );
+    textmode_window_puti( &default_window, i );
 }
 
 
@@ -175,45 +230,12 @@ void textmode_cls( void ) {
     textmode_window_cls( &default_window );
 }
 
-#define M_textmode_put_digit(X)                              \
-    switch (X) {                                             \
-        case 0: textmode_putc('0'); break;                   \
-        case 1: textmode_putc('1'); break;                   \
-        case 2: textmode_putc('2'); break;                   \
-        case 3: textmode_putc('3'); break;                   \
-        case 4: textmode_putc('4'); break;                   \
-        case 5: textmode_putc('5'); break;                   \
-        case 6: textmode_putc('6'); break;                   \
-        case 7: textmode_putc('7'); break;                   \
-        case 8: textmode_putc('8'); break;                   \
-        case 9: textmode_putc('9');                          \
-    }
- 
 
 void textmode_put_dec( unsigned int n ) {
-    int i, j;
-
-    for (i = 9; i > 0; i--) {
-        j = upow( 10, i );
-        if (n >= j) {
-            M_textmode_put_digit( n / j );
-            j = n % j;
-        }
-    }
-
-    M_textmode_put_digit( n % 10 );
+    textmode_window_put_dec( &default_window, n );
 }
 
 
-/* Given a single unsigned byte, textmode_putc its value as two hex digits */
-void textmode_put_hexbyte( _U8 byte ) {
-    if ((byte >> 4) < 10)
-        textmode_putc( (byte >> 4) + 48 );
-    else
-        textmode_putc( (byte >> 4) - 10 + 97 );
-
-    if ((byte & 0x0f) < 10)
-        textmode_putc( (byte & 0x0f) + 48 );
-    else
-        textmode_putc( (byte & 0x0f) - 10 + 97 );
+void textmode_put_hexbyte( u8 byte ) {
+    textmode_window_put_hexbyte( &default_window, byte );
 }
