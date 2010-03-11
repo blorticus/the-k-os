@@ -1,4 +1,3 @@
-#include <video/b8000textmode.h>
 #include <video/kterm.h>
 #include <sys/boot.h>
 #include <sys/asm.h>

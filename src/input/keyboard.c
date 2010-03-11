@@ -2,7 +2,6 @@
 #include <idt.h>
 #include <irq.h>
 #include <sys/types.h>
-#include <video/b8000textmode.h>
 #include <sys/asm.h>
 
 

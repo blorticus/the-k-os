@@ -1,4 +1,3 @@
-#include <video/b8000textmode.h>
 #include <sys/types.h>
 #include <stdio.h>
 
