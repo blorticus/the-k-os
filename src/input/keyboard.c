@@ -4,7 +4,6 @@
 #include <sys/types.h>
 #include <video/b8000textmode.h>
 #include <sys/asm.h>
-//#include <sys/structs.h>
 
 
 char us101_scancodes[] = {
