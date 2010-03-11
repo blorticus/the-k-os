@@ -32,6 +32,19 @@ enum TEXTMODE_COLOR
 };
 
 
+#ifdef TEST
+    extern void TEST_b8000_write_char_at( u16 offset, u16 colors, char c );
+    extern void* TEST_b8000_derive_screen_base_ptr( void );
+    #define M_B8000_write_char_at(offset,colors,c) (TEST_b8000_write_char_at( offset, colors, c ))
+    #define TEXTMODE_BASE_MEM   (TEST_b8000_derive_screen_base_ptr())
+#else
+    #define M_B8000_write_char_at(offset,colors,c) (*((u16*)((u16*)(0xB8000) + offset)) = ((u16)(colors << 8)) | (u16)c)
+    #define TEXTMODE_BASE_MEM    0xB8000
+#endif
+
+
+void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back );
+
 typedef struct b8000_textmode_window {
     u8 width;
     u16 attrs;
@@ -45,12 +58,18 @@ typedef struct b8000_textmode_window {
  * Public methods
  **/
 
+#define make_b8000_colors( fgcolor, bgcolor ) ((u8)((bgcolor << 4) | fgcolor))
+
 void init_textmode_window( B8000_TEXTMODE_WINDOW* w, u8 start_row, u8 window_height, u8 window_width, u8 colors );
 void textmode_window_scroll( B8000_TEXTMODE_WINDOW* w );
 void textmode_window_putc( B8000_TEXTMODE_WINDOW* w, unsigned char c );
 void textmode_window_set_pos( B8000_TEXTMODE_WINDOW* w, u8 row, u8 col );
 void textmode_window_cls( B8000_TEXTMODE_WINDOW* w );
 void textmode_window_puts( B8000_TEXTMODE_WINDOW* w, char* s );
+int  textmode_window_putchar( B8000_TEXTMODE_WINDOW* w, int c );
+void textmode_window_puti( B8000_TEXTMODE_WINDOW* w, unsigned int i );
+void textmode_window_put_dec( B8000_TEXTMODE_WINDOW* w, unsigned int n );
+void textmode_window_put_hexbyte( B8000_TEXTMODE_WINDOW* w, u8 byte );
 
 
 
