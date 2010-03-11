@@ -106,13 +106,13 @@ void fault_handler(struct regs *r)
 {
     if (r->int_no < 32)
     {
-        textmode_puts(exception_messages[r->int_no]);
-        textmode_puts(" Exception. System Halted!\n");
+//        textmode_puts(exception_messages[r->int_no]);
+//        textmode_puts(" Exception. System Halted!\n");
 //        for (;;);
     }
 }
 
 
 void print_isr_trap( void ) {
-    textmode_puts( "Trapped ISR\n" );
+//    textmode_puts( "Trapped ISR\n" );
 }
