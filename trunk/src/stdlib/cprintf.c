@@ -68,7 +68,7 @@ static unsigned int itoa( const char* buf, long value, unsigned int base, unsign
 
 
 char buf[20];
-int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
+int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, ... ) {
     const char** next_vararg = &fmt + 1;
 
     unsigned int printed_chars = 0;
@@ -84,14 +84,14 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
     while (*p) {
         padding = 0;
         if (*p != '%') {
-            putchar_f( *p++ );
+            putchar_f( *p++, putchar_args );
             printed_chars++;
         }
         else {
             inner:
             switch (*++p) {
                 case '%':
-                    putchar_f( '%' );
+                    putchar_f( '%', putchar_args );
                     printed_chars++;
                     break;
 
@@ -125,7 +125,7 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
                 case 'c':
                     c = *((char*)next_vararg);
                     next_vararg++;
-                    putchar_f( c );
+                    putchar_f( c, putchar_args );
                     printed_chars++;
                     break;
 
@@ -135,12 +135,12 @@ int cprintf( void (*putchar_f)(int), const char *fmt, ... ) {
 
                     print_string:
                         while (padding-- > 0) {
-                            putchar_f( ' ' );
+                            putchar_f( ' ', putchar_args );
                             printed_chars++;
                         }
 
                         while (*s) {
-                            putchar_f( *s++ );
+                            putchar_f( *s++, putchar_args );
                             printed_chars++;
                         }
 
