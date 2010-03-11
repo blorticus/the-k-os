@@ -1,11 +1,11 @@
 #include <video/vga.h>
 #include <sys/types.h>
 
-void textmode_simple_putc( char c, _U16 row, _U16 col ) {
-    _U16* memptr;
+void textmode_simple_putc( char c, u16 row, u16 col ) {
+    u16* memptr;
 
-    memptr = (_U16 *)TEXTMODE_BASE_MEM + row * 80 + col;
-    *memptr = 0x0f00 | (_U16)c;
+    memptr = (u16 *)TEXTMODE_BASE_MEM + row * 80 + col;
+    *memptr = 0x0f00 | (u16)c;
 }
 
 

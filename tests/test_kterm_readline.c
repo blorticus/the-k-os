@@ -23,6 +23,27 @@ int getchar( void ) {
     }
 }
 
+// When TEST is defined, this is used for "putchar" like functions in b8000 textmode
+#define SCREEN_WIDTH 6
+#define SCREEN_HEIGHT 5
+#define SCREEN_SIZE (SCREEN_WIDTH * SCREEN_HEIGHT)
+
+/* make the actual screen buffer a little larger than the "screen" matrix to verify
+ * that operations don't write past the end of the "screen" */
+#define SCREEN_BUFFER_SIZE SCREEN_SIZE + SCREEN_WIDTH
+
+u16 screen[SCREEN_BUFFER_SIZE];
+
+void TEST_b8000_write_char_at( u16 offset, u16 colors, char c ) {
+    screen[offset] = ((u16)(colors << 8)) | (u16)c;
+}
+
+void* TEST_b8000_derive_screen_base_ptr( void ) {
+    return screen;
+}
+
+
+
 
 /* to see what was last inserted via textmode_putc(), set a buffer to receive the results via
  * set_textmode_putc_receiver(), giving it the buffer pointer and the buffer length.  textmode_putc()
