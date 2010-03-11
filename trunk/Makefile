@@ -17,10 +17,11 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 # -- COMPILER ARGS
 # --
-ASM := /usr/bin/nasm
-INCLUDES := -I./include -I./include/stdlib
-CC_FLAGS := -fno-builtin -nostdinc -Wall -g
-MAKEFLAGS=-e
+ASM = /usr/bin/nasm
+INCLUDES = -I./include -I./include/stdlib
+CC_FLAGS = -fno-builtin -nostdinc -Wall -g
+MAKEFLAGS = -e
+DEFS := $(ADD_DEFS)
 
 
 # -- TARGET SYMBOLS
@@ -114,18 +115,18 @@ irq.o: src/irq.c
 
 # TARGET: build textmode "driver" for B8000 memory access mode
 vga.o: math.o src/video/vga.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o vga.o src/video/vga.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o vga.o src/video/vga.c
 
-vga_test.o: math.o src/video/vga.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o vga_test.o src/video/vga.c
+#vga_test.o: math.o src/video/vga.c
+#	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o vga_test.o src/video/vga.c
 
 
 # TARGET: build primitive terminal library
 kterm.o: src/video/kterm.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kterm.o src/video/kterm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o kterm.o src/video/kterm.c
 
-kterm_test.o: src/video/kterm.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o kterm_test.o src/video/kterm.c
+#kterm_test.o: src/video/kterm.c
+#	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o kterm_test.o src/video/kterm.c
 
 
 # TARGET: build math library
