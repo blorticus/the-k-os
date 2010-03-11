@@ -1,5 +1,5 @@
 #include <idt.h>
-#include <video/b8000textmode.h>
+#include <sys/types.h>
 
 /* This is a very repetitive function... it's not hard, it's
 *  just annoying. As you can see, we set the first 32 entries

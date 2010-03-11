@@ -29,8 +29,8 @@ KMAIN_LD := link/kmain.ld
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o b8000textmode.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o reboot.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o b8000textmode.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o reboot.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+kernel.bin: start.o math.o vga.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o reboot.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o vga.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o reboot.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -113,11 +113,11 @@ irq.o: src/irq.c
 
 
 # TARGET: build textmode "driver" for B8000 memory access mode
-b8000textmode.o: math.o src/video/b8000textmode.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o b8000textmode.o src/video/b8000textmode.c
+vga.o: math.o src/video/vga.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o vga.o src/video/vga.c
 
-b8000textmode_test.o: math.o src/video/b8000textmode.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o b8000textmode_test.o src/video/b8000textmode.c
+vga_test.o: math.o src/video/vga.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o vga_test.o src/video/vga.c
 
 
 # TARGET: build primitive terminal library

@@ -1,4 +1,4 @@
-#include <video/b8000textmode.h>
+#include <video/vga.h>
 #include <sys/types.h>
 #include <stdio.h>
 

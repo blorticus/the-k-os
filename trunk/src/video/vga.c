@@ -1,4 +1,4 @@
-#include <video/b8000textmode.h>
+#include <video/vga.h>
 #include <sys/types.h>
 
 void textmode_simple_putc( char c, _U16 row, _U16 col ) {
