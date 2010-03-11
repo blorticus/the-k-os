@@ -116,10 +116,16 @@ irq.o: src/irq.c
 b8000textmode.o: math.o src/video/b8000textmode.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o b8000textmode.o src/video/b8000textmode.c
 
+b8000textmode_test.o: math.o src/video/b8000textmode.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o b8000textmode_test.o src/video/b8000textmode.c
+
 
 # TARGET: build primitive terminal library
 kterm.o: src/video/kterm.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kterm.o src/video/kterm.c
+
+kterm_test.o: src/video/kterm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o kterm_test.o src/video/kterm.c
 
 
 # TARGET: build math library

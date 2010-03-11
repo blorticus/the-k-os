@@ -3,14 +3,14 @@
 #include <sys/asm.h>
 #include <math.h>
 
-#define TEXTMODE_BASE_MEM    0xB8000
+//#define TEXTMODE_BASE_MEM    0xB8000
 
-#ifdef TEST
-    extern void TEST_b8000_write_char_at( u16 c_with_attr, void* memptr );
-    #define WRITE_CHAR_AT(c,ptr) (TEST_b8000_write_char_at( c, memptr ))
-#else
-    #define WRITE_CHAR_AT(c,ptr) (*(ptr) = (c))
-#endif
+//#ifdef TEST
+//    extern void TEST_b8000_write_char_at( u16 c_with_attr, void* memptr );
+//    #define WRITE_CHAR_AT(c,ptr) (TEST_b8000_write_char_at( c, memptr ))
+//#else
+//    #define WRITE_CHAR_AT(c,ptr) (*(ptr) = (c))
+//#endif
 
 
 void textmode_simple_putc( char c, _U16 row, _U16 col ) {
@@ -31,6 +31,22 @@ void init_textmode_window( B8000_TEXTMODE_WINDOW* w, u8 start_row, u8 window_hei
 }
 
 
+/*
+ * Starting at first_pos (offset from start of textmode memory) copy characters through last_pos back copy_back
+ * positions.  If copy_back > first_pos , or first_pos > last_pos, silently return.
+ */
+void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back ) {
+    if (copy_back > first_pos)
+        return;
+
+    u16* dest = (u16*)((u16*)(TEXTMODE_BASE_MEM) + first_pos - copy_back);
+    u16* src  = (u16*)((u16*)(TEXTMODE_BASE_MEM) + first_pos);
+
+    while (first_pos++ <= last_pos)
+        *dest++ = *src++;
+}
+
+
 void textmode_window_scroll( B8000_TEXTMODE_WINDOW* w ) {
     u16* d = w->first_pos;
     u16* s = w->first_pos + w->width;
@@ -45,7 +61,6 @@ void textmode_window_scroll( B8000_TEXTMODE_WINDOW* w ) {
 }
 
 
-#define ROW_OF(w) (((w->pos - w->first_pos) / 16 / w->width) + 1)
 void textmode_window_putc( B8000_TEXTMODE_WINDOW* w, unsigned char c ) {
     int i;
 
@@ -62,11 +77,13 @@ void textmode_window_putc( B8000_TEXTMODE_WINDOW* w, unsigned char c ) {
     else if (c == '\b') {
         if (w->pos > w->first_pos) {
             w->pos--;
-            WRITE_CHAR_AT( (w->attrs | (u16)' '), w->pos );
+//            WRITE_CHAR_AT( (w->attrs | (u16)' '), w->pos );
+//            M_B8000_write_char_at( w->pos, w->attrs, ' ' );
         }
     }
     else if (c >= ' ') {
-        WRITE_CHAR_AT( (w->attrs | (u16)c), w->pos );
+//        WRITE_CHAR_AT( (w->attrs | (u16)c), w->pos );
+//        M_B8000_write_char_at( w->pos, w->attrs, c );
         if (++w->pos > w->last_pos)
             textmode_window_scroll( w );
     }

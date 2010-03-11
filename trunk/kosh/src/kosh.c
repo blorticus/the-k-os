@@ -6,6 +6,10 @@
 
 #define INPUT_BUFFER_SIZE   100
 
+kterm_window w1, w2;
+KTERM_WINDOW top_win    = &w1;
+KTERM_WINDOW bottom_win = &w2;
+
 char input_buffer[INPUT_BUFFER_SIZE];
 
 struct regs {
@@ -26,23 +30,23 @@ struct regs {
 }__attribute__((packed));
 
 void dumpregs(struct regs r) {
-    kterm_printf("eax = %8x    ebx = %8x    ecx = %8x    edx = %8x\nesp = %8x    ebp = %8x    esi = %8x    edi = %8x\nss  = %8x    ds  = %8x    es  = %8x    fs  = %8x\ngs  = %8x\n",
-                 r.eax, r.ebx, r.ecx, r.edx, r.esp, r.ebp, r.esi, r.edi, r.ss, r.ds, r.es, r.fs, r.gs );
+    kterm_window_printf( top_win, "eax = %8x    ebx = %8x    ecx = %8x    edx = %8x\nesp = %8x    ebp = %8x    esi = %8x    edi = %8x\nss  = %8x    ds  = %8x    es  = %8x    fs  = %8x\ngs  = %8x\n",
+                         r.eax, r.ebx, r.ecx, r.edx, r.esp, r.ebp, r.esi, r.edi, r.ss, r.ds, r.es, r.fs, r.gs );
 }
 
 kosh_instruction* prompt( void ) {
     kosh_instruction* instruction;
 
     for ( ;; ) {
-        kterm_printf( "KoSH> " );
-        kterm_readline( input_buffer, INPUT_BUFFER_SIZE );
+        kterm_window_printf( top_win, "KoSH> " );
+        kterm_window_readline( top_win, input_buffer, INPUT_BUFFER_SIZE );
         instruction = input_to_instruction( input_buffer );
 
         if (instruction->command == _ERROR_) {
-            kterm_printf( "ERROR: %s\n", instruction->error );
+            kterm_window_printf( top_win, "ERROR: %s\n", instruction->error );
         }
         else if (instruction->command == _EMPTY_) {
-            kterm_printf( "_EMPTY_\n" );
+            kterm_window_printf( top_win, "_EMPTY_\n" );
         }
         else {
             break;
@@ -61,7 +65,7 @@ kosh_instruction* prompt( void ) {
 void puts_bios_drive_info( u32 drive_info ) {
     u8 drive = (u8)(drive_info >> 24);
 
-    kterm_printf( "drive %x [%s], partition %x:%x:%x",
+    kterm_window_printf( top_win, "drive %x [%s], partition %x:%x:%x",
                         drive,
                         (drive == 0x00 ? "fd0" : (drive == 0x01 ? "fd1" : (drive == 0x80 ? "hd0" : (drive == 0x81 ? "hd1" : "unknown")))),
                         (u8)(drive_info >> 16),
@@ -98,7 +102,9 @@ int main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
 
-    kterm_create();
+    // kterm MUST BE initialized
+    kterm_dup_root_window( top_win );
+    kterm_window_cls( top_win );
 
     do {
         next_instruction = prompt();
@@ -106,8 +112,8 @@ int main( void ) {
         /* should not get _ERROR_ or _EMPTY_ from the call to prompt() */
         switch (next_instruction->command) {
             case ECHO:
-                kterm_puts( next_instruction->remaining_command_line );  /* will include inputed newline */
-                kterm_putc( '\n' );
+                kterm_window_puts( top_win, next_instruction->remaining_command_line );  /* will include inputed newline */
+                kterm_window_putc( top_win, '\n' );
                 break;
 
             case PEEK:
@@ -117,37 +123,37 @@ int main( void ) {
                     u8  regval8;
 
                     switch (next_instruction->reg) {
-                        case EAX: M_GR_EAX(regval32); kterm_puts( " eax = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
-                        case EBX: M_GR_EBX(regval32); kterm_puts( " ebx = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
-                        case ECX: M_GR_ECX(regval32); kterm_puts( " ecx = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
-                        case EDX: M_GR_EDX(regval32); kterm_puts( " edx = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
-                        case AX:  M_GR_AX (regval16); kterm_puts( " ax  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case BX:  M_GR_BX (regval16); kterm_puts( " bx  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case CX:  M_GR_CX (regval16); kterm_puts( " cx  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case DX:  M_GR_DX (regval16); kterm_puts( " dx  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case AL:  M_GR_AL (regval8);  kterm_puts( " al  = " ); kterm_puth( regval8  ); kterm_putc( '\n' ); break;
-                        case AH:  M_GR_AH (regval8);  kterm_puts( " ah  = " ); kterm_puth( regval8  ); kterm_putc( '\n' ); break;
-                        case SS:  M_GR_SS (regval16); kterm_puts( " ss  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case CS:  M_GR_CS (regval16); kterm_puts( " cs  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case DS:  M_GR_DS (regval16); kterm_puts( " ds  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case ES:  M_GR_ES (regval16); kterm_puts( " es  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case FS:  M_GR_FS (regval16); kterm_puts( " fs  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case GS:  M_GR_GS (regval16); kterm_puts( " gs  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
-                        case ESP: M_GR_ESP(regval32); kterm_puts( " esp = " ); kterm_puth( regval32 ); kterm_putc( '\n' ); break;
-                        case SP:  M_GR_SP (regval16); kterm_puts( " sp  = " ); kterm_puth( regval16 ); kterm_putc( '\n' ); break;
+                        case EAX: M_GR_EAX(regval32); kterm_window_puts( top_win, " eax = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
+                        case EBX: M_GR_EBX(regval32); kterm_window_puts( top_win, " ebx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
+                        case ECX: M_GR_ECX(regval32); kterm_window_puts( top_win, " ecx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
+                        case EDX: M_GR_EDX(regval32); kterm_window_puts( top_win, " edx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
+                        case AX:  M_GR_AX (regval16); kterm_window_puts( top_win, " ax  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case BX:  M_GR_BX (regval16); kterm_window_puts( top_win, " bx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case CX:  M_GR_CX (regval16); kterm_window_puts( top_win, " cx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case DX:  M_GR_DX (regval16); kterm_window_puts( top_win, " dx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case AL:  M_GR_AL (regval8);  kterm_window_puts( top_win, " al  = " ); kterm_window_puth( top_win, regval8  ); kterm_window_putc( top_win, '\n' ); break;
+                        case AH:  M_GR_AH (regval8);  kterm_window_puts( top_win, " ah  = " ); kterm_window_puth( top_win, regval8  ); kterm_window_putc( top_win, '\n' ); break;
+                        case SS:  M_GR_SS (regval16); kterm_window_puts( top_win, " ss  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case CS:  M_GR_CS (regval16); kterm_window_puts( top_win, " cs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case DS:  M_GR_DS (regval16); kterm_window_puts( top_win, " ds  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case ES:  M_GR_ES (regval16); kterm_window_puts( top_win, " es  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case FS:  M_GR_FS (regval16); kterm_window_puts( top_win, " fs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case GS:  M_GR_GS (regval16); kterm_window_puts( top_win, " gs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case ESP: M_GR_ESP(regval32); kterm_window_puts( top_win, " esp = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
+                        case SP:  M_GR_SP (regval16); kterm_window_puts( top_win, " sp  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
 
-                        default : kterm_puts( "Code Incomplete For That Register\n" );
+                        default : kterm_window_puts( top_win, "Code Incomplete For That Register\n" );
                     }
                 }
                 else if (next_instruction->flags & KOSH_INSTRUCTION_FLAG_MEMADDR_SET) {
                     u32 val = *((u32*)(next_instruction->memory_location));
-                    kterm_puts( "addr (" ); kterm_puth( next_instruction->memory_location ); kterm_puts( ") = " ); kterm_puth( val ); kterm_putc( '\n' );
+                    kterm_window_puts( top_win, "addr (" ); kterm_window_puth( top_win, next_instruction->memory_location ); kterm_window_puts( top_win, ") = " ); kterm_window_puth( top_win, val ); kterm_window_putc( top_win, '\n' );
                 }
 
                 break;
 
             case POKE:
-                kterm_puts( "poke\n" );
+                kterm_window_puts( top_win, "poke\n" );
                 break;
 
             case DUMPREGS:
@@ -164,28 +170,28 @@ int main( void ) {
                 break;
 
             case HELP:
-                kterm_puts( " echo <text>       - repeat <text>\n" );
-                kterm_puts( " peek <reg|mem>    - see value at register <reg> or memory location 0x<mem>\n" );
-                kterm_puts( " poke <reg|mem>    - change value at register <reg> or memory location 0x<mem>\n" );
-                kterm_puts( " regs              - dump all register values\n" );
-                kterm_puts( " bios              - prints out relocated bios values\n" );
-                kterm_puts( " int               - activates interrupt diagnostics\n" );
+                kterm_window_puts( top_win, " echo <text>       - repeat <text>\n" );
+                kterm_window_puts( top_win, " peek <reg|mem>    - see value at register <reg> or memory location 0x<mem>\n" );
+                kterm_window_puts( top_win, " poke <reg|mem>    - change value at register <reg> or memory location 0x<mem>\n" );
+                kterm_window_puts( top_win, " regs              - dump all register values\n" );
+                kterm_window_puts( top_win, " bios              - prints out relocated bios values\n" );
+                kterm_window_puts( top_win, " int               - activates interrupt diagnostics\n" );
                 break;
 
             case BIOS:
                 mri = retrieve_multiboot_relocate_info();
-                kterm_printf( "lower mem = %i\n", mri->mem_lower_size_kB );
-                kterm_printf( "upper mem = %i\n", mri->mem_upper_size_kB );
-                kterm_printf( "total mem = %i MB\n", (((mri->mem_lower_size_kB + mri->mem_upper_size_kB) / 1000) + 1) );
-                kterm_printf( "cmdline   = %s\n", mri->cmdline_ptr       );
-                kterm_printf( "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_printf( "\n" );
-                kterm_printf( "length of mmap entries = %d bytes starting at %x\n", mri->mmap_length, mri->mmap_addr );
+                kterm_window_printf( top_win, "lower mem = %i\n", mri->mem_lower_size_kB );
+                kterm_window_printf( top_win, "upper mem = %i\n", mri->mem_upper_size_kB );
+                kterm_window_printf( top_win, "total mem = %i MB\n", (((mri->mem_lower_size_kB + mri->mem_upper_size_kB) / 1000) + 1) );
+                kterm_window_printf( top_win, "cmdline   = %s\n", mri->cmdline_ptr       );
+                kterm_window_printf( top_win, "bootdev   = " ); puts_bios_drive_info( mri->boot_device ); kterm_window_printf( top_win, "\n" );
+                kterm_window_printf( top_win, "length of mmap entries = %d bytes starting at %x\n", mri->mmap_length, mri->mmap_addr );
                 struct multiboot_mmap_entry* next_mmap_entry = (struct multiboot_mmap_entry*)mri->mmap_addr;
                 u32 traversed = 0;
 
                 if (mri->mmap_length) {
                       while (traversed < mri->mmap_length) {
-                        kterm_printf( "  -- size = %d, base_addr = %x:%x, length = %d:%d, type = %d\n",
+                        kterm_window_printf( top_win, "  -- size = %d, base_addr = %x:%x, length = %d:%d, type = %d\n",
                                       next_mmap_entry->entry_size, next_mmap_entry->base_addr_high, next_mmap_entry->base_addr_low,
                                       next_mmap_entry->length_high, next_mmap_entry->length_low, next_mmap_entry->type );
                         traversed += next_mmap_entry->entry_size + 4;   // +4 because of the size, which isn't part of entry
@@ -196,7 +202,7 @@ int main( void ) {
                 break;
 
             case INTDIAG:
-                kterm_puts( "\nSTART DIAG ... " );
+                kterm_window_puts( top_win, "\nSTART DIAG ... " );
                 break;
 
             default:
