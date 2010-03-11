@@ -1,6 +1,8 @@
 #include <lcheck.h>
 #include <stdio.h>
 
+#define NULL ((char*)'\0')
+
 //int cprintf( void (*putchar_f)(int), const char *fmt, ... )
 
 char local_buf[100];
@@ -14,12 +16,12 @@ void reset_putchar_buf( void ) {
     bptr = 0;
 }
 
-void t_putchar( int c ) {
+void t_putchar( int c, ... ) {
     local_buf[bptr++] = (char)c;
 }
 
 
-#define local_printf(format, ...) cprintf(t_putchar, format, ## __VA_ARGS__)
+#define local_printf(format, ...) cprintf(t_putchar, NULL, format, ## __VA_ARGS__)
 
 
 int main( void ) {
@@ -29,7 +31,7 @@ int main( void ) {
     s = create_suite( "cprintf" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "" );
+    c = cprintf( t_putchar, NULL, "" );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "", 100 ) == 0,
                  "To cprintf, empty format string, no vararg params, buffer is empty" );
@@ -37,7 +39,7 @@ int main( void ) {
                  "To cprintf, empty format string, no vararg params, count is zero" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, " abc\t123\nfoo bar" );
+    c = cprintf( t_putchar, NULL, " abc\t123\nfoo bar" );
 
     fail_unless( s, __strncmp( (const char*)local_buf, " abc\t123\nfoo bar", 100 ) == 0,
                  "To cprintf, string but no formats, no vararg params, buffer is correct" );
@@ -45,7 +47,7 @@ int main( void ) {
                  "To cprintf, string but no formats, no vararg params, count is 16" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%% abc\t%%123\nfoo%% bar%%" );
+    c = cprintf( t_putchar, NULL, "%% abc\t%%123\nfoo%% bar%%" );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "% abc\t%123\nfoo% bar%", 100 ) == 0,
                  "To cprintf, string w/ percent literals only, no vararg params, buffer is correct" );
@@ -58,7 +60,7 @@ int main( void ) {
     const char* str = "foo bar";
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%d", 123 );
+    c = cprintf( t_putchar, NULL, "%d", 123 );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "123", 100 ) == 0,
                  "To cprintf, single %d, one constant, buffer is correct" );
@@ -66,7 +68,7 @@ int main( void ) {
                  "To cprintf, single %d, one constant, count is correct" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%d", -345690 );
+    c = cprintf( t_putchar, NULL, "%d", -345690 );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "-345690", 100 ) == 0,
                  "To cprintf, single %d, one constant, buffer is correct" );
@@ -74,7 +76,7 @@ int main( void ) {
                  "To cprintf, single %d, one constant, count is correct" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%i", p );
+    c = cprintf( t_putchar, NULL, "%i", p );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "0", 100 ) == 0,
                  "To cprintf, single %i, one var (value 0), buffer is correct" );
@@ -82,7 +84,7 @@ int main( void ) {
                  "To cprintf, single %d, one var (value 0), count is correct" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%x", x );
+    c = cprintf( t_putchar, NULL, "%x", x );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "ab34", 100 ) == 0,
                  "To cprintf, single %x, one var (value ab34), buffer is correct" );
@@ -90,7 +92,7 @@ int main( void ) {
                  "To cprintf, single %x, one var (value ab34), count is correct" );
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%x", (long)-3456789 );
+    c = cprintf( t_putchar, NULL, "%x", (long)-3456789 );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "ffcb40eb", 100 ) == 0,
                  "To cprintf, single %x, one value (value -3456789), buffer is correct" );
@@ -99,7 +101,7 @@ int main( void ) {
 
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "%s", "this is the %% time\n" );
+    c = cprintf( t_putchar, NULL, "%s", "this is the %% time\n" );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "this is the %% time\n", 100 ) == 0,
                  "To cprintf, single %s, literal value, buffer is correct" );
@@ -108,7 +110,7 @@ int main( void ) {
 
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, "1a%%23%i-%x%i,%s%d<>%%%x%s%c\n", -234, x, p, "this", 1576342, 0x0, str, 'a' );
+    c = cprintf( t_putchar, NULL, "1a%%23%i-%x%i,%s%d<>%%%x%s%c\n", -234, x, p, "this", 1576342, 0x0, str, 'a' );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "1a%23-234-ab340,this1576342<>%0foo bara\n", 100 ) == 0,
                  "To cprintf, string w/ percent expansions for %, i, x, d, s, c, varargs w/ vars, buffer is correct" );

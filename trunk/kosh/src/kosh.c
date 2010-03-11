@@ -6,9 +6,10 @@
 
 #define INPUT_BUFFER_SIZE   100
 
-kterm_window w1, w2;
-KTERM_WINDOW top_win    = &w1;
-KTERM_WINDOW bottom_win = &w2;
+kterm_window w1, d1, w2;
+KTERM_WINDOW top_win     = &w1;
+KTERM_WINDOW divider_win = &d1;
+KTERM_WINDOW bottom_win  = &w2;
 
 char input_buffer[INPUT_BUFFER_SIZE];
 
@@ -101,10 +102,20 @@ void puts_bios_drive_info( u32 drive_info ) {
 int main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
+    int i;
 
     // kterm MUST BE initialized
-    kterm_dup_root_window( top_win );
+//    kterm_dup_root_window( top_win );
+    kterm_create_window( top_win,     0,   20, 80 );
+    kterm_create_window( divider_win, 1600, 1, 80 );
+    kterm_create_window( bottom_win,  1680, 4, 80 );
+
     kterm_window_cls( top_win );
+    kterm_window_cls( divider_win );
+    kterm_window_cls( bottom_win );
+
+    for (i = 0; i < 80; i++)
+        kterm_window_putc( divider_win, '=' );
 
     do {
         next_instruction = prompt();

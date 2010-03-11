@@ -19,9 +19,14 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 # --
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
-CC_FLAGS = -fno-builtin -nostdinc -Wall -g
+CC_FLAGS = -fno-builtin -nostdinc -Wall
 MAKEFLAGS = -e
-DEFS := $(ADD_DEFS)
+DEFS =
+
+ifdef TESTING
+	DEFS := $(DEFS) -DTEST
+	CC_FLAGS := $(CC_FLAGS) -g
+endif
 
 
 # -- TARGET SYMBOLS
