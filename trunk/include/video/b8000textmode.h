@@ -45,77 +45,7 @@ enum TEXTMODE_COLOR
 
 void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back );
 
-typedef struct b8000_textmode_window {
-    u8 width;
-    u16 attrs;
-    u16* pos;
-    u16* first_pos;
-    u16* last_pos;
-} B8000_TEXTMODE_WINDOW;
-
-
-/*********
- * Public methods
- **/
-
 #define make_b8000_colors( fgcolor, bgcolor ) ((u8)((bgcolor << 4) | fgcolor))
-
-void init_textmode_window( B8000_TEXTMODE_WINDOW* w, u8 start_row, u8 window_height, u8 window_width, u8 colors );
-void textmode_window_scroll( B8000_TEXTMODE_WINDOW* w );
-void textmode_window_putc( B8000_TEXTMODE_WINDOW* w, unsigned char c );
-void textmode_window_set_pos( B8000_TEXTMODE_WINDOW* w, u8 row, u8 col );
-void textmode_window_cls( B8000_TEXTMODE_WINDOW* w );
-void textmode_window_puts( B8000_TEXTMODE_WINDOW* w, char* s );
-int  textmode_window_putchar( B8000_TEXTMODE_WINDOW* w, int c );
-void textmode_window_puti( B8000_TEXTMODE_WINDOW* w, unsigned int i );
-void textmode_window_put_dec( B8000_TEXTMODE_WINDOW* w, unsigned int n );
-void textmode_window_put_hexbyte( B8000_TEXTMODE_WINDOW* w, u8 byte );
-
-
-
-/* initialize video mode, setting screen to width x height, initializing pointer to at_row and at_col
- * (both start at zero, and can be width - 1 or height - 1) and setting the character color to bgcolor
- * (background) and fgcolor (foreground) */
-void textmode_init( u8 width, u8 height, u8 at_row, u8 at_col, u8 bgcolor, u8 fgcolor );
-
-
-/* default initalization.  Sets screen to 80 x 25, row and column to 0 (upper left) and light_gray on black */
-void textmode_init_default( void );
-
-
-/* put a character on the screen using the configured fg and bg colors, and the current row and column, then
- * advance column by one (which may cause row to advance and reset column to zero.  May also cause scrolling) */
-void textmode_putc( char c );
-
-
-/* put a string to the screen using the configured fg and bg colors, starting at the current row and column, then
- * advance column by length of string (see textmode_putc()) */
-void textmode_puts( char *s );
-
-
-/* put an unsigned integer */
-void textmode_puti( unsigned int i );
-
-
-/* clear the screen (actually, fill it with spaces in the current fg/bg colors) */
-void textmode_cls( void );
-
-
-/* convert unsigned byte into two hex digits and textmode_putc() them */
-void textmode_put_hexbyte( u8 byte );
-
-
-/* like libc putchar() */
-int textmode_putchar( int c );
-
-void textmode_scroll( void );
-
-
-/*********
- * Testing methods
- **/
-void textmode_put_dec( unsigned int n ); /* convert int to string output */
-
 
 
 #endif
