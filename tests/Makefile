@@ -24,8 +24,8 @@ cprintf.t: test_cprintf.c liblcheck.a cprintf.o
 kmalloc.t: test_kmalloc.c liblcheck.a kmalloc.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o kmalloc.t test_kmalloc.c ../src/memory/kmalloc.o $(LIBS)
 
-kterm.t: test_kterm.c liblcheck.a kterm_test.o
-	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -save-temps -o kterm.t test_kterm.c ../kterm_test.o ../b8000textmode_test.o $(LIBS)
+kterm.t: test_kterm.c liblcheck.a kterm.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -save-temps -o kterm.t test_kterm.c ../kterm.o ../vga.o $(LIBS)
 
 
 liblcheck.a:
@@ -43,11 +43,11 @@ string.o:
 cprintf.o:
 	$(MAKE) -C ../src/stdlib cprintf.o
 
-b8000textmode_test.o:
-	$(MAKE) -C .. b8000textmode_test.o
+vga.o:
+	$(MAKE) -C .. vga.o ADD_DEFS=-DTEST
 
-kterm_test.o: b8000textmode_test.o
-	$(MAKE) -C .. kterm_test.o
+kterm.o: vga.o
+	$(MAKE) -C .. kterm.o ADD_DEFS=-DTEST
 
 kmalloc.o:
 	$(MAKE) -C ../src/memory kmalloc.o
