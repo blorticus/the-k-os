@@ -26,6 +26,10 @@ void* TEST_b8000_derive_screen_base_ptr( void ) {
     return screen;
 }
 
+void testing_kterm_window_putc( KTERM_WINDOW w, char c ) {
+    kterm_window_putc( w, c );
+}
+
 
 /**
  * Compare the matrix of "screen" characters to the pattern string (which MUST be SCREEN_SIZE characters long).

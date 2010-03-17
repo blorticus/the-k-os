@@ -60,7 +60,7 @@ int main( void ) {
     const char* str = "foo bar";
 
     reset_putchar_buf();
-    c = cprintf( t_putchar, NULL, "%d", 123 );
+    c = cprintf( t_putchar, NULL, "%d", (long)123 );
 
     fail_unless( s, __strncmp( (const char*)local_buf, "123", 100 ) == 0,
                  "To cprintf, single %d, one constant, buffer is correct" );

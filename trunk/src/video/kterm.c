@@ -1,18 +1,39 @@
 #include <video/vga.h>
 #include <sys/types.h>
 #include <stdio.h>
+#include <video/kterm.h>
 
 
-typedef struct kterm_window {
-    u8 width;
-    u8 height;
-    u16 base_offset;
-    u16 end_offset;
-    u16 current_offset;
-    u8 colors;
-} kterm_window;
+/**
+ * The getchar() method is used by kterm_readline.  That method, as
+ * defined in stdio, pulls a character from the keyboard.  When
+ * testing, that generally won't work and probably isn't desired
+ * anyway.  If -DTESTING provided, then override getchar() with
+ * whatever method is needed for testing.
+ * Also, it may be desirable to override kterm_window_putc() for
+ * testing, so all references to that method internally use the
+ * macro M_kterm_window_putc().  This allows selective overrides.
+ **/
 
-typedef kterm_window* KTERM_WINDOW;
+#ifdef TEST
+    extern int getchar( void );
+    extern void testing_kterm_window_putc( KTERM_WINDOW w, char c );
+    #define M_kterm_window_putc(w,c) (testing_kterm_window_putc( w, c ))
+#else
+    #include <stdio.h>
+    #define M_kterm_window_putc(w,c) (kterm_window_putc( w, c ))
+#endif
+
+//typedef struct kterm_window {
+//    u8 width;
+//    u8 height;
+//    u16 base_offset;
+//    u16 end_offset;
+//    u16 current_offset;
+//    u8 colors;
+//} kterm_window;
+
+//typedef kterm_window* KTERM_WINDOW;
 static kterm_window rw;
 static KTERM_WINDOW root_window = &rw;
 
@@ -95,7 +116,7 @@ void kterm_window_putc( KTERM_WINDOW w, char c ) {
 void kterm_window_puts( KTERM_WINDOW w, const char* s ) {
     char* t = (char*)s;
     while (*t)
-        kterm_window_putc( w, *t++ );
+        M_kterm_window_putc( w, *t++ );
 }
 
 
@@ -107,18 +128,18 @@ void kterm_puts( const char* str ) {
 
 void kterm_putc( char c ) {
 //    textmode_window_putc( root_window->tm_win, c );
-    kterm_window_putc( root_window, c );
+    M_kterm_window_putc( root_window, c );
 }
 
 
 int kterm_window_putchar( KTERM_WINDOW w, int c ) {
-    kterm_window_putc( w, (unsigned char)c );
+    M_kterm_window_putc( w, (unsigned char)c );
     return c;
 }
 
 
 int kterm_putchar( int c ) {
-    kterm_window_putc( root_window, (unsigned char)c );
+    M_kterm_window_putc( root_window, (unsigned char)c );
     return c;
 }
 
@@ -188,8 +209,7 @@ void kterm_window_readline( KTERM_WINDOW w, char* buffer, unsigned int size ) {
         c = (char)getchar();
 
         if (c == '\n') {
-//            kterm_putc( c );
-            kterm_window_putc( w, c );
+            M_kterm_window_putc( w, c );
             buffer[i] = '\0';
             return;
         }
@@ -209,14 +229,12 @@ void kterm_window_readline( KTERM_WINDOW w, char* buffer, unsigned int size ) {
             buffer[i++] = c;
         }
 
-//        kterm_putc( c );
-        kterm_window_putc( w, c );
+        M_kterm_window_putc( w, c );
     }
 
     if (i == size - 1) {
         buffer[i] = '\0';
-//        kterm_putc( '\n' );
-        kterm_window_putc( w, '\n' );
+        M_kterm_window_putc( w, '\n' );
     }
 }
 
@@ -231,5 +249,5 @@ void kterm_cls( void ) {
 
 
 void kterm_window_putchar_pf( int c, char* params ) {
-    kterm_window_putc( (KTERM_WINDOW)params, (char)c );
+    M_kterm_window_putc( (KTERM_WINDOW)params, (char)c );
 }

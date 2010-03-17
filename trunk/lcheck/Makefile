@@ -3,7 +3,7 @@
 #LD := $(TOOLBIN)/ld
 #AR := $(TOOLBIN)/ar
 INCLUDES := -I.
-CC_FLAGS := -Wall -g
+CC_FLAGS := -Wall -g -arch i386
 
 
 # TARGET: build lcheck.a library

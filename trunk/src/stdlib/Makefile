@@ -1,11 +1,11 @@
-#TOOLBIN := /usr/bin
-#CC := $(TOOLBIN)/gcc
-#LD := $(TOOLBIN)/ld
 ASM := /usr/bin/nasm
-#AR := $(TOOLBIN)/ar
 INCLUDES := -I../../include -I../../include/stdlib
-CC_FLAGS := -fno-builtin -nostdinc -Wall -g
+CC_FLAGS := -fno-builtin -nostdinc -Wall
 
+ifdef TESTING
+    DEFS := $(DEFS) -DTEST
+    CC_FLAGS := $(CC_FLAGS) -g -arch i386
+endif
 
 
 # TARGET: build stdlib
