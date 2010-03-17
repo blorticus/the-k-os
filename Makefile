@@ -25,7 +25,7 @@ DEFS =
 
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
-	CC_FLAGS := $(CC_FLAGS) -g
+	CC_FLAGS := $(CC_FLAGS) -g -arch i386
 endif
 
 
@@ -167,7 +167,7 @@ clean:
 # TARGET: clean-up after debugging, removes bin, object, vm and gas asm files
 .PHONY: veryclean
 veryclean:
-	rm -f *.bin *.o *.flp *.img *.s *.S
+	rm -f *.bin *.o *.flp *.img *.s *.S *.i
 
 
 # TARGET: do nearly full clean, but skip test directory (which must call this target when it builds items)

@@ -1,10 +1,10 @@
 #TOOLBIN := /usr/bin
 #GCC := $(TOOLBIN)/gcc
-CC_FLAGS := -g -Wall
+CC_FLAGS := -g -Wall -arch i386
 INCLUDES := -I../include -I../lcheck -I../include/stdlib
 LIBS := -L../lcheck -llcheck
 
-exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kmalloc.t
+exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kmalloc.t kterm.t
 	$(MAKE) -C .. notest-distclean
 	@./cprintf.t
 	@./strntolower.t
@@ -23,7 +23,7 @@ cprintf.t: test_cprintf.c liblcheck.a cprintf.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o cprintf.t test_cprintf.c ../src/stdlib/cprintf.o $(LIBS)
 
 kmalloc.t: test_kmalloc.c liblcheck.a kmalloc.o
-	$(CC) $(CC_FLAGS) $(INCLUDES) -o kmalloc.t test_kmalloc.c ../src/memory/kmalloc.o $(LIBS)
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o kmalloc.t test_kmalloc.c ../src/memory/kmalloc.o $(LIBS)
 
 kterm.t: test_kterm.c liblcheck.a kterm.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -o kterm.t test_kterm.c ../kterm.o ../vga.o $(LIBS)

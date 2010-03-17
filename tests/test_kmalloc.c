@@ -64,12 +64,15 @@ static void make_four_mmap_entries( u32 first_addr_offset, u32 first_length, u32
 
 #define CHUNK_OFFSET(x) ((struct kmalloc_mem_element*)((u8*)memory_chunk + x))
 
-int main( void ) {
-    lcheck_suite* s;
+void p64bit_warning( lcheck_suite* s ) {
+    fail_unless( s, 1 == 0,
+                 " **** KMALLOC UNIT TESTS CURRENTLY NOT SUPPORTED ON 64-BIT PLATFORM **** " );
+}
+
+
+void perform_tests( lcheck_suite* s ) {
     int i;
     struct kmalloc_mem_element* e;
-
-    s = create_suite( "kmalloc" );
 
     // empty memory chunk
     for (i = 0; i < MEMORY_CHUNK_LENGTH; i++)
@@ -251,9 +254,20 @@ int main( void ) {
     fail_unless( s, !(e->flags & KMALLOC_ALLOCATED_BLOCK_FLAG),         "TEST 5: second element is maked as unallocated" );
     fail_unless( s, e->prev_element == prev,                            "TEST 5: second element prev_element is head" );
     fail_unless( s, e->next_element == NULL,                            "TEST 5: second element next_element is NULL" );
+}
 
-    
+
+int main( void ) {
+    lcheck_suite* s;
+
+    s = create_suite( "kmalloc" );
+
+#ifdef P64BIT
+    p64bit_warning( s );
+#else
+    perform_tests( s );
+#endif
 
     return conclude_suite( s );
-
 }
+
