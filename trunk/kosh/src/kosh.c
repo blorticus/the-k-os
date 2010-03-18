@@ -31,6 +31,45 @@ struct regs {
     u16 ss;
 }__attribute__((packed));
 
+
+static const char* CPUID_FEATURE_FIXED_LENGTH_NAMES[] = {
+     "FPU  ",
+     "VME  ",
+     "DE   ",
+     "PSE  ",
+     "TSC  ",
+     "MSR  ",
+     "PAE  ",
+     "MCE  ",
+     "CX8  ",
+     "APIC ",
+     "---- ",
+     "SEP  ",
+     "MTRR ",
+     "PGE  ",
+     "MCA  ",
+     "CMOV ",
+     "PAT  ",
+     "PSE36",
+     "PSN  ",
+     "CLFL ",
+     "---- ",
+     "DTES ",
+     "ACPI ",
+     "MMX  ",
+     "FXSR ",
+     "SSE  ",
+     "SSE2 ",
+     "SS   ",
+     "HTT  ",
+     "TM1  ",
+     "IA64 ",
+     "PBE  "
+};
+
+
+
+
 void dumpregs(struct regs r) {
     kterm_window_printf( top_win, "eax = %8x    ebx = %8x    ecx = %8x    edx = %8x\nesp = %8x    ebp = %8x    esi = %8x    edi = %8x\nss  = %8x    ds  = %8x    es  = %8x    fs  = %8x\ngs  = %8x\n",
                          r.eax, r.ebx, r.ecx, r.edx, r.esp, r.ebp, r.esi, r.edi, r.ss, r.ds, r.es, r.fs, r.gs );
@@ -104,9 +143,11 @@ int main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
     int i;
+    cpuid_retval crv;
+    int pos_count;      // for cpuid function
+
 
     // kterm MUST BE initialized
-//    kterm_dup_root_window( top_win );
     kterm_create_window( top_win,     0,   20, 80 );
     kterm_create_window( divider_win, 1600, 1, 80 );
     kterm_create_window( bottom_win,  1680, 4, 80 );
@@ -217,10 +258,21 @@ int main( void ) {
             case CPUID:
                 if (cpuid_is_supported()) {
                     kterm_window_printf( top_win, "CPUID Supported = true\n" );
-                    if (has_cpuid_feature( CPUID_FEATURES_APIC ))
-                        kterm_window_printf( top_win, "APIC = present\n" );
-                    else
-                        kterm_window_printf( top_win, "APIC = absent\n" );
+                    execute_cpuid_function( CPUID_FUNC_PROC_TYPE_STEPPING_AND_FEATURES, &crv );
+
+                    /* step through bits on crv, and if feature is present print fixed length name with +; otherwise, with a - */
+                    for (i = 0, pos_count = 0; i < 32; i++) {
+                        if (CPUID_FEATURE_FIXED_LENGTH_NAMES[i][0] != '-') { // there are some reserved bits for cpuid features.  Those are ----- in our static name, so skip them
+                            if (crv.edx >> i & 0x00000001)
+                                kterm_window_printf( top_win, "+%s ", CPUID_FEATURE_FIXED_LENGTH_NAMES[i] );
+                            else
+                                kterm_window_printf( top_win, "-%s ", CPUID_FEATURE_FIXED_LENGTH_NAMES[i] );
+
+                            if (++pos_count % 11 == 0)
+                                kterm_window_putc( top_win, '\n' );
+                        }
+                    }
+                    kterm_window_putc( top_win, '\n' );
                 }
                 else {
                     kterm_window_printf( top_win, "CPUID Supported = false\n" );
