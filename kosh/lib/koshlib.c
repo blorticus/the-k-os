@@ -29,7 +29,8 @@ typedef enum {
     POKE,           // memory location or register name
     DUMPREGS,       // dump primary registers
     INTDIAG,        // interrupt diagnostics
-    BIOS            // dump bios area
+    BIOS,           // dump bios area
+    CPUID           // show cpuid support and characteristics
 } kosh_base_command;
 
 typedef enum {
@@ -368,6 +369,16 @@ kosh_instruction* input_to_instruction( char* input ) {
         }
         else {
             instruction->command = INTDIAG;
+        }
+    }
+    else if (strcmp( token_buffer, "cpuid" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] != NULL) {
+            instruction->command = HELP;
+            instruction->error   = "Extra Input After Command";
+        }
+        else {
+            instruction->command = CPUID;
         }
     }
     else {

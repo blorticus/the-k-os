@@ -14,7 +14,8 @@ typedef enum {
     DUMPREGS,       // dump important memory registers
     BIOS,           // dump bios area of memory
     INTDIAG,        // interrupt diagnostic
-    HELP            // print help
+    HELP,           // print help
+    CPUID           // CPUID support and info
 } kosh_base_command;
 
 typedef enum {
