@@ -3,6 +3,7 @@
 #include <multiboot.h>
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/cpu.h>
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -187,6 +188,7 @@ int main( void ) {
                 kterm_window_puts( top_win, " regs              - dump all register values\n" );
                 kterm_window_puts( top_win, " bios              - prints out relocated bios values\n" );
                 kterm_window_puts( top_win, " int               - activates interrupt diagnostics\n" );
+                kterm_window_puts( top_win, " cpuid             - Show CPUID support and characteristics\n" );
                 break;
 
             case BIOS:
@@ -208,6 +210,20 @@ int main( void ) {
                         traversed += next_mmap_entry->entry_size + 4;   // +4 because of the size, which isn't part of entry
                         next_mmap_entry = (struct multiboot_mmap_entry*)((u8*)next_mmap_entry + next_mmap_entry->entry_size + 4);
                       }
+                }
+
+                break;
+
+            case CPUID:
+                if (cpuid_is_supported()) {
+                    kterm_window_printf( top_win, "CPUID Supported = true\n" );
+                    if (has_cpuid_feature( CPUID_FEATURES_APIC ))
+                        kterm_window_printf( top_win, "APIC = present\n" );
+                    else
+                        kterm_window_printf( top_win, "APIC = absent\n" );
+                }
+                else {
+                    kterm_window_printf( top_win, "CPUID Supported = false\n" );
                 }
 
                 break;
