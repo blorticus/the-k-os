@@ -2,6 +2,7 @@
 #include <sys/asm.h>
 #include <irq.h>
 #include <video/kterm.h>
+#include <pic.h>
 
 /* These are own ISRs that point to our special IRQ handler
 *  instead of the regular 'fault_handler' function */
@@ -64,26 +65,27 @@ void irq_uninstall_handler(int irq)
 *  Interrupt Controller (PICs - also called the 8259's) in
 *  order to make IRQ0 to 15 be remapped to IDT entries 32 to
 *  47 */
-void irq_remap(void)
-{
-    ioport_writeb(0x20, 0x11);
-    ioport_writeb(0xA0, 0x11);
-    ioport_writeb(0x21, 0x20);
-    ioport_writeb(0xA1, 0x28);
-    ioport_writeb(0x21, 0x04);
-    ioport_writeb(0xA1, 0x02);
-    ioport_writeb(0x21, 0x01);
-    ioport_writeb(0xA1, 0x01);
-    ioport_writeb(0x21, 0x0);
-    ioport_writeb(0xA1, 0x0);
-}
+//void irq_remap(void)
+//{
+//    ioport_writeb(0x20, 0x11);
+//    ioport_writeb(0xA0, 0x11);
+//    ioport_writeb(0x21, 0x20);
+//    ioport_writeb(0xA1, 0x28);
+//    ioport_writeb(0x21, 0x04);
+//    ioport_writeb(0xA1, 0x02);
+//    ioport_writeb(0x21, 0x01);
+//    ioport_writeb(0xA1, 0x01);
+//    ioport_writeb(0x21, 0x0);
+//    ioport_writeb(0xA1, 0x0);
+//}
 
 /* We first remap the interrupt controllers, and then we install
 *  the appropriate ISRs to the correct entries in the IDT. This
 *  is just like installing the exception handlers */
 void irq_install()
 {
-    irq_remap();
+//    irq_remap();
+    PIC_remap_irq_interrupts( 32, 40 );
 
     idt_set_gate(32, (unsigned)irq0, 0x08, 0x8E);
     idt_set_gate(33, (unsigned)irq1, 0x08, 0x8E);

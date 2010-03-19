@@ -35,8 +35,8 @@ KMAIN_LD := link/kmain.ld
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o vga.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o reboot.o cpuid.o cpu.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o vga.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o reboot.o cpu.o cpuid.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+kernel.bin: start.o math.o vga.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o reboot.o cpuid.o cpu.o pic.o
+	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o vga.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o reboot.o cpu.o cpuid.o pic.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -161,6 +161,9 @@ cpu.o: src/cpu.c
 
 cpuid.o: src/cpuid.asm
 	$(ASM) -f elf -o cpuid.o src/cpuid.asm
+
+pic.o: src/pic.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o pic.o src/pic.c
 
 
 # TARGET: clean target, removes object and bin files
