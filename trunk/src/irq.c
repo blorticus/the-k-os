@@ -4,6 +4,11 @@
 #include <video/kterm.h>
 #include <pic.h>
 
+
+/* IRQs will be remapped to different IDT entries.  They will be renumbered serially, starting with this one */
+#define IRQ_0_REMAP_ISR     32
+
+
 /* These are own ISRs that point to our special IRQ handler
 *  instead of the regular 'fault_handler' function */
 extern void irq0();
@@ -23,19 +28,6 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-static u8 DO_INTERRUPT_DIAG = 0;
-static u8 DIAG_COUNTER = 0;
-
-/* turn on interrupt diagnostic routine */
-void irq_set_diag( u8 count ) {
-    DO_INTERRUPT_DIAG = 1;
-    DIAG_COUNTER = count;
-}
-
-void irq_unset_diag() {
-    DO_INTERRUPT_DIAG = 0;
-    DIAG_COUNTER = 0;
-}
 
 /* This array is actually an array of function pointers. We use
 *  this to handle custom IRQ handlers for a given IRQ */
@@ -45,10 +37,14 @@ void *irq_routines[16] =
     0, 0, 0, 0, 0, 0, 0, 0
 };
 
+
 /* This installs a custom IRQ handler for the given IRQ */
-void irq_install_handler(int irq, void (*handler)(struct regs *r))
+irq_handler_routine irq_install_handler( int irq, irq_handler_routine handler )
+//void irq_install_handler(int irq, void (*handler)(struct regs *r))
 {
+    irq_handler_routine current_handler = irq_routines[irq];
     irq_routines[irq] = handler;
+    return current_handler;
 }
 
 /* This clears the handler for a given IRQ */
@@ -85,25 +81,24 @@ void irq_uninstall_handler(int irq)
 void irq_install()
 {
 //    irq_remap();
-    PIC_remap_irq_interrupts( 32, 40 );
+    PIC_remap_irq_interrupts( IRQ_0_REMAP_ISR, IRQ_0_REMAP_ISR + 15 );
 
-    idt_set_gate(32, (unsigned)irq0, 0x08, 0x8E);
-    idt_set_gate(33, (unsigned)irq1, 0x08, 0x8E);
-    idt_set_gate(34, (unsigned)irq2, 0x08, 0x8E);
-    idt_set_gate(35, (unsigned)irq3, 0x08, 0x8E);
-    idt_set_gate(36, (unsigned)irq4, 0x08, 0x8E);
-    idt_set_gate(37, (unsigned)irq5, 0x08, 0x8E);
-    idt_set_gate(38, (unsigned)irq6, 0x08, 0x8E);
-    idt_set_gate(39, (unsigned)irq7, 0x08, 0x8E);
-
-    idt_set_gate(40, (unsigned)irq8, 0x08, 0x8E);
-    idt_set_gate(41, (unsigned)irq9, 0x08, 0x8E);
-    idt_set_gate(42, (unsigned)irq10, 0x08, 0x8E);
-    idt_set_gate(43, (unsigned)irq11, 0x08, 0x8E);
-    idt_set_gate(44, (unsigned)irq12, 0x08, 0x8E);
-    idt_set_gate(45, (unsigned)irq13, 0x08, 0x8E);
-    idt_set_gate(46, (unsigned)irq14, 0x08, 0x8E);
-    idt_set_gate(47, (unsigned)irq15, 0x08, 0x8E);
+    idt_set_entry( IRQ_0_REMAP_ISR + 0,  (unsigned)irq0,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 1,  (unsigned)irq1,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 2,  (unsigned)irq2,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 3,  (unsigned)irq3,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 4,  (unsigned)irq4,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 5,  (unsigned)irq5,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 6,  (unsigned)irq6,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 7,  (unsigned)irq7,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 8,  (unsigned)irq8,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 9,  (unsigned)irq9,  0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 10, (unsigned)irq10, 0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 11, (unsigned)irq11, 0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 12, (unsigned)irq12, 0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 13, (unsigned)irq13, 0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 14, (unsigned)irq14, 0x08, 0x8E );
+    idt_set_entry( IRQ_0_REMAP_ISR + 15, (unsigned)irq15, 0x08, 0x8E );
 }
 
 /* Each of the IRQ ISRs point to this function, rather than
@@ -123,27 +118,10 @@ void irq_handler(struct regs *r)
 
     /* Find out if we have a custom handler to run for this
     *  IRQ, and then finally, run it */
-    handler = irq_routines[r->int_no - 32];
+    handler = irq_routines[r->int_no - IRQ_0_REMAP_ISR];
     if (handler)
-    {
-//        if (DO_INTERRUPT_DIAG) {
-//            kterm_printf( "\b\b\b%3d", r->int_no );
-//            if (--DIAG_COUNTER == 0)
-//                irq_unset_diag();
-//        }
-
         handler(r);
-    }
 
-    /* If the IDT entry that was invoked was greater than 40
-    *  (meaning IRQ8 - 15), then we need to send an EOI to
-    *  the slave controller */
-    if (r->int_no >= 40)
-    {
-        ioport_writeb(0xA0, 0x20);
-    }
-
-    /* In either case, we need to send an EOI to the master
-    *  interrupt controller too */
-    ioport_writeb(0x20, 0x20);
+    /* Must signal PIC(s) when IRQ handling completed */
+    PIC_end_of_irq_handling( r->int_no - IRQ_0_REMAP_ISR );
 }

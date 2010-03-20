@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/cpu.h>
+#include <isrs.h>
+#include <idt.h>
+#include <irq.h>
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -14,7 +17,7 @@ KTERM_WINDOW bottom_win  = &w2;
 
 char input_buffer[INPUT_BUFFER_SIZE];
 
-struct regs {
+struct kosh_regs {
     // EAX, ECX, EDX, EBX, original ESP, EBP, ESI, and EDI
     u32 edi;
     u32 esi;
@@ -70,7 +73,7 @@ static const char* CPUID_FEATURE_FIXED_LENGTH_NAMES[] = {
 
 
 
-void dumpregs(struct regs r) {
+void dumpregs(struct kosh_regs r) {
     kterm_window_printf( top_win, "eax = %8x    ebx = %8x    ecx = %8x    edx = %8x\nesp = %8x    ebp = %8x    esi = %8x    edi = %8x\nss  = %8x    ds  = %8x    es  = %8x    fs  = %8x\ngs  = %8x\n",
                          r.eax, r.ebx, r.ecx, r.edx, r.esp, r.ebp, r.esi, r.edi, r.ss, r.ds, r.es, r.fs, r.gs );
 }
@@ -139,13 +142,25 @@ void puts_bios_drive_info( u32 drive_info ) {
 #define M_GR_SP(var)       ({ asm volatile( "movw %%sp,  %0;" : "=r"(var) ); })
 
 
+irq_handler_routine ihr = 0;    // for int_diag function
+
+/* for int_diag, replace the irq0 handler with this one.  When it receives irq0, it
+ * prints a message to bottom_win, then restores the old handler, stored in
+ * the global ihr.  Not thread safe in so, so many ways */
+void int_diag_pit_handler( struct regs *r ) {
+    kterm_window_printf( bottom_win, "RECEIVED IRQ0\n" );
+
+    kterm_window_printf( bottom_win, "Reinstalling Original Handler...\n" );
+    irq_install_handler( 0, ihr );
+}
+
+
 int main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
     int i;
     cpuid_retval crv;
-    int pos_count;      // for cpuid function
-
+    int pos_count;              // for cpuid function
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -155,6 +170,8 @@ int main( void ) {
     kterm_window_cls( top_win );
     kterm_window_cls( divider_win );
     kterm_window_cls( bottom_win );
+
+    fault_handler_set_kterm_window( bottom_win );   /* if processor exception raised, print message in bottom window */
 
     for (i = 0; i < 80; i++)
         kterm_window_putc( divider_win, '=' );
@@ -281,7 +298,8 @@ int main( void ) {
                 break;
 
             case INTDIAG:
-                kterm_window_puts( top_win, "\nSTART DIAG ... " );
+                kterm_window_printf( bottom_win, "WAITING FOR IRQ0 ... " );
+                ihr = irq_install_handler( 0, &int_diag_pit_handler );
                 break;
 
             default:
