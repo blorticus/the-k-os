@@ -1,3 +1,6 @@
+#ifndef __VIDEO_KTERM_H__
+#define __VIDEO_KTERM_H__
+
 #include <sys/types.h>
 #include <stdio.h>
 
@@ -35,3 +38,5 @@ void kterm_window_putchar_pf( int c, char* params );
 
 //#define kterm_printf(fmt, ...) cprintf((void*)kterm_putchar, fmt, ## __VA_ARGS__)
 #define kterm_window_printf(w,fmt, ...) cprintf((void*)kterm_window_putchar_pf, (char*)w, fmt, ## __VA_ARGS__)
+
+#endif

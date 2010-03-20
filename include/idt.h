@@ -1,6 +1,8 @@
 #ifndef __IDT_H__
 #define __IDT_H__
 
+#include <sys/types.h>
+
 /* This defines what the stack looks like after an ISR was running */
 struct regs
 {
@@ -10,7 +12,8 @@ struct regs
     unsigned int eip, cs, eflags, useresp, ss;
 };
 
-void idt_set_gate( unsigned char num, unsigned long base, unsigned short sel, unsigned char flags );
+//void idt_set_gate( unsigned char num, unsigned long base, unsigned short sel, unsigned char flags );
+void idt_set_entry( u8 num, u32 base, u16 sel, u8 flags );
 void idt_install( void );
 void isrs_install();
 

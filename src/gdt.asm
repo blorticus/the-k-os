@@ -19,7 +19,7 @@ create_gdt:
 
 
 ; we also must make sure we're pointing to code segment, so we do a far jump (that is, we jump through a specific segment selector)
-; "far" is funny when we're jumping ahead so close
+; "far" is funny when we're jumping ahead so near
 code_jump:
     jmp 0x08:jmp_point
 
@@ -59,7 +59,7 @@ gdt_table_start:
     dw 0, 0, 0, 0
 
 
-    ;; Entry for "code" section of flat model.  Start point is 0x08
+    ;; Entry for "code" section of flat model.  Start point is 0x08.  Given limit and base, it is all of addressable memory.
     gdt_code_entry:
     dw 0xFFFF           ; limit (in 4KiB pages)
     dw 0x0000           ; base low
@@ -69,7 +69,7 @@ gdt_table_start:
     db 0                ; base high
 
 
-    ;; Entry for "data" section of flat model.  Start point is 0x10
+    ;; Entry for "data" section of flat model.  Start point is 0x10 (8 bytes after 0x08...).  Also all of addressable memory.
     dw 0xFFFF           ; limit
     dw 0x0000           ; base low
     db 0                ; base middle

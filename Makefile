@@ -22,6 +22,7 @@ INCLUDES = -I./include -I./include/stdlib
 CC_FLAGS = -fno-builtin -nostdinc -Wall
 MAKEFLAGS = -e
 DEFS =
+OBJDIR = i386-obj
 
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
@@ -35,8 +36,8 @@ KMAIN_LD := link/kmain.ld
 
 
 # TARGET: build kernel image
-kernel.bin: start.o math.o vga.o kmain.o idt.o gdt.o $(KMAIN_LD) irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kterm.o kosh.o libkoshlib.a libstd.a multiboot.o cprintf.o reboot.o cpuid.o cpu.o pic.o
-	$(LD) -T $(KMAIN_LD) -o kernel.bin start.o kmain.o math.o vga.o idt.o gdt.o irq_handlers.o isr_handlers.o isrs.o irq.o asm.o keyboard.o kosh/kosh.o kterm.o multiboot.o src/stdlib/cprintf.o reboot.o cpu.o cpuid.o pic.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+kernel.bin: $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(KMAIN_LD) $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o kosh.o libkoshlib.a libstd.a $(OBJDIR)/multiboot.o cprintf.o $(OBJDIR)/reboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o
+	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJDIR)/start.o $(OBJDIR)/kmain.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o kosh/kosh.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o src/stdlib/cprintf.o $(OBJDIR)/reboot.o $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/pic.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -80,96 +81,97 @@ libstd.a:
 
 
 # TARGET: build asm kernel entry point
-start.o: start.asm
-	$(ASM) -f elf -o start.o start.asm
+$(OBJDIR)/start.o: start.asm
+	$(ASM) -f elf -o $(OBJDIR)/start.o start.asm
 
 
 # TARGET: build C kmain() kernel entry point
-kmain.o: kmain.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o kmain.o kmain.c
+$(OBJDIR)/kmain.o: kmain.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kmain.o kmain.c
 
 
 # TARGET: build multiboot routines
-multiboot.o: src/multiboot.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o multiboot.o src/multiboot.c
+$(OBJDIR)/multiboot.o: src/multiboot.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/multiboot.o src/multiboot.c
 
 
 # TARGET: build Global Descriptor Table routines
-gdt.o: src/gdt.asm
-	$(ASM) -f elf -o gdt.o src/gdt.asm
+$(OBJDIR)/gdt.o: src/gdt.asm
+	$(ASM) -f elf -o $(OBJDIR)/gdt.o src/gdt.asm
 
 
 # TARGET: build Interrupt Descriptor Table routines
-idt.o: src/idt.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o idt.o src/idt.c
+$(OBJDIR)/idt.o: src/idt.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/idt.c
 
 
-isr_handlers.o: src/isr_handlers.asm
-	$(ASM) -f elf -o isr_handlers.o src/isr_handlers.asm
+$(OBJDIR)/isr_handlers.o: src/isr_handlers.asm
+	$(ASM) -f elf -o $(OBJDIR)/isr_handlers.o src/isr_handlers.asm
 
-irq_handlers.o: src/irq_handlers.asm
-	$(ASM) -f elf -o irq_handlers.o src/irq_handlers.asm
+$(OBJDIR)/irq_handlers.o: src/irq_handlers.asm
+	$(ASM) -f elf -o $(OBJDIR)/irq_handlers.o src/irq_handlers.asm
 
 
-isrs.o: src/isrs.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o isrs.o src/isrs.c
+$(OBJDIR)/isrs.o: src/isrs.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/isrs.o src/isrs.c
 
-irq.o: src/irq.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o irq.o src/irq.c
+$(OBJDIR)/irq.o: src/irq.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/irq.o src/irq.c
 
 
 # TARGET: build textmode "driver" for B8000 memory access mode
-vga.o: math.o src/video/vga.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o vga.o src/video/vga.c
+$(OBJDIR)/vga.o: $(OBJDIR)/math.o src/video/vga.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o $(OBJDIR)/vga.o src/video/vga.c
 
 #vga_test.o: math.o src/video/vga.c
 #	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o vga_test.o src/video/vga.c
 
 
 # TARGET: build primitive terminal library
-kterm.o: src/video/kterm.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o kterm.o src/video/kterm.c
+$(OBJDIR)/kterm.o: src/video/kterm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o $(OBJDIR)/kterm.o src/video/kterm.c
 
 #kterm_test.o: src/video/kterm.c
 #	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -c -o kterm_test.o src/video/kterm.c
 
 
 # TARGET: build math library
-math.o: src/math.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o math.o src/math.c
+$(OBJDIR)/math.o: src/math.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/math.o src/math.c
 
 
 # TARGET: build basic keyboard driver
-keyboard.o: src/input/keyboard.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o keyboard.o src/input/keyboard.c
+$(OBJDIR)/keyboard.o: src/input/keyboard.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/keyboard.o src/input/keyboard.c
 
 
 # TARGET: assembly routines that cannot be macros
-asm.o: src/asm.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o asm.o src/asm.c
+$(OBJDIR)/asm.o: src/asm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/asm.o src/asm.c
 
 
 # TARGET: string.h methods
-string.o: src/string.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o string.o src/string.c
+$(OBJDIR)/string.o: src/string.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/string.o src/string.c
 
-reboot.o: src/reboot.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o reboot.o src/reboot.c
+$(OBJDIR)/reboot.o: src/reboot.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/reboot.o src/reboot.c
 
-cpu.o: src/cpu.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o cpu.o src/cpu.c
+$(OBJDIR)/cpu.o: src/cpu.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/cpu.o src/cpu.c
 
-cpuid.o: src/cpuid.asm
-	$(ASM) -f elf -o cpuid.o src/cpuid.asm
+$(OBJDIR)/cpuid.o: src/cpuid.asm
+	$(ASM) -f elf -o $(OBJDIR)/cpuid.o src/cpuid.asm
 
-pic.o: src/pic.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o pic.o src/pic.c
+$(OBJDIR)/pic.o: src/pic.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pic.o src/pic.c
 
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
 clean:
 	rm -f *.bin *.o
+	rm -f i386-obj/*
 	rm -f src/*.bin src/*.o
 
 

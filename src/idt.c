@@ -8,17 +8,17 @@
  *      4 bits          : flags: Present bit; privilege level ("ring") 2-bit; obligatory 0 bit
  *      4 bits          : the type: Task Gate (0x5); Interrupt Gate (32-bit = 0xE); or Trap Gate (32-bit = 0xF)
  *     16 bits          : offset in target segment, high 16 bits
- * Offset in Target Segment is the memory location of the handler (in the GDT Selector Segment) for the exception hanlder of the referenced ISR slot
+ * Offset in Target Segment is the memory location of the handler (in the GDT Selector Segment) for the exception handler of the referenced ISR slot
  * An interrupt gate disables interrupts before execution of the handler and trap gates do not.
  * If the Present Bit is set to 0 for an interrupt number, and that exception is raised, the CPU will raise another exception 
  * For these structs, use ((packed)) to prevent the compiler from aligning the structures
  */
 struct idt_descriptors {
-    _U16 target_seg_offset_low;
-    _U16 gdt_code_selector;
-    _U8  zeroes;
-    _U8  type_and_flags;
-    _U16 target_seg_offset_high;
+    u16 target_seg_offset_low;
+    u16 gdt_code_selector;
+    u8  zeroes;
+    u8  type_and_flags;
+    u16 target_seg_offset_high;
 } __attribute__((packed));  
 
 
@@ -28,8 +28,8 @@ struct idt_descriptors {
  *      32 bits         : the base memory location in the current data segement for the table
  */
 struct idt_ptr {
-    _U16 limit;
-    _U32 base;
+    u16 limit;
+    u32 base;
 } __attribute__((packed));
  
 
@@ -46,8 +46,8 @@ extern void isr_do_nothing( void );
 void clear_all_isrs( void ) {
     int i;
 
-    _U16 do_nothing_low  = (_U16)(_U32)(isr_do_nothing);
-    _U16 do_nothing_high = (_U16)((_U32)(isr_do_nothing) >> 16);
+    u16 do_nothing_low  = (u16)(u32)(isr_do_nothing);
+    u16 do_nothing_high = (u16)((u32)(isr_do_nothing) >> 16);
 
     for (i = 0; i < 256; i++) {
         idt[i].gdt_code_selector      = 0x08;
@@ -59,36 +59,28 @@ void clear_all_isrs( void ) {
 }
 
 
-/* Use this function to set an entry in the IDT. Alot simpler
-*  than twiddling with the GDT ;) */
-void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
+/* Create an entry in the IDT */
+//void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
+void idt_set_entry( u8 num, u32 base, u16 sel, u8 flags)
 {
-    /* The interrupt routine's base address */
-    idt[num].target_seg_offset_low  = (unsigned short)base;
-    idt[num].target_seg_offset_high = (unsigned short)(base >> 16);
+    idt[num].target_seg_offset_low  = (u16)base;
+    idt[num].target_seg_offset_high = (u16)(base >> 16);
 
-    /* The segment or 'selector' that this IDT entry will use
-    *  is set here, along with any access flags */
     idt[num].gdt_code_selector  = sel;
-    idt[num].zeroes             = 0;
+    idt[num].zeroes             = 0x00;
     idt[num].type_and_flags     = flags;
 }
 
 /* Installs the IDT */
 void idt_install()
 {
-    /* Sets the special IDT pointer up, just like in 'gdt.c' */
     idtp.limit = (sizeof (idt)) - 1;
-    idtp.base = (_U32)&idt;
+    idtp.base  = (u32)&idt;
 
     /* Clear out the entire IDT, initializing it to zeros */
-//    memset(&idt, 0, sizeof(struct idt_entry) * 256);
     clear_all_isrs();
 
-    /* Add any new ISRs to the IDT here using idt_set_gate */
-
-
-
-    /* Points the processor's internal register to the new IDT */
+    /* from idt.asm, tell processor where IDT is located via idt_ptr */
+    // XXX: this should be possible to do inline, but I've not yet figured out how
     idt_load();
 }

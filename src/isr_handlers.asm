@@ -37,10 +37,22 @@ global isr128
 
 ;  0: Divide By Zero Exception
 isr0:
-    cli
-    push byte 0
-    push byte 0
-    jmp isr_common_stub
+    pusha
+    push gs
+    push fs
+    push es
+    push ds
+
+    pop ds
+    pop es
+    pop fs
+    pop gs
+    popa
+    iret
+;    cli
+;    push byte 0
+;    push byte 0
+;    jmp isr_common_stub
 
 ;  1: Debug Exception
 isr1:
@@ -283,8 +295,6 @@ isr128:
     iret
 
 
-; We call a C function in here. We need to let the assembler know
-; that '_fault_handler' exists in another file
 extern fault_handler
 
 ; This is our common ISR stub. It saves the processor state, sets
