@@ -1,0 +1,45 @@
+SVN:
+----
+|
+|-- trunk
+|-- milestones
+|-- branches
+
+The trunk/ is for the latest version of code.  It should be functional code.  If one wishes
+to work off the trunk/, one should cut a new branch.  Branches are currently serially numbered
+(1, 2, 3, ...).  Milestones are essentially "tagged" versions, but before the first real version.
+They are serially numbered.
+
+
+TRUNK DIRECTORIES AND FILES:
+----------------------------
+|
+|-- Makefile                    (root Makefile)
+|-- start.asm                   (kernel entry point)
+|-- kmain.c                     (primary kernel start)
+|-- bin                             (directory for Make support scripts)
+|   `-- mkimgdisk                       (used to create VM disks for boot kernel -- MUST DEFINE FOR LOCAL ENV)
+|-- boot                            (directory for bootloading support)
+|   `-- kos-silly-loader.asm            (silly 32-bit protected mode boot loader)
+|-- docs                        (document directory)
+|   |-- directories.txt             (this file)
+|   |-- overview.txt                (overview of K-OS)
+|   `-- where-to-start.txt          (brief on where to look for code)
+|-- include                     (C header files)
+|   |-- b8000textmode.h
+|   |-- math.h
+|   `-- sys
+|       |-- asm.h                   (assembly macros and other inline)
+|       `-- types.h
+|-- link                        (ld linker scripts)
+|   `-- kmain.ld                    (kernel entry linker script)
+|-- src                         (other C sources)
+|   |-- math.c                      (math functions)
+|   `-- video                       (video packages)
+|       '-- b8000textmode.c             (B8000 textmode "driver")
+|-- test                        (test files and scripts)
+|   |-- Makefile
+|   |-- test
+|   |-- test.c
+|   |-- testlib.c
+|   |-- testlib.h
