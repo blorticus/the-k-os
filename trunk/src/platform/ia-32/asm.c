@@ -1,4 +1,4 @@
-#include <sys/asm.h>
+#include <platform/ia-32/asm.h>
 #include <sys/types.h>
 
 u8 ioport_readb( u16 port ) {

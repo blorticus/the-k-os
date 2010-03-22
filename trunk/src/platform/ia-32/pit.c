@@ -1,4 +1,4 @@
-#include <pit.h>
+#include <platform/ia-32/pit.h>
 
 #define PIT_CHANNEL_0_DATA_IO_PORT      0x40
 #define PIT_CHANNEL_1_DATA_IO_PORT      0x41
