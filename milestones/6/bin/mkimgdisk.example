@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# The root-level Makefile calls this in order to create a virtual image that can be boot, e.g., in vmware
+# This is included as an example, and will probably need to be tailored to your own environment.  Notice
+# that this script uses a mnt/ directory at the same level as the Makefile, as well as vm/ dir (relative
+# to the Makefile).  It assumes that there is already a floppy image (ext2.flp) that has an ext2 filesystem
+# on it, and grub's first- and second-stage bootloaders installed.  The SVN repository should also contain
+# such a floppy image with some arbitrary version of the kernel installed.
+
+echo "Mounting virtual image..."
+sudo /sbin/losetup -d /dev/loop0 2>/dev/null
+sudo /sbin/losetup /dev/loop0 ../vm/ext2.flp
+sudo /bin/mount -o rw,suid,dev,exec,auto,user,async /dev/loop0 mnt
+
+echo "Copying kernel..."
+cp kernel.bin mnt
+
+echo "Unmounting virutal image..."
+sudo /bin/umount mnt
