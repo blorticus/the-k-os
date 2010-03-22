@@ -1,5 +1,5 @@
-#ifndef __ISRS_H__
-#define __ISRS_H__
+#ifndef __PLATFORM_IA32_ISRS_H__
+#define __PLATFORM_IA32_ISRS_H__
 
 #include <video/kterm.h>
 

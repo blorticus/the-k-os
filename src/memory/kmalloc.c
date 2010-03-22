@@ -1,4 +1,4 @@
-#include <kmalloc.h>
+#include <memory/kmalloc.h>
 
 /* Doubly linked list for kernel memory allocator.  Maps all freely available
  * blocks.  If 'prev_element' is null, the element is the head of the queue.

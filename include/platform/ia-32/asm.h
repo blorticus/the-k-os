@@ -1,5 +1,5 @@
-#ifndef __SYSTEM_ASM_H__
-#define __SYSTEM_ASM_H__
+#ifndef __PLATFORM_IA32_ASM_H__
+#define __PLATFORM_IA32_ASM_H__
 
 #include <sys/types.h>
 

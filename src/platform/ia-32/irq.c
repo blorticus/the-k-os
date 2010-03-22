@@ -1,8 +1,8 @@
-#include <idt.h>
-#include <sys/asm.h>
-#include <irq.h>
+#include <platform/ia-32/asm.h>
+#include <platform/ia-32/idt.h>
+#include <platform/ia-32/irq.h>
+#include <platform/ia-32/pic.h>
 #include <video/kterm.h>
-#include <pic.h>
 
 
 /* IRQs will be remapped to different IDT entries.  They will be renumbered serially, starting with this one */

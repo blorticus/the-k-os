@@ -1,5 +1,5 @@
-#ifndef __IDT_H__
-#define __IDT_H__
+#ifndef __PLATFORM_IA32_IDT_H__
+#define __PLATFORM_IA32_IDT_H__
 
 #include <sys/types.h>
 

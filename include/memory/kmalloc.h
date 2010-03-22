@@ -1,5 +1,5 @@
-#ifndef __KMALLOC_H__
-#define __KMALLOC_H__
+#ifndef __MEMORY_KMALLOC_H__
+#define __MEMORY_KMALLOC_H__
 
 #include <sys/types.h>
 #include <multiboot.h>
