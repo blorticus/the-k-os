@@ -3,10 +3,10 @@
 #include <multiboot.h>
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/cpu.h>
-#include <isrs.h>
-#include <idt.h>
-#include <irq.h>
+#include <platform/ia-32/cpu.h>
+#include <platform/ia-32/isrs.h>
+#include <platform/ia-32/idt.h>
+#include <platform/ia-32/irq.h>
 
 #define INPUT_BUFFER_SIZE   100
 

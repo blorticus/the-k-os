@@ -1,8 +1,8 @@
 #include <video/kterm.h>
-#include <sys/boot.h>
-#include <sys/asm.h>
-#include <idt.h>
-#include <irq.h>
+#include <platform/ia-32/boot.h>
+#include <platform/ia-32/asm.h>
+#include <platform/ia-32/idt.h>
+#include <platform/ia-32/irq.h>
 #include <input/keyboard.h>
 #include <stdio.h>
 #include <multiboot.h>
