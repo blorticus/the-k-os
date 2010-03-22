@@ -177,7 +177,7 @@ clean:
 
 # TARGET: clean-up after debugging, removes bin, object, vm and gas asm files
 .PHONY: veryclean
-veryclean:
+veryclean: clean
 	rm -f *.bin *.o *.flp *.img *.s *.S *.i
 
 
