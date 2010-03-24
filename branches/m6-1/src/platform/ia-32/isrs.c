@@ -1,8 +1,8 @@
-#include <idt.h>
+#include <platform/ia-32/idt.h>
+#include <platform/ia-32/isrs.h>
+#include <platform/ia-32/pic.h>
 #include <sys/types.h>
 #include <video/kterm.h>
-#include <isrs.h>
-#include <pic.h>
 
 #define NULL '\0'
 

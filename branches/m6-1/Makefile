@@ -23,6 +23,7 @@ CC_FLAGS = -fno-builtin -nostdinc -Wall
 MAKEFLAGS = -e
 DEFS =
 OBJDIR = i386-obj
+PLATFORM = ia-32
 
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
@@ -36,8 +37,8 @@ KMAIN_LD := link/kmain.ld
 
 
 # TARGET: build kernel image
-kernel.bin: $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(KMAIN_LD) $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o kosh.o libkoshlib.a libstd.a $(OBJDIR)/multiboot.o cprintf.o $(OBJDIR)/reboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o
-	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJDIR)/start.o $(OBJDIR)/kmain.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o kosh/kosh.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o src/stdlib/cprintf.o $(OBJDIR)/reboot.o $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/pic.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+kernel.bin: $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(KMAIN_LD) $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o kosh.o libkoshlib.a libstd.a $(OBJDIR)/multiboot.o cprintf.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o
+	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJDIR)/start.o $(OBJDIR)/kmain.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o kosh/kosh.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o src/stdlib/cprintf.o $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/pic.o -L./src/stdlib -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -96,27 +97,27 @@ $(OBJDIR)/multiboot.o: src/multiboot.c
 
 
 # TARGET: build Global Descriptor Table routines
-$(OBJDIR)/gdt.o: src/gdt.asm
-	$(ASM) -f elf -o $(OBJDIR)/gdt.o src/gdt.asm
+$(OBJDIR)/gdt.o: src/platform/$(PLATFORM)/gdt.asm
+	$(ASM) -f elf -o $(OBJDIR)/gdt.o src/platform/$(PLATFORM)/gdt.asm
 
 
 # TARGET: build Interrupt Descriptor Table routines
-$(OBJDIR)/idt.o: src/idt.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/idt.c
+$(OBJDIR)/idt.o: src/platform/$(PLATFORM)/idt.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/platform/$(PLATFORM)/idt.c
 
 
-$(OBJDIR)/isr_handlers.o: src/isr_handlers.asm
-	$(ASM) -f elf -o $(OBJDIR)/isr_handlers.o src/isr_handlers.asm
+$(OBJDIR)/isr_handlers.o: src/platform/$(PLATFORM)/isr_handlers.asm
+	$(ASM) -f elf -o $(OBJDIR)/isr_handlers.o src/platform/$(PLATFORM)/isr_handlers.asm
 
-$(OBJDIR)/irq_handlers.o: src/irq_handlers.asm
-	$(ASM) -f elf -o $(OBJDIR)/irq_handlers.o src/irq_handlers.asm
+$(OBJDIR)/irq_handlers.o: src/platform/$(PLATFORM)/irq_handlers.asm
+	$(ASM) -f elf -o $(OBJDIR)/irq_handlers.o src/platform/$(PLATFORM)/irq_handlers.asm
 
 
-$(OBJDIR)/isrs.o: src/isrs.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/isrs.o src/isrs.c
+$(OBJDIR)/isrs.o: src/platform/$(PLATFORM)/isrs.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/isrs.o src/platform/$(PLATFORM)/isrs.c
 
-$(OBJDIR)/irq.o: src/irq.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/irq.o src/irq.c
+$(OBJDIR)/irq.o: src/platform/$(PLATFORM)/irq.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/irq.o src/platform/$(PLATFORM)/irq.c
 
 
 # TARGET: build textmode "driver" for B8000 memory access mode
@@ -146,8 +147,8 @@ $(OBJDIR)/keyboard.o: src/input/keyboard.c
 
 
 # TARGET: assembly routines that cannot be macros
-$(OBJDIR)/asm.o: src/asm.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/asm.o src/asm.c
+$(OBJDIR)/asm.o: src/platform/$(PLATFORM)/asm.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/asm.o src/platform/$(PLATFORM)/asm.c
 
 
 # TARGET: string.h methods
@@ -157,14 +158,14 @@ $(OBJDIR)/string.o: src/string.c
 $(OBJDIR)/reboot.o: src/reboot.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/reboot.o src/reboot.c
 
-$(OBJDIR)/cpu.o: src/cpu.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/cpu.o src/cpu.c
+$(OBJDIR)/cpu.o: src/platform/$(PLATFORM)/cpu.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/cpu.o src/platform/$(PLATFORM)/cpu.c
 
-$(OBJDIR)/cpuid.o: src/cpuid.asm
-	$(ASM) -f elf -o $(OBJDIR)/cpuid.o src/cpuid.asm
+$(OBJDIR)/cpuid.o: src/platform/$(PLATFORM)/cpuid.asm
+	$(ASM) -f elf -o $(OBJDIR)/cpuid.o src/platform/$(PLATFORM)/cpuid.asm
 
-$(OBJDIR)/pic.o: src/pic.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pic.o src/pic.c
+$(OBJDIR)/pic.o: src/platform/$(PLATFORM)/pic.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pic.o src/platform/$(PLATFORM)/pic.c
 
 
 # TARGET: clean target, removes object and bin files

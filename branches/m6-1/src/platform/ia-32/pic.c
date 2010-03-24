@@ -1,5 +1,5 @@
-#include <pic.h>
-#include <sys/asm.h>
+#include <platform/ia-32/pic.h>
+#include <platform/ia-32/asm.h>
 
 
 /* command and data I/O ports for master and slave PIC */

@@ -1,7 +1,7 @@
-#ifndef __IRQ_H__
-#define __IRQ_H__
+#ifndef __PLATFORM_IA32_IRQ_H__
+#define __PLATFORM_IA32_IRQ_H__
 
-#include <idt.h>
+#include <platform/ia-32/idt.h>
 
 typedef void(*irq_handler_routine)(struct regs *r);
 

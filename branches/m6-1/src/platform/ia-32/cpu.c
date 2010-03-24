@@ -1,4 +1,4 @@
-#include <sys/cpu.h>
+#include <platform/ia-32/cpu.h>
 #include <sys/types.h>
 
 

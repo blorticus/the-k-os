@@ -1,5 +1,5 @@
-#ifndef __SYS_BOOT_H__
-#define __SYS_BOOT_H__
+#ifndef __PLATFORM_IA32_BOOT_H__
+#define __PLATFORM_IA32_BOOT_H__
 
 #include <sys/types.h>
 

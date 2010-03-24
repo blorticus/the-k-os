@@ -1,5 +1,5 @@
-#ifndef __B8000_TEXTMODE_H__
-#define __B8000_TEXTMODE_H__
+#ifndef __VIDEO_VGA_H__
+#define __VIDEO_VGA_H__
 
 #include <sys/types.h>
 

@@ -1,5 +1,5 @@
-#ifndef __CPU_H__
-#define __CPU_H__
+#ifndef __PLATFORM_IA32_CPU_H__
+#define __PLATFORM_IA32_CPU_H__
 
 #include <sys/types.h>
 
