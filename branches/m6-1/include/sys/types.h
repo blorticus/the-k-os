@@ -1,6 +1,7 @@
 #ifndef __SYS_TYPES_H__
 #define __SYS_TYPES_H__
 
+#define NULL '\0'
 
 #ifdef P64BIT
 typedef unsigned char       _U8;

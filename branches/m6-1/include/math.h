@@ -10,7 +10,14 @@
  ***/
 
 
-/* Raises base to 'exp' power, returning the result.  May overflow without error */
+/**
+ *
+ * DESCRIPTION:     raise 'base' by 'exp'.  Equivalent of base^exp
+ * RETURN:          base raised to exp
+ * SIDE-EFFECTS:    none
+ * NOTES:           no attempt to account for overflow.  If base ^ exp > 2^32 - 1, return value will overflow.
+ * RE-ENTRANT?:     yes
+ */ 
 unsigned int upow( unsigned int base, unsigned short exp );
 
 
