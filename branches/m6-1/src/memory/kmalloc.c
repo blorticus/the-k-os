@@ -1,4 +1,5 @@
 #include <memory/kmalloc.h>
+#include <sys/types.h>
 
 /* Doubly linked list for kernel memory allocator.  Maps all freely available
  * blocks.  If 'prev_element' is null, the element is the head of the queue.
@@ -7,8 +8,6 @@
  * block length in bytes.
  *
 */
-
-#define NULL '\0'
 
 struct kmalloc_mem_element* KMALLOC_HEAD = NULL;
 

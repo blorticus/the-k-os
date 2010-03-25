@@ -4,8 +4,6 @@
 #include <sys/types.h>
 #include <video/kterm.h>
 
-#define NULL '\0'
-
 /* This is a very repetitive function... it's not hard, it's
 *  just annoying. As you can see, we set the first 32 entries
 *  in the IDT to the first 32 ISRs. We can't use a for loop
