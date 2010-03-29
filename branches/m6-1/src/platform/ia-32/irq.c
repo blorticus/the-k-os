@@ -1,7 +1,5 @@
 #include <platform/ia-32/asm.h>
-#include <platform/ia-32/idt.h>
-#include <platform/ia-32/irq.h>
-#include <platform/ia-32/pic.h>
+#include <platform/ia-32/interrupts.h>
 #include <video/kterm.h>
 
 
@@ -48,9 +46,11 @@ irq_handler_routine irq_install_handler( int irq, irq_handler_routine handler )
 }
 
 /* This clears the handler for a given IRQ */
-void irq_uninstall_handler(int irq)
+irq_handler_routine irq_uninstall_handler(int irq)
 {
+    irq_handler_routine current_handler = irq_routines[irq];
     irq_routines[irq] = 0;
+    return current_handler;
 }
 
 /* Normally, IRQs 0 to 7 are mapped to entries 8 to 15. This

@@ -1,7 +1,5 @@
 #include <input/keyboard.h>
-#include <platform/ia-32/idt.h>
-#include <platform/ia-32/irq.h>
-#include <platform/ia-32/asm.h>
+#include <platform/ia-32/interrupts.h>
 #include <sys/types.h>
 
 

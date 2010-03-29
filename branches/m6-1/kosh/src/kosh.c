@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <platform/ia-32/cpu.h>
-#include <platform/ia-32/isrs.h>
-#include <platform/ia-32/idt.h>
-#include <platform/ia-32/irq.h>
+#include <platform/ia-32/interrupts.h>
 
 #define INPUT_BUFFER_SIZE   100
 

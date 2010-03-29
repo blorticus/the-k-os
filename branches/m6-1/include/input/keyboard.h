@@ -49,9 +49,9 @@ typedef struct {
  *                  must simply know which is which based on the first byte returned.
  * RETURN:          the upper byte is a set of eight flags corresponding to the ancillary keys defined above.  Thus, if the left control key and the
  *                  right shift key were depressed, the upper byte will be LEFT_CTRL | RIGHT_SHIFT.  The lower byte is the ASCII character.  If either
- *                  shift key was depressed along with a character, it's keyboard shifted value will be expressed.  'scancodes' will contain only the
- *                  non-ancillary key, so holding down a control key will not produce a returnable value for read_next_key_stroke() until some other
- *                  printable character key is pressed.
+ *                  shift key was depressed along with a character, it's keyboard shifted value will be expressed.  'scancodes' may contain only an
+ *                  ancillary key, in which case 'scancodes' will have a value (and the top half of the returned byte will have a corresponding value),
+ *                  but the bottom byte of the return value will be 0x00
  * SIDE-EFFECTS:    advance the buffer pointer of read scancodes
  * NOTES:           none
  * RE-ENTRANT?:     NO

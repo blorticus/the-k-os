@@ -40,3 +40,6 @@ fi
 
 echo "Unmounting virutal image..."
 umount -f mnt
+
+echo "Copying virtual image..."
+cp vm/ext2.img ../..
