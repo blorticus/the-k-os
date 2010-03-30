@@ -4,15 +4,14 @@
 
 
 /* Parses a command "word" (no whitespace permitted) and determines whether it is memory location or a register name (or neither).
- *  * Memory locations must begin with 0x and must be hex digits only.  Registers must be Intel canonical format names for 8-, 16- or
- *   * 32-bit registers in any case (even mixed case).  'word' must be NULL terminated.  If 'word' is not null-terminated or contains
- *    * whitespace, results are not defined.  If 'word' is a memory location, its value is converted to 'memaddr' type and fed to
- *     * instruction.memory_location (and instruction.reg is set to -1).  If it appears to be a register name, instruction.reg is set to
- *      * the enum 'register_name' value and instruction.memory_location is set to 0.  If 'word' appears to be invalid, instruction.error
- *       * is set and zero is returned.  Otherwise, non-zero is returned.  If 'word' is a memory location, and it specifies a value outside
- *        * the bounds of the type 'memaddr', instruction.error will be set and zero will be returned.
- *         */
-//int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
+ * Memory locations must begin with 0x and must be hex digits only.  Registers must be Intel canonical format names for 8-, 16- or
+ * 32-bit registers in any case (even mixed case).  'word' must be NULL terminated.  If 'word' is not null-terminated or contains
+ * whitespace, results are not defined.  If 'word' is a memory location, its value is converted to 'memaddr' type and fed to
+ * instruction.memory_location (and instruction.reg is set to -1).  If it appears to be a register name, instruction.reg is set to
+ * the enum 'register_name' value and instruction.memory_location is set to 0.  If 'word' appears to be invalid, instruction.error
+ * is set and zero is returned.  Otherwise, non-zero is returned.  If 'word' is a memory location, and it specifies a value outside
+ * the bounds of the type 'memaddr', instruction.error will be set and zero will be returned.
+ */ 
 
 
 void _test_for_reg( lcheck_suite* s, const char* test_value, register_name rn ) {

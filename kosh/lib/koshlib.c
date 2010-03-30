@@ -14,46 +14,8 @@
 #define TOKEN_BUFFER_SIZE   25
 
 
-#define NULL    '\0'
-
 char input_buffer[INPUT_BUFFER_SIZE];
 char token_buffer[TOKEN_BUFFER_SIZE];
-
-/*
-typedef enum {
-    _ERROR_,        // an error occurred
-    _EMPTY_,        // no command supplied
-    EXIT,           // currently, this means halt the system
-    PEEK,           // memory location or register name
-    ECHO,           // echo a string
-    POKE,           // memory location or register name
-    DUMPREGS,       // dump primary registers
-    INTDIAG,        // interrupt diagnostics
-    BIOS,           // dump bios area
-    CPUID           // show cpuid support and characteristics
-} kosh_base_command;
-
-typedef enum {
-    AL, AH, BL, BH, CL, CH, DL, DH,
-    AX, BX, CX, DX,
-    EAX, EBX, ECX, EDX,
-    SS, CS, DS, ES, FS, GS,
-    SI, DI,
-    ESI, EDI,
-    BP, EBP,
-    SP, ESP,
-    EFLAGS
-} register_name;
-
-
-typedef struct {
-    kosh_base_command       command;
-    register_name           reg;
-    memaddr                 memory_location;
-    char*                   remaining_command_line;
-    const char*             error;
-} kosh_instruction;
-*/
 
 
 /* parses 'str' looking for the next sequence of characters that end with NULL or whitespace, up to 'limit' number
@@ -67,7 +29,7 @@ char* last_searched = NULL;
 /* this will be localized later, but for now, represents the current instruction */
 kosh_instruction g_instruction;
 
-char* next_word( char* str, char* buffer, _U32 limit ) {
+char* next_word( char* str, char* buffer, u32 limit ) {
     int i;
 
     if (str == NULL) {

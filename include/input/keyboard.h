@@ -3,21 +3,14 @@
 
 #include <sys/types.h>
 
-//char us101_scancodes[] = {
-///*   0       1       2       3       4       5       6       7       8       9       a       b       c       d       e       f      */
-//     0,      0,     '1',    '2',    '3',    '4',    '5',    '6',    '7',    '8',    '9',    '0',    '-',    '=',    '\b',   '\t',   /* 0n */
-//    'q',    'w',    'e',    'r',    't',    'y',    'u',    'i',    'o',    'p',    '[',    ']',    '\n',  /*LC*/0, 'a',    's',    /* 1n */
-//    'd',    'f',    'g',    'h',    'j',    'k',    'l',    ';',    '\'',   '`',   /*LS*/0, '\\',   'z',    'x',    'c',    'v',    /* 2n */
-//    'b',    'n',    'm',    ',',    '.',    '/',   /*RS*/0,  0,    /*LA*/0, ' ',     0,      0,      0,      0,      0,      0,     /* 3n */
-//};
-//
-//char shifted_us101_scancodes[] = {
-///*   0       1       2       3       4       5       6       7       8       9       a       b       c       d       e       f      */
-//     0,      0,     '!',    '@',    '#',    '$',    '%',    '^',    '&',    '*',    '(',    ')',    '_',    '+',    '\b',   '\t',   /* 0n */
-//    'Q',    'W',    'E',    'R',    'T',    'Y',    'U',    'I',    'O',    'P',    '{',    '}',    '\n',  /*LC*/0, 'A',    'S',    /* 1n */
-//    'D',    'F',    'G',    'H',    'J',    'K',    'L',    ':',    '"',    '~',   /*LS*/0, '|',    'Z',    'X',    'C',    'V',    /* 2n */
-//    'B',    'N',    'M',    '<',    '>',    '?',   /*RS*/0,  0,    /*LA*/0, ' ',     0,      0,      0,      0,      0,      0,     /* 3n */
-//};
+
+/**
+ * BRIEF:           A basic US-101 keyboard driver
+ * BACKGROUND:      Methods in this package install a keyboard IRQ ISR.  When a key is pressed, and the IRQ is raised, another method
+ *                  reads the produced scancodes for the appropriate I/O port, and maps the scancode(s) to actual key(s)
+ * SEE:             http://wiki.osdev.org/PS2_Keyboard
+ * RE-ENTRANT?:     NO
+ ***/
 
 
 /* so-called ancillary keys that might be depressed at the same time as a character key */
@@ -30,7 +23,16 @@
 #define RIGHT_SHIFT     0x40
 
 
-/* Scancode circular queue struct */
+/**
+ *
+ * DESCRIPTION:     Keyboard buffer, stores scancodes in a circular buffer.  This is also the buffer from which scancodes are read, so careful coordination
+ *                  between those two functions is necessary.
+ * ELEMENTS:        slots = the actual scancode
+ *                  size = number of scancodes that can be stored in the buffer
+ *                  adjust = XXX: need to read code to figure this out
+ *                  top = index in 'slots' where last character was written (next write will be at top + 1 or 0 if top == size - 1)
+ *                  bottom = index in 'slots' where last character was read (next read will be at bottom + 1 if there are any more characters to be read)
+ */ 
 typedef struct {
     u16*            slots;
     u16             size;       /* number of slots */
@@ -40,7 +42,33 @@ typedef struct {
 } ScCQueue;
 
 
+/**
+ *
+ * DESCRIPTION:     read the next scancode in the keyboard queue, convert it into meta and character, and return that.  'scancodes' is a pointer to the
+ *                  actual list of scancodes corresponding to the key.  Some keystrokes produce more than one byte, but some produce two.  The consumer
+ *                  must simply know which is which based on the first byte returned.
+ * RETURN:          the upper byte is a set of eight flags corresponding to the ancillary keys defined above.  Thus, if the left control key and the
+ *                  right shift key were depressed, the upper byte will be LEFT_CTRL | RIGHT_SHIFT.  The lower byte is the ASCII character.  If either
+ *                  shift key was depressed along with a character, it's keyboard shifted value will be expressed.  'scancodes' may contain only an
+ *                  ancillary key, in which case 'scancodes' will have a value (and the top half of the returned byte will have a corresponding value),
+ *                  but the bottom byte of the return value will be 0x00
+ * SIDE-EFFECTS:    advance the buffer pointer of read scancodes
+ * NOTES:           none
+ * RE-ENTRANT?:     NO
+ *
+ */ 
 u16 read_next_key_stroke( u16* scancodes );
+
+
+/**
+ *
+ * DESCRIPTION:     Install the IRQ ISR for keyboard input.  This method populates a global ScCQueue, the same one from which read_next_key_stroke() reads
+ * RETURN:          void
+ * SIDE-EFFECTS:    replaces ISR for keyboard IRQ
+ * NOTES:           none
+ * RE-ENTRANT?:     YES
+ *
+ */ 
 void keyboard_irq_install();
 
 

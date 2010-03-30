@@ -1,4 +1,4 @@
-#include <platform/ia-32/pic.h>
+#include <platform/ia-32/interrupts.h>
 #include <platform/ia-32/asm.h>
 
 
