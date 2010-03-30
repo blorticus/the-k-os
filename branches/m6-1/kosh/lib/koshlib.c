@@ -29,7 +29,7 @@ char* last_searched = NULL;
 /* this will be localized later, but for now, represents the current instruction */
 kosh_instruction g_instruction;
 
-char* next_word( char* str, char* buffer, _U32 limit ) {
+char* next_word( char* str, char* buffer, u32 limit ) {
     int i;
 
     if (str == NULL) {

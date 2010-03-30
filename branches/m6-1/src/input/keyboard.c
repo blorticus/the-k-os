@@ -20,7 +20,7 @@ char shifted_us101_scancodes[] = {
 };
 
 
-_U8 is_shifted = 0;
+u8 is_shifted = 0;
 
 
 /* count of characters to enqueue from keyboard in circular buffer,  CANNOT BE LARGER THAN 2**16 - 1 */

@@ -1,19 +1,19 @@
 #ifndef __SYS_TYPES_H__
 #define __SYS_TYPES_H__
 
+
+/**
+ * BRIEF:           Basic type definitions varied by architecture type
+ * BACKGROUND:      The OS can be booted with a multiboot compliant loader (e.g., GRUB), so this header file
+ *                  and corresponding routines are for dealing with multiboot information (multiboot leaves
+ *                  a data structure in memory with useful/necessary information)
+ * SEE:             http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+ * RE-ENTRANT?:     PER-METHOD
+ ***/
+
 #define NULL '\0'
 
 #ifdef P64BIT
-typedef unsigned char       _U8;
-typedef unsigned short      _U16;
-typedef unsigned long       _U32;
-typedef unsigned long long  _U64;
-
-typedef signed char         _S8;
-typedef signed short        _S16;
-typedef long                _S32;
-typedef long long           _S64;
-
 typedef unsigned char       u8;
 typedef unsigned short      u16;
 typedef unsigned int        u32;
@@ -26,16 +26,6 @@ typedef long                s64;
 
 typedef u64                 memaddr;
 #else
-typedef unsigned char       _U8;
-typedef unsigned short      _U16;
-typedef unsigned long       _U32;
-typedef unsigned long long  _U64;
-
-typedef signed char         _S8;
-typedef signed short        _S16;
-typedef long                _S32;
-typedef long long           _S64;
-
 typedef unsigned char       u8;
 typedef unsigned short      u16;
 typedef unsigned long       u32;

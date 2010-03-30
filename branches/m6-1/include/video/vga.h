@@ -19,11 +19,11 @@
  * RE-ENTRANT?:     NO
  **/
 
-/*********
- * Enumerations
- **/
-
-/* 8-bit color palette for foreground and background colors */
+/**
+ *
+ * DESCRIPTION:     VGA basic color textmode provides a 4-bit color palette for foreground and background
+ *                  These correspond to the defined colors and their bit values.
+ */ 
 enum TEXTMODE_COLOR
 {
     black, blue, green, cyan, red, magenta, brown,
@@ -32,6 +32,8 @@ enum TEXTMODE_COLOR
 };
 
 
+/* when unit testing, generally, writing directly to b8000 is not possible.  The following methods
+   can be overridden to allow sensible testing (allowing writes to somewhere other than b8000 */
 #ifdef TEST
     extern void TEST_b8000_write_char_at( u16 offset, u16 colors, char c );
     extern void* TEST_b8000_derive_screen_base_ptr( void );
@@ -43,8 +45,39 @@ enum TEXTMODE_COLOR
 #endif
 
 
+/**
+ *
+ * DESCRIPTION:     Copy a chunk of vga basic color textmode memory.  Generally, this facilitates scrolling.
+ *                  Imagining that textmode memory is a flat matrix of characters on an 80 x 25 screen (and
+ *                  thus an 80x25 == 2000 element array of characters), 'first_pos' is the element of the
+ *                  character array where copying should begin.  'last_pos' is the last position that should
+ *                  be copied.  'copy_back' is the number of slots "backward" that the copy should be made.
+ *                  Thus, if first_pos == 20, last_pos == 40 and copy_back == 10, the character (and color
+ *                  attributes) and b8000 + 20 slot will be copied to b8000 + 10 slot, b8000 + 21 slot will
+ *                  be copied to b8000 + 11 slot, and so forth, through b8000 + 40 slot (inclusive) -- which
+ *                  is copied to b8000 + 30 slot.
+ * RETURN:          void
+ * SIDE-EFFECTS:    Video memory is updated
+ * NOTES:           -
+ * RE-ENTRANT?:     NO
+ *
+ */ 
 void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back );
 
+
+
+/**
+ *
+ * DESCRIPTION:     Each VGA slot is a character (lower half) and an attribute (upper half).  This
+ *                  macro take a foreground color 'fgcolor' and a background color 'bgcolor', and
+ *                  produces an upper half word with the appropriate values.  fgcolor and bgcolor
+ *                  come from TEXTMODE_COLOR above.
+ * RETURN:          void
+ * SIDE-EFFECTS:    -
+ * NOTES:           -
+ * RE-ENTRANT?:     -
+ *
+ */ 
 #define make_b8000_colors( fgcolor, bgcolor ) ((u8)((bgcolor << 4) | fgcolor))
 
 
