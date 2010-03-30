@@ -82,13 +82,13 @@ libstd.a:
 
 
 # TARGET: build asm kernel entry point
-$(OBJDIR)/start.o: start.asm
-	$(ASM) -f elf -o $(OBJDIR)/start.o start.asm
+$(OBJDIR)/start.o: src/start.asm
+	$(ASM) -f elf -o $(OBJDIR)/start.o src/start.asm
 
 
 # TARGET: build C kmain() kernel entry point
-$(OBJDIR)/kmain.o: kmain.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kmain.o kmain.c
+$(OBJDIR)/kmain.o: src/kmain.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kmain.o src/kmain.c
 
 
 # TARGET: build multiboot routines

@@ -1,7 +1,5 @@
 #include <input/keyboard.h>
-#include <platform/ia-32/idt.h>
-#include <platform/ia-32/irq.h>
-#include <platform/ia-32/asm.h>
+#include <platform/ia-32/interrupts.h>
 #include <sys/types.h>
 
 
@@ -22,7 +20,7 @@ char shifted_us101_scancodes[] = {
 };
 
 
-_U8 is_shifted = 0;
+u8 is_shifted = 0;
 
 
 /* count of characters to enqueue from keyboard in circular buffer,  CANNOT BE LARGER THAN 2**16 - 1 */
@@ -35,14 +33,12 @@ ScCQueue keyboard_buffer_queue;
 u16 kb_slots[KEYBOARD_QUEUE_SIZE];  /* without kmalloc() yet, pre-allocate keyboard buffer.  Later this should be done when IRQ is installed */
 
 
-/* Interruptable?       YES
- * Re-entrant?          NO
- */
-void keyboard_handler( struct regs *r ) {
-//    INT_BITFIELD |= INT_BF_KB_QUEUED_OUTPUT;  // tell kernel main loop that keyboard data are waiting
-
+/**
+ * keybaord_handler takes the standard ISR parameter (the register values).  Perform byte read on I/O port 0x60.  This is the scancode produced
+ * by the keypress.  Write it to the top of the queue.
+ **/
+static void keyboard_handler( struct regs *r ) {
     int scancode;
-//    u16 write_to;
 
     scancode = ioport_readb( 0x60 );
 
@@ -57,35 +53,19 @@ void keyboard_handler( struct regs *r ) {
 
 
 
-/* Interruptable?       YES
- * Re-entrant?          NO
- *
+/**
  * Read the next scancode in the scancode buffer.  If it is a non-meta ("character") key being depressed,
  * set lower half of return value to the ASCII value for that key.  If it is a meta key (shift lock,
  * shift keys, control keys, or meta/alt keys) set upper half to the appropriate MetaKey type value.  If
  * a meta key is held down while a character key is pressed, both upper and lower will be set.  If the
  * meta key is a shift key, or the caps lock is down, character keys will be shifted ASCII value.  If the
  * scancode buffer is empty, return 0x0000
- */
-
-#define CAPS_LOCK       0x01
-#define LEFT_SHIFT      0x02
-#define LEFT_CTRL       0x04
-#define LEFT_META       0x08
-#define RIGHT_META      0x10
-#define RIGHT_CTRL      0x20
-#define RIGHT_SHIFT     0x40
+ **/
 
 /* bit field indicating what meta key is currently depressed */
 u8 G_meta_keys = 0x00;
 
 
-/* Read the next key stroke.  The upper byte of the return value is the meta key setting (see bit masks above).  The lower byte
- * of the return value is the ASCII character corresponding to the character produced (which will be shifted if either shift
- * key is depressed).  'scancodes' contains the raw scan codes.  This may be one or two bytes long.  It will normally be one byte,
- * but some keys produce two one byte sequences (that is, they are preceded by an "escape" character).  If there is only one byte,
- * the upper half will be 0x00.
- */
 u16 read_next_key_stroke( u16* scancodes ) {
     u16 scancode;
 

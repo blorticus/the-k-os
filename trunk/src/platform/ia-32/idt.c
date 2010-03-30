@@ -1,18 +1,25 @@
 #include <sys/types.h>
+#include <platform/ia-32/interrupts.h>
 
-/*
- * The Interrupt Descriptor Table consists of a series of 8-byte descriptors (just like the GDT).  The structure is:
- *     16 bits          : offset in target segment, low 16-bits
- *     16 bits          : target code segment selector (from the GDT)
- *      8 bits          : the dword count and required zero flags; this is always 0 for IDT entries
- *      4 bits          : flags: Present bit; privilege level ("ring") 2-bit; obligatory 0 bit
- *      4 bits          : the type: Task Gate (0x5); Interrupt Gate (32-bit = 0xE); or Trap Gate (32-bit = 0xF)
- *     16 bits          : offset in target segment, high 16 bits
- * Offset in Target Segment is the memory location of the handler (in the GDT Selector Segment) for the exception handler of the referenced ISR slot
- * An interrupt gate disables interrupts before execution of the handler and trap gates do not.
- * If the Present Bit is set to 0 for an interrupt number, and that exception is raised, the CPU will raise another exception 
- * For these structs, use ((packed)) to prevent the compiler from aligning the structures
- */
+/**
+ *
+ * DESCRIPTION:     A single entry in the IDT exactly as it is arranged in memory
+ * ELEMENTS:        base_low_word    = the bottom half of the ISR address
+ *                  gdt_selector     = the GDT code segment entry through which addressing should be mapped
+ *                  zeroed_flags     = in the ia-32, several tables use the same struture as the IDT.  This is a flags field, but for
+ *                                     the IDT table, it is all zeroes for all entries
+ *                  descriptor_flags = flags for the descriptor, including:
+ *                                      - 1   : present bit (if 0, raise exception on interrupt invocation)
+ *                                      - 2,3 : privilege level ("ring")
+ *                                      - 4   : must be 0
+ *                                      - 5-8 : gate type: Task Gate (0x5), Interrupt Gate (32-bit = 0xE), or Trap Gate (32-bit = 0xF)
+ *                  base_word_high   = the top half o the ISR address
+ * NOTES:           MUST be packed, which prevents the compiler from aligning the struct on processor word boundaries.
+ *                  Offset in Target Segment is the memory location of the handler (in the GDT Selector Segment) for the
+ *                    exception handler of the referenced ISR slot.
+ *                  An interrupt gate disables interrupts before execution of the handler and trap gates do not.
+ *
+ */ 
 struct idt_descriptors {
     u16 target_seg_offset_low;
     u16 gdt_code_selector;
@@ -22,20 +29,21 @@ struct idt_descriptors {
 } __attribute__((packed));  
 
 
-/*
- * The value passed to the assembly instruction [lidt], structure is:
- *      16 bits         : limit, the offset from 'base' in bytes for the end of the table.  Remember that each slot is 8 bytes wide.  There can be up to 256 slots.
- *      32 bits         : the base memory location in the current data segement for the table
- */
+/**
+ *
+ * DESCRIPTION:     The load IDT asm instruction (lidt) is provided a pointer to a data structure that, itself, points to the actual
+ *                  table.  This is that pointing structure
+ * ELEMENTS:        limit       = the size of the table in bytes (XXX: verify)
+ *                  base        = the physical memory address of the start of the table
+ * NOTES:           MUST be packed, which prevents the compiler from aligning the struct on processor word boundaries
+ *
+ **/ 
 struct idt_ptr {
     u16 limit;
     u32 base;
 } __attribute__((packed));
  
 
-/* 
- * The IDT has 256 slots.  Initialize all 256 slots to a function that does nothing
- */
 struct idt_descriptors idt[256];
 struct idt_ptr         idtp;
 
