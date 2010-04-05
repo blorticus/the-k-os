@@ -1,5 +1,7 @@
 [BITS 32]
 
+SECTION .text
+
 global cpuid_is_supported      ; int cpuid_is_supported( void ) -- returns 1 if CPUID supported; 0 if not
 
 ; This uses a mechanism detailed here: http://wiki.osdev.org/CPUID#How_to_use_CPUID

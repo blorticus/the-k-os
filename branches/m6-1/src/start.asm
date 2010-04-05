@@ -7,6 +7,8 @@
 
 ; On entry, interrupts are disabled
 
+SECTION .text
+
 global start
 
 start:
