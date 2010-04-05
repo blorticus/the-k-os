@@ -1,5 +1,7 @@
 [BITS 32]
 
+SECTION .text
+
 global isr0
 global isr1
 global isr2
