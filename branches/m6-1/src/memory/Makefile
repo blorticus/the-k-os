@@ -2,6 +2,7 @@ ASM := /usr/bin/nasm
 INCLUDES := -I../../include -I../../include/stdlib
 CC_FLAGS := -fno-builtin -nostdinc -Wall
 DEFS =
+OBJDIR = ../../i386-obj
 
 ifdef TESTING
     DEFS := $(DEFS) -DTEST
@@ -9,10 +10,11 @@ ifdef TESTING
 endif
 
 
+$(OBJDIR)/kmalloc.o: kmalloc.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o $(OBJDIR)/kmalloc.o kmalloc.c 
 
-# TARGET: build stdio library
-kmalloc.o: kmalloc.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o kmalloc.o kmalloc.c 
+$(OBJDIR)/phys_core.o: phys_core.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) $(DEFS) -c -o $(OBJDIR)/phys_core.o phys_core.c 
 
 
 .PHONY: clean
