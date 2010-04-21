@@ -11,8 +11,8 @@ endif
 
 
 # TARGET: build stdlib
-$(OBJDIR)/libstd.a: $(OBJDIR)/stdio.o keyboard.o asm.o irq.o irq_handlers.o idt.o
-	$(AR) rcs $(OBJDIR)/libstd.a $(OBJDIR)/stdio.o $(OBJDIR)/keyboard.o $(OBJDIR)/asm.o $(OBJDIR)/irq.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/idt.o
+$(OBJDIR)/libstd.a: $(OBJDIR)/cprintf.o $(OBJDIR)/stdio.o keyboard.o asm.o irq.o irq_handlers.o idt.o
+	$(AR) rcs $(OBJDIR)/libstd.a $(OBJDIR)/stdio.o $(OBJDIR)/keyboard.o $(OBJDIR)/asm.o $(OBJDIR)/irq.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/idt.o $(OBJDIR)/cprintf.o
 
 
 
