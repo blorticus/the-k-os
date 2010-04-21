@@ -19,14 +19,22 @@
 memaddr* mem_stack_bottom;  // pointer just "before" (actually after) first entry
 memaddr* mem_stack_top;     // pointer just "after" (actually before) last entry
 
-//static inline void push_physical_memaddr( memaddr x ) {
+/* these weird ifdef's are to allow one to step through this code with the debugger, which (at least for the version of
+ * gcc I'm using) doesn't seem to work very well when they are inlined functions */
+#ifdef TESTING
 static void push_physical_memaddr( memaddr x ) {
+#else
+static inline void push_physical_memaddr( memaddr x ) {
+#endif
     mem_stack_top--;
     *mem_stack_top = x;
 }
 
-//static inline memaddr pop_physical_memaddr( void ) {
+#ifdef TESTING
 static memaddr pop_physical_memaddr( void ) {
+#else
+static inline memaddr pop_physical_memaddr( void ) {
+#endif
     if (mem_stack_top == mem_stack_bottom)  // ASSERT: stack is empty
         return NULL;
 
@@ -40,23 +48,22 @@ get_phys_mem_stack_size( void ) {
     return ((u32)mem_stack_bottom - (u32)mem_stack_top) >> 2;   // shift 2 means divide by 32 -- the size of the elements
 }
 
-#ifdef TESTING
-    /* get the pointer number 'offset' from the phys mem stack.  offset is from the bottom (so 0 is the first element in the stack).  Return NULL if
-     * requested offset is larger than stack size - 1 (or if the value */
-    memaddr* get_phys_mem_stack_value_at( u32 offset ) {
-        if (offset >= get_phys_mem_stack_size())
-            return NULL;
 
-        return (memaddr*)(mem_stack_bottom + offset);
-    }
-#endif
+memaddr*
+get_phys_mem_stack_value_at( u32 offset ) {
+    if (offset >= get_phys_mem_stack_size())
+        return NULL;
+
+    return (memaddr*)*(mem_stack_bottom - (offset + 1));
+}
 
 
 static void process_mmap_chunk( memptr chunk_offset, memptr end_of_chunk, u32 page_cmp, u32 page_size ) {
     if (((u32)chunk_offset & page_cmp) != 0)
         chunk_offset = (memptr)((u32)(((u32)chunk_offset | page_cmp) + 1));
-    
-    end_of_chunk = (memptr)((u32)end_of_chunk & ~page_cmp);   // also page align end_of_chunk to the nearest page floor
+
+    if (((u32)end_of_chunk & page_cmp) != page_cmp)     // also page align end_of_chunk to the top of the nearest previous page
+        end_of_chunk = (memptr)(((u32)end_of_chunk & ~page_cmp) - 1);
     
     while (chunk_offset < end_of_chunk) {
         push_physical_memaddr( (memaddr)chunk_offset );

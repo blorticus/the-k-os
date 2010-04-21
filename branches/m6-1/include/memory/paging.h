@@ -15,6 +15,6 @@ u32 get_phys_mem_stack_size( void );
 memaddr* init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_entry* mmap, u32 mmap_length, memptr start_of_kernel, memptr end_of_kernel );
 memaddr allocate_physical_page( void );
 void free_physical_page( memaddr page_start );
-
+memaddr* get_phys_mem_stack_value_at( u32 offset );
 
 #endif
