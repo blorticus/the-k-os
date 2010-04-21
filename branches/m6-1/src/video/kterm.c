@@ -27,6 +27,19 @@
 static kterm_window rw;
 static KTERM_WINDOW root_window = &rw;
 
+const char* panic_base_msg = "Kernel Panic! ";
+void kterm_panic_msg( char* msg ) {
+    unsigned int i = 0;
+    char* t = panic_base_msg;
+
+    while (*t)
+        M_B8000_write_char_at( i++, 0xf0, *t++ );
+
+    while (*msg)
+        M_B8000_write_char_at( i++, 0xf0, *msg++ );
+}
+
+
 void kterm_create_window( KTERM_WINDOW w, u16 window_start, u8 window_height, u8 window_width ) {
     w->width = window_width;
     w->height = window_height;

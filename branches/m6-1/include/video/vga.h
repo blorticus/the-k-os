@@ -65,7 +65,6 @@ enum TEXTMODE_COLOR
 void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back );
 
 
-
 /**
  *
  * DESCRIPTION:     Each VGA slot is a character (lower half) and an attribute (upper half).  This
