@@ -2,6 +2,7 @@
 #include <lcheck.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 lcheck_suite* create_suite( const char* name ) {
     lcheck_suite* s = (lcheck_suite*)malloc( sizeof( lcheck_suite ) );
@@ -71,3 +72,10 @@ char* __strcat_realloc( const char* dest, const char* src ) {
 int __strlen( const char* s ) {
     return strlen( s );
 }
+
+int __sprintf( char* s, const char* fmt, ... ) {
+    va_list argptr;
+    va_start( argptr, fmt );
+    return vsprintf( s, fmt, argptr );
+}
+
