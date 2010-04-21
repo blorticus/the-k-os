@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <platform/ia-32/cpu.h>
 #include <platform/ia-32/interrupts.h>
+#include <sys/kernelsyms.h>
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -245,6 +246,7 @@ int main( void ) {
                 kterm_window_puts( top_win, " bios              - prints out relocated bios values\n" );
                 kterm_window_puts( top_win, " int               - activates interrupt diagnostics\n" );
                 kterm_window_puts( top_win, " cpuid             - Show CPUID support and characteristics\n" );
+                kterm_window_puts( top_win, " kernel            - Information about the kernel\n" );
                 break;
 
             case BIOS:
@@ -298,6 +300,10 @@ int main( void ) {
             case INTDIAG:
                 kterm_window_printf( bottom_win, "WAITING FOR IRQ0 ... " );
                 ihr = irq_install_handler( 0, &int_diag_pit_handler );
+                break;
+
+            case KERNEL_INFO:
+                kterm_window_printf( top_win, "KERNEL START = 0x%x  END = 0x%x\n", (u32)START_OF_KERNEL, (u32)END_OF_KERNEL );
                 break;
 
             default:
