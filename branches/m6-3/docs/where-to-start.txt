@@ -1,0 +1,24 @@
+BOOTING:
+--------
+Currently, K-OS uses GRUB for bootloading.  There is a limited bootloader, boot/kos-silly-loader.asm.  It
+sets up an environment for 32-bit protected mode, loads some sectors off disk to 1MB, and jumps there, but
+it is not completely correct.  I will return to it later.
+
+KERNEL ENTRY:
+-------------
+The kernel starts with start.asm which sets up a system stack, adds a multiboot compliant header,
+then jumps to kmain, which is defined in kmain.c.  At this point, kmain() uses VGA B8000 video primitives
+to clear the screen, then write a message to the screen.  Finally, it invokes KoSH (the K-OS Kernel Shell),
+which provides the ability to analyze the system.
+
+
+SOME SPECIFIC CHOICES:
+----------------------
+o gcc is the compiler, ld is the linker
+o nasm is the assembler for pure assembly files
+o gnu make is the building system
+o the system makes no effort to be even vaguely POSIX-like, but there is overlap
+o specific #defined variable sizes are defined in sys/types.h, e.g., u8 for unsigned 8-bit, s8 for signed, etc
+o base kernel video uses VGA color textmode (B8000) memory text mode because it is easy
+o I re-implement methods (e.g., math functions) available in the gcc standard C libraries because this is
+  a learning OS.  Later, I'll switch to using other people's code ... because it's better and they're smarter
