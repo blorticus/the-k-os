@@ -41,4 +41,17 @@ int strncmp( const char *s1, const char *s2, size_t n );
 int strntolower( char *s, size_t n );
 int strntoupper( char *s, size_t n );
 
+
+/**
+ *
+ * DESCRIPTION:     copy the value 'value' (converted to unsigned 8-bit integer) to 'destination' 'len' times, advancing 'destination' pointer on each write
+ * RETURN:          pointer to 'destination'
+ * SIDE-EFFECTS:    none
+ * RE-ENTRANT?:     yes
+ *
+ */
+void* memset( void *destination, int value, size_t len );
+
+
+
 #endif
