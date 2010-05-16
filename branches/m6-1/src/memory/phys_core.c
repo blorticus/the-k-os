@@ -17,6 +17,7 @@
  */
 // NOTE: total_upper_memory_in_bytes is u64 to allow for PAE, but the total possible page count must be less than LIMIT(u32)
 memaddr* mem_stack_bottom;  // pointer just "before" (actually after) first entry
+u32 mem_stack_limit;        // maximum number of entries in the stack
 memaddr* mem_stack_top;     // pointer just "after" (actually before) last entry
 
 /* these weird ifdef's are to allow one to step through this code with the debugger, which (at least for the version of
@@ -39,6 +40,14 @@ static inline memaddr pop_physical_memaddr( void ) {
         return NULL;
 
     return *mem_stack_top++;
+}
+
+
+/* top half is addr of "bottom" of stack, while bottom half is "limit addr" of stack.  "bottom" > "limit addr", and stack exists between the two
+ * so, "bottom" is pointer to address right at the first entry, while "limit" is pointer at last byte of last possible entry */
+u64
+get_phys_mem_stack_attrs( void ) {
+    return ((u64)((u64)((u32)mem_stack_bottom) << 32) | (u64)((u64)((u32)mem_stack_bottom) - mem_stack_limit * 4 + 1));
 }
 
 
@@ -116,6 +125,17 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
             chunk_offset = (memptr)next_mmap_entry->base_addr_low;
             end_of_chunk = (memptr)chunk_offset + next_mmap_entry->length_low;
 
+            // XXX: a vile hack that should be fixed, but it does fulfill a requirement: don't allow physical pages to come
+            //      from lowest 1 MiB
+            if ((u32)chunk_offset <= 0x100000) {
+                if ((u32)end_of_chunk <= 0x100000) {
+                    end_of_chunk = chunk_offset;
+                }
+                else {
+                    chunk_offset = (memptr)0x100001;
+                }
+            }
+
             // if the kernel is mixed somewhere between chunk_offset and end_of_chunk, adjust around it
             if (start_of_kernel <= chunk_offset) {
                 if (end_of_kernel >= chunk_offset) {
@@ -153,6 +173,8 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
             return NULL;
 
     push_physical_memaddr( (memaddr)next_stack_item );  // we popped one too many, so push the last value back on
+
+    mem_stack_limit = get_phys_mem_stack_size();
 
     return (memaddr*)((u32)mem_stack_top & ~page_cmp);
 }
