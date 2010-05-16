@@ -12,7 +12,8 @@ exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kmalloc.t kterm.t
 	@./kterm.t
 	@./kterm_readline.t
 	@./kmalloc.t
-#	@./phys_core.t    -- XXX: ADD THIS WHEN FINISHED
+	@./phys_core.t
+#   @./stringmem.t      -- XXX: ADD THIS WHEN FINISHED
 
 
 kterm_readline.t: test_kterm_readline.c liblcheck.a string.o kterm.o vga.o
@@ -20,6 +21,9 @@ kterm_readline.t: test_kterm_readline.c liblcheck.a string.o kterm.o vga.o
 
 strntolower.t: string.o test_strntolower.c liblcheck.a libstd.a
 	$(CC) $(CC_FLAGS) $(INCLUDES) -fno-builtin -nostdinc -o strntolower.t test_strntolower.c ../$(BASE_OBJDIR)/string.o $(LIBS)
+
+stringmem.t: stringmem.o test_stringmem.c liblcheck.a
+	$(CC) $(CC_FLAGS) $(INCLUDES) -fno-builtin -nostdinc -o stringmem.t test_stringmem.c ../$(BASE_OBJDIR)/stringmem.o $(LIBS)
 
 cprintf.t: test_cprintf.c liblcheck.a cprintf.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o cprintf.t test_cprintf.c ../$(BASE_OBJDIR)/cprintf.o $(LIBS)
@@ -29,6 +33,9 @@ kmalloc.t: test_kmalloc.c liblcheck.a kmalloc.o
 
 phys_core.t: test_phys_core.c liblcheck.a phys_core.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o phys_core.t test_phys_core.c ../$(BASE_OBJDIR)/phys_core.o $(LIBS)
+
+paging.t: test_paging.c liblcheck.a paging.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o paging.t test_paging.c ../$(BASE_OBJDIR)/paging.o $(LIBS)
 
 kterm.t: test_kterm.c liblcheck.a kterm.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -o kterm.t test_kterm.c ../$(BASE_OBJDIR)/kterm.o ../$(BASE_OBJDIR)/vga.o $(LIBS)
@@ -45,6 +52,12 @@ stdio.o:
 
 string.o:
 	$(MAKE) -C .. $(BASE_OBJDIR)/string.o TESTING=1
+
+stringmem.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/stringmem.o TESTING=1
+
+paging.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/paging.o TESTING=1
 
 cprintf.o:
 	$(MAKE) -C ../src/stdlib ../../$(BASE_OBJDIR)/cprintf.o TESTING=1

@@ -79,3 +79,8 @@ int __sprintf( char* s, const char* fmt, ... ) {
     return vsprintf( s, fmt, argptr );
 }
 
+
+void* __memset( void *b, int c, unsigned int len ) {
+    return memset( b, c, len );
+}
+

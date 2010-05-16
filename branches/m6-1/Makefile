@@ -19,7 +19,8 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 # --
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
-CC_FLAGS = -fno-builtin -nostdinc -Wall
+#CC_FLAGS = -fno-builtin -nostdinc -Wall
+CC_FLAGS = -nostdinc -Wall
 MAKEFLAGS = -e
 DEFS =
 OBJDIR = i386-obj
@@ -35,10 +36,11 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o
 
 # TARGET: build kernel image
-kernel.bin: $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(KMAIN_LD) $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o kosh.o libkoshlib.a libstd.a $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o
-	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJDIR)/start.o $(OBJDIR)/kmain.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o kosh/kosh.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/libstd.a $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
+kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
+	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -155,6 +157,7 @@ $(OBJDIR)/asm.o: src/platform/$(PLATFORM)/asm.c
 $(OBJDIR)/string.o: src/string.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/string.o src/string.c
 
+
 $(OBJDIR)/reboot.o: src/reboot.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/reboot.o src/reboot.c
 
@@ -170,6 +173,11 @@ $(OBJDIR)/pic.o: src/platform/$(PLATFORM)/pic.c
 $(OBJDIR)/phys_core.o: src/memory/phys_core.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/phys_core.o src/memory/phys_core.c
 
+$(OBJDIR)/paging.o: src/memory/paging.c
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/paging.o src/memory/paging.c
+
+$(OBJDIR)/stringmem.o: src/memory/stringmem.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/stringmem.o src/memory/stringmem.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
