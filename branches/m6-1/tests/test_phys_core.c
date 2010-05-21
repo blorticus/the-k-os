@@ -65,6 +65,9 @@ struct multiboot_mmap_entry* testing_find_last_free_mmap_chunk( const struct mul
 void perform_tests( lcheck_suite* s ) {
     memptr sv;
     int i, g;
+    int ok;
+    u32 correct_stack_size;
+    u32 ev;
 
     // TEST 1: break memory chunk six areas (notice that, between m[1] and m[2] there is a missing chunk of 400 bytes; that's on purpose):
     //         Put kernel in the middle of mmap chunk at offset 3, right on page boundaries.  Also, put the first chunk below the 1 MB boundary
@@ -140,8 +143,18 @@ void perform_tests( lcheck_suite* s ) {
     init_physical_paging_32( 12, mmap, sizeof( mmap ), (memaddr*)0x100000, (memaddr*)0x109a75 );
 
     // align top memory to page boundary and bottom to next highest page boundary.  That, divided by 4096, is the number of pages that should have been added
-    fail_unless( s, get_phys_mem_stack_size() == (((133103616 & 0xfffff000) - (0x109a76 + 4096 - (0x109a76 % 4096))) / 4096),
+    correct_stack_size = ((133103616 & 0xfffff000) - (0x109a76 + 4096 - (0x109a76 % 4096))) / 4096;
+    fail_unless( s, get_phys_mem_stack_size() == correct_stack_size,
                  "TEST 5: get_phys_mem_stack_size report incorrect stack size" );
+
+    ok = 1;
+
+    for (i = 0, ev = 0x109a76 + 4096 - (0x109a76 % 4096); i < correct_stack_size; i++, ev += 4096)
+        if ((u32)get_phys_mem_stack_value_at( i ) != ev)
+            ok = 0;
+
+    fail_unless( s, ok,
+                 "TEST 5: stack does not contain expected values" );
 }
 
 
