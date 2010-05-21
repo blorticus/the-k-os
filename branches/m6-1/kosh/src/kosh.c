@@ -7,6 +7,9 @@
 #include <platform/ia-32/interrupts.h>
 #include <sys/kernelsyms.h>
 
+#include <memory/paging.h>
+extern void phys_core_set_window( KTERM_WINDOW w );
+
 #define INPUT_BUFFER_SIZE   100
 
 kterm_window w1, d1, w2;

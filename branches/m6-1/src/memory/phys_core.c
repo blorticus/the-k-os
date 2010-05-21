@@ -2,6 +2,13 @@
 #include <multiboot.h>
 #include <memory/paging.h>
 
+u32 cbi = 0;
+void (*callback)(u32, u32) = NULL;
+void phys_core_set_callback( void (*c)(u32, u32) ) {
+    callback = c;
+}
+
+
 /**
  * BRIEF:           A physical memory allocator
  * BACKGROUND:      Allow kernel to allocate and de-allocate physical memory.
@@ -67,38 +74,34 @@ get_phys_mem_stack_value_at( u32 offset ) {
 }
 
 
-static void process_mmap_chunk( memptr chunk_offset, memptr end_of_chunk, u32 page_cmp, u32 page_size ) {
-    if (((u32)chunk_offset & page_cmp) != 0)
-        chunk_offset = (memptr)((u32)(((u32)chunk_offset | page_cmp) + 1));
+static void process_mmap_chunk( u32 chunk_offset, u32 end_of_chunk, u32 page_cmp, u32 page_size ) {
+    u32 i;
 
-    if (((u32)end_of_chunk & page_cmp) != page_cmp)     // also page align end_of_chunk to the top of the nearest previous page
-        end_of_chunk = (memptr)(((u32)end_of_chunk & ~page_cmp) - 1);
-    
-    while (chunk_offset < end_of_chunk) {
+    if ((chunk_offset & page_cmp) != 0)
+        chunk_offset = ((chunk_offset | page_cmp) + 1);
+
+    if ((end_of_chunk & page_cmp) != page_cmp)     // also page align end_of_chunk to the top of the nearest previous page
+       end_of_chunk = (end_of_chunk & ~page_cmp) - 1;
+
+    for (i = chunk_offset; i < end_of_chunk; i += page_size) {
         push_physical_memaddr( (memaddr)chunk_offset );
-        chunk_offset = (memptr)((char*)(chunk_offset + page_size));
+        chunk_offset = chunk_offset + page_size;
     }
 }
 
 
-memaddr*
-init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_entry* mmap, u32 mmap_length, memptr start_of_kernel, memptr end_of_kernel ) {
-    u32 free_memory = 0;        // XXX: too small if using PAE!
-    u32 traversed;
-    struct multiboot_mmap_entry* next_mmap_entry;
-    struct multiboot_mmap_entry* last_free_chunk;
-    memptr chunk_offset;
-    memptr end_of_chunk;
-    u32 page_cmp = 0xffffffff >> (32 - bits_for_page_size); // page_size - 1
-    u32 page_size = page_cmp + 1;
-    memptr page_aligned_stack_base;
-    memptr next_stack_item;
-    int mmap_chunk_already_processed;   // oh, just a stupid little cheat
+/* this possibly peculiar set of ifdef's for TEST allows testing of find_last_free_mmap_chunk() and also allows
+   testing of init_physical_paging_32() where the stack is created in a controllable chunk of memory */
 
-    // iterate through mmap and find last free chunk (and count the amount of free memory).  If the last chunk isn't large enough to hold the stack of pointers,
-    // bail out
-    traversed = 0;
-    next_mmap_entry = (struct multiboot_mmap_entry*)mmap;
+#ifdef TEST
+struct multiboot_mmap_entry* find_last_free_mmap_chunk( const struct multiboot_mmap_entry* mmap, u32 mmap_length ) {
+#else
+static inline struct multiboot_mmap_entry* find_last_free_mmap_chunk( const struct multiboot_mmap_entry* mmap, u32 mmap_length ) {
+#endif
+    u32 traversed = 0;
+    u32 free_memory = 0;        // XXX: u32 too small if using PAE!
+    struct multiboot_mmap_entry* next_mmap_entry = (struct multiboot_mmap_entry*)mmap;
+    struct multiboot_mmap_entry* last_free_chunk;
 
     while (traversed < mmap_length) {
         if (next_mmap_entry->type == 1) {   // only multiboot mmap type that means 'free to use'
@@ -109,6 +112,36 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
         traversed += next_mmap_entry->entry_size;
         next_mmap_entry = (struct multiboot_mmap_entry*)((u8*)next_mmap_entry + next_mmap_entry->entry_size + 4);   // +4 because of the size, which isn't part of entry
     }
+
+    return last_free_chunk;
+}
+
+
+#ifdef TEST
+    extern struct multiboot_mmap_entry* testing_find_last_free_mmap_chunk( const struct multiboot_mmap_entry* mmap, u32 mmap_length );
+    #define m_find_last_free_mmap_chunk(mmap, mmap_length) testing_find_last_free_mmap_chunk( mmap, mmap_length )
+#else
+    #define m_find_last_free_mmap_chunk(mmap, mmap_length) find_last_free_mmap_chunk( mmap, mmap_length )
+#endif
+
+
+memaddr*
+init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_entry* mmap, u32 mmap_length, memptr start_of_kernel, memptr end_of_kernel ) {
+    u32 free_memory = 0;        // XXX: too small if using PAE!
+    u32 traversed;
+    struct multiboot_mmap_entry* next_mmap_entry;
+    struct multiboot_mmap_entry* last_free_chunk;
+    u32 chunk_offset;
+    u32 end_of_chunk;
+    u32 page_cmp = 0xffffffff >> (32 - bits_for_page_size); // page_size - 1
+    u32 page_size = page_cmp + 1;
+    memptr page_aligned_stack_base;
+    memptr next_stack_item;
+    int mmap_chunk_already_processed;   // oh, just a stupid little cheat
+
+    // iterate through mmap and find last free chunk (and count the amount of free memory).  If the last chunk isn't large enough to hold the stack of pointers,
+    // bail out
+    last_free_chunk = m_find_last_free_mmap_chunk( mmap, mmap_length );
 
     if (last_free_chunk->length_low < free_memory >> (bits_for_page_size - 2))  // i.e., free_memory / bits_for_page_size * 4, because 4 bytes per pointer on stack
         return NULL;
@@ -122,35 +155,35 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
         if (next_mmap_entry->type == 1) {   // only multiboot mmap type that means 'free to use'
             mmap_chunk_already_processed = 0;
 
-            chunk_offset = (memptr)next_mmap_entry->base_addr_low;
-            end_of_chunk = (memptr)chunk_offset + next_mmap_entry->length_low;
+            chunk_offset = (u32)(next_mmap_entry->base_addr_low);
+            end_of_chunk = chunk_offset + next_mmap_entry->length_low;
 
             // XXX: a vile hack that should be fixed, but it does fulfill a requirement: don't allow physical pages to come
-            //      from lowest 1 MiB
-            if ((u32)chunk_offset <= 0x100000) {
-                if ((u32)end_of_chunk <= 0x100000) {
-                    end_of_chunk = chunk_offset;
+            //      from lowest 1 MiB.  Omit from testing because we don't know where the memory chunks will actually be
+            if (chunk_offset < 0x100000) {
+                if (end_of_chunk <= 0x100000) {
+                    mmap_chunk_already_processed = 1;
                 }
                 else {
-                    chunk_offset = (memptr)0x100001;
+                    chunk_offset = 0x100000;
                 }
             }
 
             // if the kernel is mixed somewhere between chunk_offset and end_of_chunk, adjust around it
-            if (start_of_kernel <= chunk_offset) {
-                if (end_of_kernel >= chunk_offset) {
-                    if (end_of_kernel < end_of_chunk)
-                        chunk_offset = (memptr)((char*)(end_of_kernel + 1));
+            if ((u32)start_of_kernel <= chunk_offset) {
+                if ((u32)end_of_kernel >= chunk_offset) {
+                    if ((u32)end_of_kernel < end_of_chunk)
+                        chunk_offset = (u32)end_of_kernel + 1;
                     else
                         chunk_offset = end_of_chunk; // this chunk completely contained by the kernel
                 }
             }
-            else if (start_of_kernel <= end_of_chunk) { // ASSERT: kernel starts after start of chunk but before or at the end of chunk
-                if (end_of_kernel >= end_of_chunk)
-                    end_of_chunk = (memptr)((char*)(start_of_kernel - 1));
+            else if ((u32)start_of_kernel <= end_of_chunk) { // ASSERT: kernel starts after start of chunk but before or at the end of chunk
+                if ((u32)end_of_kernel >= end_of_chunk)
+                    end_of_chunk = (u32)start_of_kernel - 1;
                 else {   // ASSERT: the kernel is completely contained within the chunk, so this is effectively two chunks
-                    process_mmap_chunk( chunk_offset,       start_of_kernel - 1, page_cmp, page_size );
-                    process_mmap_chunk( end_of_kernel + 1,  end_of_chunk,        page_cmp, page_size );
+                    process_mmap_chunk( chunk_offset,            (u32)start_of_kernel - 1, page_cmp, page_size );
+                    process_mmap_chunk( (u32)end_of_kernel + 1,  end_of_chunk,             page_cmp, page_size );
                     mmap_chunk_already_processed = 1;
                 }
             }
@@ -165,6 +198,7 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
         next_mmap_entry = (struct multiboot_mmap_entry*)((u8*)next_mmap_entry + next_mmap_entry->entry_size + 4);   // +4 because of the size, which isn't part of entry
     }
 
+#ifndef TEST
     // One more thing to do ... remove all pages that contain the physical memory stack.  They must be at the end of stack in descending order
     page_aligned_stack_base = (memptr)((u32)mem_stack_top & ~page_cmp);  // since stack grows down, find nearest page floor under the top of the stack
 
@@ -173,6 +207,7 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
             return NULL;
 
     push_physical_memaddr( (memaddr)next_stack_item );  // we popped one too many, so push the last value back on
+#endif
 
     mem_stack_limit = get_phys_mem_stack_size();
 

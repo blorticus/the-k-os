@@ -13,7 +13,7 @@ int main( void );
 kterm_window rw;
 KTERM_WINDOW kterm = &rw;
 
-static inline halt_os( void ) {
+static inline void halt_os( void ) {
     for ( ;; ) ;
 }
 
