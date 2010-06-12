@@ -70,12 +70,13 @@ get_phys_mem_stack_value_at( u32 offset ) {
     if (offset >= get_phys_mem_stack_size())
         return NULL;
 
+    // keep in mind that mem_stack_bottom points just beyond last stack item (hence the '+ 1')
     return (memaddr*)*(mem_stack_bottom - (offset + 1));
 }
 
 
 static void process_mmap_chunk( u32 chunk_offset, u32 end_of_chunk, u32 page_cmp, u32 page_size ) {
-    u32 i;
+//    u32 i;
 
     if ((chunk_offset & page_cmp) != 0)
         chunk_offset = ((chunk_offset | page_cmp) + 1);
@@ -83,7 +84,8 @@ static void process_mmap_chunk( u32 chunk_offset, u32 end_of_chunk, u32 page_cmp
     if ((end_of_chunk & page_cmp) != page_cmp)     // also page align end_of_chunk to the top of the nearest previous page
        end_of_chunk = (end_of_chunk & ~page_cmp) - 1;
 
-    for (i = chunk_offset; i < end_of_chunk; i += page_size) {
+//    for (i = chunk_offset; i < end_of_chunk && i < 0x7000000; i += page_size) {
+    while (chunk_offset < end_of_chunk && chunk_offset < 0x7000000) {
         push_physical_memaddr( (memaddr)chunk_offset );
         chunk_offset = chunk_offset + page_size;
     }
@@ -99,14 +101,12 @@ struct multiboot_mmap_entry* find_last_free_mmap_chunk( const struct multiboot_m
 static inline struct multiboot_mmap_entry* find_last_free_mmap_chunk( const struct multiboot_mmap_entry* mmap, u32 mmap_length ) {
 #endif
     u32 traversed = 0;
-    u32 free_memory = 0;        // XXX: u32 too small if using PAE!
     struct multiboot_mmap_entry* next_mmap_entry = (struct multiboot_mmap_entry*)mmap;
     struct multiboot_mmap_entry* last_free_chunk;
 
     while (traversed < mmap_length) {
         if (next_mmap_entry->type == 1) {   // only multiboot mmap type that means 'free to use'
             last_free_chunk = next_mmap_entry;
-            free_memory += next_mmap_entry->length_low;
         }
 
         traversed += next_mmap_entry->entry_size;
@@ -141,12 +141,16 @@ init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_ent
 
     // iterate through mmap and find last free chunk (and count the amount of free memory).  If the last chunk isn't large enough to hold the stack of pointers,
     // bail out
+#if 0
     last_free_chunk = m_find_last_free_mmap_chunk( mmap, mmap_length );
 
     if (last_free_chunk->length_low < free_memory >> (bits_for_page_size - 2))  // i.e., free_memory / bits_for_page_size * 4, because 4 bytes per pointer on stack
         return NULL;
 
     mem_stack_bottom = mem_stack_top = (memptr)last_free_chunk->base_addr_low + last_free_chunk->length_low;
+#endif
+
+    mem_stack_bottom = mem_stack_top = (memptr)0x1000000;
 
     traversed = 0;
     next_mmap_entry = (struct multiboot_mmap_entry*)mmap;

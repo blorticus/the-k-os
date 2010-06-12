@@ -18,6 +18,7 @@ memaddr allocate_physical_page( void );
 void free_physical_page( memaddr page_start );
 memaddr* get_phys_mem_stack_value_at( u32 offset );
 memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void );
+void enable_paging_mode( memptr dirptr );
 
 
 #endif

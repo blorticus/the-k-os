@@ -353,6 +353,16 @@ kosh_instruction* input_to_instruction( char* input ) {
             instruction->command = KERNEL_INFO;
         }
     }
+    else if (strcmp( token_buffer, "test" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+        if (token_buffer[0] != NULL) {
+            instruction->command = HELP;
+            instruction->error   = "Extra Input After Command";
+        }
+        else {
+            instruction->command = TEST;
+        }
+    }
     else {
         instruction->command = _ERROR_;
         instruction->error   = "Invalid Command";

@@ -28,10 +28,10 @@ void kmain( void ) {
 
     create_gdt();
 
-    if (!init_physical_paging_32( 12, mbi->mmap_addr, mbi->mmap_length, START_OF_KERNEL, END_OF_KERNEL )) {
-        kterm_panic_msg( "Physical Paging Failed" );
-        halt_os();
-    }
+//    if (!init_physical_paging_32( 12, mbi->mmap_addr, mbi->mmap_length, START_OF_KERNEL, END_OF_KERNEL )) {
+//        kterm_panic_msg( "Physical Paging Failed" );
+//        halt_os();
+//    }
 
     idt_install();
     isrs_install();

@@ -9,6 +9,8 @@
 
 #include <memory/paging.h>
 extern void phys_core_set_window( KTERM_WINDOW w );
+//void* fake_alloc_one_virtual_page( u32* dir, u32 dir_entry, u32 table_entry, u32 page_aligned_phys_memory );
+u64 fake_alloc_one_virtual_page( u32* dir, u32 dir_entry, u32 table_entry, u32 page_aligned_phys_memory );
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -164,6 +166,11 @@ int main( void ) {
     cpuid_retval crv;
     int pos_count;              // for cpuid function
 
+    u32 *dir, *table, paddr;
+    char *TEST_A, *TEST_B, *t;
+    u32 phys_addr, virt_addr;
+    memptr va;
+
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
     kterm_create_window( divider_win, 1600, 1, 80 );
@@ -239,6 +246,7 @@ int main( void ) {
                 fp f;
                 f = (fp) dumpregs;
                 f();
+                kterm_window_printf( top_win, "CR0: %x  CR3: %x\n", read_from_control_register_0(), read_from_control_register_3() );
                 break;
 
             case HELP:
@@ -307,6 +315,71 @@ int main( void ) {
 
             case KERNEL_INFO:
                 kterm_window_printf( top_win, "KERNEL START = 0x%x  END = 0x%x\n", (u32)START_OF_KERNEL, (u32)END_OF_KERNEL );
+                break;
+
+            case TEST:
+                dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
+
+//                // seed area where we read/write
+//                TEST_A = (char*)0x1000000;
+//                for (i = 'A'; i <= 'Z'; i++)
+//                    *TEST_A++ = (char)i;
+//                *TEST_A = '\0';
+//
+//                kterm_window_printf( bottom_win, "BEFORE PAGING: %s\n", (char*)0x1000000 );
+//
+//              // dir at 0x300000, table follows
+//                dir = (u32*)0x300000;
+//                memset( (void*)dir, 0, 4096 );
+//
+//              // identity page through 0x3ffffff
+//                table = (u32*)(0x300000 + 4096);
+//                for (i = 0, paddr = 0; i < 1024; i++, paddr += 4096)
+//                    table[i] = paddr | 3;
+//
+//                dir[0] = ((u32)table) | 3;
+//
+//                // map 0xc0000000 .. c01000000 to physical page at 0x400000 .. 0x500000`
+//                table = (u32*)(0x300000 + 4096 * 2);
+//                for (i = 0, paddr = 0x400000; i < 256; i++, paddr += 4096)
+//                    table[i] = paddr | 3;
+//                for (i = 256; i < 1024; i++)
+//                    table[i] = 2;  // supervisor + r/w + not present
+//
+//                dir[768] = (u32)table;
+//                dir[768] |= 3;
+//
+                enable_paging_mode( dir );
+
+                va = allocate_virtual_page( &virt_addr, &phys_addr );
+
+                kterm_window_printf( bottom_win, "PHYS: 0x%x, VIRT: 0x%x\n", phys_addr, virt_addr );
+
+                TEST_A = (char*)va;
+
+                TEST_B = (char*)"Take it to the limit and beyond";
+
+                while (*TEST_B) *TEST_A++ = *TEST_B++;
+
+                kterm_window_printf( bottom_win, "TEST_A: %s\n", (char*)va );
+
+//
+//                addrs = fake_alloc_one_virtual_page( dir, 768, 0, 0x800000 );
+//                virt_addr = (char*)0xc0000000; //addrs >> 32;
+//                phys_addr = (u32)addrs;
+//
+//                kterm_window_printf( bottom_win, "PHYS: 0x%x, VIRT: 0x%x\n", phys_addr, virt_addr );
+//
+//                kterm_window_printf( bottom_win, "AFTER PAGING: %s\n", (char*)0xc0000000 );
+//
+//                TEST_A = (char*)virt_addr;
+//                TEST_B = (char*)"That's the spirit of the Great Northwest!";
+//
+//                while (*TEST_A++ = *TEST_B++)
+//                    ;
+//
+//                kterm_window_printf( bottom_win, "AFTER WRITING: %s\n", (char*)virt_addr );
+
                 break;
 
             default:

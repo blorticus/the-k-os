@@ -17,6 +17,7 @@ typedef enum {
     HELP,           // print help
     CPUID,          // CPUID support and info
     KERNEL_INFO,    // information about the kernel
+    TEST,           // for temporary testing of features
 } kosh_base_command;
 
 typedef enum {
