@@ -8,9 +8,10 @@ typedef struct {
 } lcheck_suite;
 
 
-lcheck_suite* create_suite  ( const char* name );
-void          fail_unless   ( lcheck_suite* s, int result, char* testname );
-int           conclude_suite( lcheck_suite* s );
+lcheck_suite* create_suite   ( const char* name );
+void          fail_unless    ( lcheck_suite* s, int result, char* testname );
+void          fmt_fail_unless( lcheck_suite* s, int result, char* testname_fmt, ... );
+int           conclude_suite ( lcheck_suite* s );
 
 int   __strncmp       ( const char* s1, const char* s2, unsigned int n );
 int   __strcmp        ( const char* s1, const char* s2 );

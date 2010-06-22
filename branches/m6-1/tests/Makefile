@@ -40,6 +40,9 @@ paging.t: test_paging.c liblcheck.a paging.o
 kterm.t: test_kterm.c liblcheck.a kterm.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -o kterm.t test_kterm.c ../$(BASE_OBJDIR)/kterm.o ../$(BASE_OBJDIR)/vga.o $(LIBS)
 
+kernel_stack.t: test_kernel_stack.c liblcheck.a kernel_stack.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o kernel_stack.t test_kernel_stack.c ../$(BASE_OBJDIR)/kernel_stack.o $(LIBS)
+
 
 liblcheck.a:
 	$(MAKE) -C ../lcheck liblcheck.a TESTING=1
@@ -73,6 +76,9 @@ kmalloc.o:
 
 phys_core.o:
 	$(MAKE) -C ../src/memory ../../$(BASE_OBJDIR)/phys_core.o TESTING=1
+
+kernel_stack.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/kernel_stack.o TESTING=1
 
 
 .PHONY: clean
