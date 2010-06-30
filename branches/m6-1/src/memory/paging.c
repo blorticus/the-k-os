@@ -1,36 +1,18 @@
 #include <memory/paging.h>
 #include <string.h>
 #include <platform/ia-32/cpu.h>
+#include <util/kernel_stack.h>
 
 #define KERNEL_VIRTUAL_PAGE_ATTRS   0x03
 
 #define CLEAN_DIR_ENTRY(e)    e = 0x4;
 #define CLEAN_TABLE_ENTRY(e)  e = 0x4;
 
-u32* phys_mem_stack_start;    // immediately before first entry
-u32* phys_mem_stack_end;      // immediately after last entry
+//u32* phys_mem_stack_start;    // immediately before first entry
+//u32* phys_mem_stack_end;      // immediately after last entry
 
-void init_mem_stack( u32* start ) {
-    phys_mem_stack_start = phys_mem_stack_end = start;
-}
-
-static inline void push_phys_page( u32 page_addr ) {
-    *phys_mem_stack_end++ = page_addr;
-}
-
-
-static inline u32 pop_phys_page() {
-    u32 a;
-    if (phys_mem_stack_start < phys_mem_stack_end) {
-        a = *(phys_mem_stack_end - 1);
-        phys_mem_stack_end--;
-        return a;
-    }
-    else {
-        return 0;
-    }
-}
-
+struct kernel_stack ss;
+KERNEL_STACK phys_stack = &ss;
 
 u32 next_phys_page_base = 0x400000;
 u32 next_dir_entry      = 768;
@@ -38,11 +20,23 @@ u32 next_table_entry    = 0;
 
 //#define GET_PHYS_PAGE(p)    p = (u32*)next_phys_page_base; next_phys_page_base += 4096;
 
-static inline u32* get_phys_page() {
-    u32 r = next_phys_page_base;
-    next_phys_page_base += 4096;
-    return (u32*)r;
+void init_phys_stack( void ) {
+#ifndef TEST
+    kernel_stack_init( phys_stack, 0x300000 );
+    kernel_stack_push_repeat( phys_stack, (0x800000 - 0x400000) / 4096, 0x400000, 4096 );
+#endif
 }
+
+#ifdef TEST
+extern u32* get_phys_page();
+#else
+static inline u32* get_phys_page() {
+    return (u32*)(kernel_stack_pop( phys_stack ));
+//    u32 r = next_phys_page_base;
+//    next_phys_page_base += 4096;
+//    return (u32*)r;
+}
+#endif
 
 
 /*
@@ -162,8 +156,8 @@ memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void ) {
     u32 addr;
     int i;
 
-//    init_mem_stack( (u32*)0x300000 );
-//
+    init_phys_stack();
+
 //    for (addr = 0x400000; addr < 0x800000; addr += 4096)
 //        push_phys_page( addr );
 //

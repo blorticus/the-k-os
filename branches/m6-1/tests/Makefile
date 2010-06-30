@@ -37,6 +37,9 @@ phys_core.t: test_phys_core.c liblcheck.a phys_core.o
 paging.t: test_paging.c liblcheck.a paging.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o paging.t test_paging.c ../$(BASE_OBJDIR)/paging.o $(LIBS)
 
+paging_impl.t: test_IMPL_paging.c liblcheck.a paging.o kernel_stack.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o paging_impl.t test_IMPL_paging.c ../$(BASE_OBJDIR)/paging.o ../$(BASE_OBJDIR)/kernel_stack.o $(LIBS)
+
 kterm.t: test_kterm.c liblcheck.a kterm.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -DTEST -o kterm.t test_kterm.c ../$(BASE_OBJDIR)/kterm.o ../$(BASE_OBJDIR)/vga.o $(LIBS)
 

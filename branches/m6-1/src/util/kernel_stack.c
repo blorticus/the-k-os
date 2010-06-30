@@ -54,3 +54,13 @@ kernel_stack_peek( KERNEL_STACK s ) {
 }
 
 
+void
+kernel_stack_push_repeat( KERNEL_STACK s, unsigned int count, u32 init_value, u32 step ) {
+    while (count--) {
+        *(s->limit) = init_value;
+        s->limit++;
+        init_value += step;
+    }
+}
+
+

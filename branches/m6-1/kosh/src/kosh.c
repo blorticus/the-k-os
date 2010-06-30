@@ -321,11 +321,17 @@ int main( void ) {
 
                 u32* t1;
 
-                t1 = (u32*)dir[0];
+                t1 = (u32*)(dir[1023] & 0xfffff000);
 
-                kterm_window_printf( bottom_win, "DIR = 0x%x, TBL = 0x%x, TBL[0] = 0x%x, TBL[1] = 0x%x\n", (u32)dir, (u32)t1, t1[0], t1[1] );
+                kterm_window_printf( bottom_win, "BEFORE: DIR = 0x%x, TBL = 0x%x, TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)dir, (u32)t1, t1[1023], t1[1022] );
 
-//                enable_paging_mode( dir );
+                enable_paging_mode( dir );
+
+                u32* da, *ta;
+                da = (u32*)0xfffff000;
+                ta = (u32*)0xffffe000;
+
+                kterm_window_printf( bottom_win, "AFTER: DIR = 0x%x, TBL = 0x%x, TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)da, (u32)ta, ta[1023], ta[1022] );
 
 //                va = allocate_virtual_page( &virt_addr, &phys_addr );
 //
