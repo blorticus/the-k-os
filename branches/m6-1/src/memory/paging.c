@@ -20,12 +20,14 @@ u32 next_table_entry    = 0;
 
 //#define GET_PHYS_PAGE(p)    p = (u32*)next_phys_page_base; next_phys_page_base += 4096;
 
+#ifdef TEST
+extern void init_phys_stack( void );
+#else
 void init_phys_stack( void ) {
-#ifndef TEST
-    kernel_stack_init( phys_stack, 0x300000 );
+    kernel_stack_init( phys_stack, (memptr)0x300000 );
     kernel_stack_push_repeat( phys_stack, (0x800000 - 0x400000) / 4096, 0x400000, 4096 );
-#endif
 }
+#endif
 
 #ifdef TEST
 extern u32* get_phys_page();
@@ -158,14 +160,9 @@ memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void ) {
 
     init_phys_stack();
 
-//    for (addr = 0x400000; addr < 0x800000; addr += 4096)
-//        push_phys_page( addr );
-//
-//    dir = (u32*)pop_phys_page();
     dir = get_phys_page();
     clear_directory( dir );
 
-//    table = (u32*)pop_phys_page();
     table = get_phys_page();
 
     // identity page 0x0 through 0x3fffff
@@ -178,7 +175,6 @@ memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void ) {
     // so, 0xffc00000 is the table at dir[0], 0xffc00100 (which is 0xffc00000 + 4096) is the table at dir[1], and so forth.  0xfffff000 is the directory itself,
     // 0xffffe000 is the last table (required so that we can map the other tables).  This means that we lose the penultimate 4 MiB of linear memory.  We don't
     // start at 0xffbff000 because that would require mapping one more physical page
-//    table = (u32*)pop_phys_page();
     table = get_phys_page();
     clear_table( table );
 
@@ -187,56 +183,66 @@ memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void ) {
 
     dir[1023] = (u32)table | KERNEL_VIRTUAL_PAGE_ATTRS;
 
-//    next_check_dir_entry = 1;
-//    next_check_tbl_entry = 0;
-
     return (memptr)dir;
+}
+
+
+#ifndef TEST
+static inline 
+#endif
+u32* get_virt_addr_for_table_entry( u32 e ) {
+    return (u32*)(0xffc00000 + 4096 * e);
+}
+
+
+/**
+ * If the page table has already been configured for table referencing page containing the base address 'for_virt_page_base_addr',
+ * return the virtual address for that page table.  Otherwise, allocate a page table and, it in the directory, then return
+ * the table's virtual address.  Return null if a page cannot be allocated.  This assumes that the directory has already
+ * been configured at 0xfffff000, that virtual tables start at 0xffffe000, that 'for_virt_page_base_addr' is a valid page base
+ * address (that is, for_virt_page_base_addr % 4096 == 0), and that paging has been enabled.
+ */
+static u32* create_or_return_page_table( memptr for_virt_page_base_addr ) {
+    u32* dir        = (u32*)0xfffff000;
+    u32* tbls_tbl   = (u32*)0xffffe000;    // as described above, this is the virt addr of the last page table, which provides virt addrs for each page table
+    u32  dir_entry  = (u32)for_virt_page_base_addr >> 22;                // i.e., for_virt_page_base_addr / 1024 / 4096
+    u32* page_tbl_phys_addr;
+
+    if (dir[dir_entry] < 4096) {    // i.e., if dir entry is only flags
+        page_tbl_phys_addr = get_phys_page();
+        if (page_tbl_phys_addr == NULL)
+            return NULL;
+
+        dir[dir_entry]      = (u32)page_tbl_phys_addr | KERNEL_VIRTUAL_PAGE_ATTRS;
+        tbls_tbl[dir_entry] = (u32)page_tbl_phys_addr | KERNEL_VIRTUAL_PAGE_ATTRS;
+    }
+
+    return get_virt_addr_for_table_entry( dir_entry );
 }
 
 
 u32* allocate_virtual_page( u32* va, u32* pa ) {
     int i, j;
-    u32 virt_addr = 0;          // the base address of the virtual page for this allocation
-    u32 *phys_addr = 0;          // the base address of the physical page actually allocated
-    u32 *tbl_phys, *tbl_virt;   // if a new page table must be allocated, its physical base addr, and the virt addr we use to get at it
+    u32* virt_addr = 0;          // the base address of the virtual page for this allocation
+    u32* phys_addr = 0;          // the base address of the physical page actually allocated
+    u32  page_tbl_entry;
+    u32* page_tbl_virt_addr;
 
     u32* dir      = (u32*)0xfffff000;
-    u32 *tbls_tbl = (u32*)0xffffe000;    // as described above, this is the virt addr of the last page table, which provides virt addrs for each page table
+    u32* tbls_tbl = (u32*)0xffffe000;    // as described above, this is the virt addr of the last page table, which provides virt addrs for each page table
 
-    phys_addr = (u32*)0x800000;
-    virt_addr = 0xc0000000;
+    phys_addr = get_phys_page();  // (u32*)0x900000;
+    virt_addr = (u32*)0xc0000000;
 
-    tbl_phys = (u32*)0x500000;
+    page_tbl_entry  = ((u32)virt_addr & 0x3fffff) >> 12;   // i.e., (for_virt_page_base_addr % (1024 * 4096)) / 4096
 
-    dir[768] = (u32)tbl_phys | KERNEL_VIRTUAL_PAGE_ATTRS;
-//    tbls_tbl[768
+    page_tbl_virt_addr = create_or_return_page_table( (memptr)virt_addr );
+    page_tbl_virt_addr[page_tbl_entry] = (u32)phys_addr | KERNEL_VIRTUAL_PAGE_ATTRS;
 
-//    if (next_dir_entry == 1024)
-//        return 0;
-//
-//    virt_addr = next_dir_entry * 4096 * 1024 + (next_table_entry * 4096);
-//    GET_PHYS_PAGE( phys_addr );
-//
-//    if (next_table_entry == 0) {
-//        GET_PHYS_PAGE(tbl_phys);
-//        tbls_tbl[next_dir_entry] = (u32)tbl_phys | KERNEL_VIRTUAL_PAGE_ATTRS;
-//        dir[next_dir_entry]      = (u32)tbl_phys | KERNEL_VIRTUAL_PAGE_ATTRS;
-//    }
-//
-//    tbl_virt = (u32*)(0xffc00000 + 4096 * next_dir_entry);
-//    clear_table( tbl_virt );
-//
-//    tbl_virt[next_table_entry] = (u32)phys_addr;
-//
-//    if (++next_table_entry > 1023) {
-//        next_dir_entry++;
-//        next_table_entry = 0;
-//    }
-
-    *va = virt_addr;
+    *va = (u32)virt_addr;
     *pa = (u32)phys_addr;
 
-    return (u32*)virt_addr;
+    return virt_addr;
 
 //    // find an unassigned page starting from where we last left off
 //    for (i = next_check_dir_entry; i < 1024 && !virt_addr; i++) {

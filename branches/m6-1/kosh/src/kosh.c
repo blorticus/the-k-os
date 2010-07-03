@@ -323,26 +323,29 @@ int main( void ) {
 
                 t1 = (u32*)(dir[1023] & 0xfffff000);
 
-                kterm_window_printf( bottom_win, "BEFORE: DIR = 0x%x, TBL = 0x%x, TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)dir, (u32)t1, t1[1023], t1[1022] );
+                kterm_window_printf( top_win, "BEFORE: DIR = 0x%x, TBL = 0x%x,\n   TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)dir, (u32)t1, t1[1023], t1[1022] );
 
                 enable_paging_mode( dir );
 
-                u32* da, *ta;
+                u32* da, *ta, *tb;
                 da = (u32*)0xfffff000;
                 ta = (u32*)0xffffe000;
 
-                kterm_window_printf( bottom_win, "AFTER: DIR = 0x%x, TBL = 0x%x, TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)da, (u32)ta, ta[1023], ta[1022] );
+                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, TBL = 0x%x,\n   TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)da, (u32)ta, ta[1023], ta[1022] );
 
-//                va = allocate_virtual_page( &virt_addr, &phys_addr );
-//
-//                kterm_window_printf( bottom_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-//
-//                TEST_A = (char*)va;
-//                TEST_B = (char*)"Take it to the limit and beyond";
-//
-//                while (*TEST_B) *TEST_A++ = *TEST_B++;
-//
-//                kterm_window_printf( bottom_win, "TEST_A: %s\n", (char*)va );
+                va = allocate_virtual_page( &virt_addr, &phys_addr );
+
+                tb = (u32*)0xfff00000;
+
+                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+                kterm_window_printf( top_win, "DIR[768] = 0x%x, TBLS_TBL[768] = 0x%x, TBL[0] = 0x%x\n", da[768], ta[768], tb[0] );
+
+                TEST_A = (char*)va;
+                TEST_B = (char*)"Take it to the limit and beyond";
+
+                while (*TEST_B) *TEST_A++ = *TEST_B++;
+
+                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
 
                 break;
 
