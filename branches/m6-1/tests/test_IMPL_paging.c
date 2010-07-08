@@ -3,6 +3,7 @@
 #include <sys/types.h>
 
 extern u32* get_virt_addr_for_table_entry( u32 e );
+extern void set_virt_page_scan_start( u16 at_dir_entry, u16 at_table_entry );
 
 #define PAGES   9
 
@@ -14,6 +15,15 @@ u32* get_page_number( int i ) {
         return 0;
     else
         return (u32*)(page_aligned_pages_start + 1024 * i);
+}
+
+// a fake directory
+u32 fake_dir[1024];
+
+static void clear_fake_dir() {
+    int i;
+    for (i = 0; i < 1024; i++)
+        fake_dir[i] = 3;
 }
 
 
@@ -64,6 +74,12 @@ int main( void ) {
 
     fail_unless( s, (u32)get_virt_addr_for_table_entry( 768 ) == 0xfff00000,
                  "get_virt_addr_for_table_entry( 0 ) does not return 0xfff00000" );
+
+//    // tests for get_next_available_virt_page()
+//    clear_fake_dir();
+//    set_virt_scan_start( 10, 0 );   // more-or-less arbitrary value somewhere past 4 MiB
+//
+    
 
     return conclude_suite( s );
 }

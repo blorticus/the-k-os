@@ -14,9 +14,6 @@
 struct kernel_stack ss;
 KERNEL_STACK phys_stack = &ss;
 
-u32 next_phys_page_base = 0x400000;
-u32 next_dir_entry      = 768;
-u32 next_table_entry    = 0;
 
 //#define GET_PHYS_PAGE(p)    p = (u32*)next_phys_page_base; next_phys_page_base += 4096;
 
@@ -72,7 +69,6 @@ static inline u32* get_phys_page() {
  * So, page directory entry 0 (the first entry) points to a page table which has 1024 entries, and covers the first 4 MiB (1024 entries * 4096 KiB/page) of memory;
  *  Page directory entry 1 (the second entry) points to a page table which has 1024 entries, and covers the second 4 MiB of memory; and so forth.
  * The lowest 1MiB of memory will be "identity paged" in all processes.  That is, 0xb8000 if the virtual memory space will map to 0xb8000 is the physical memory space.
- * The kernel itself and its data structures will be mapped to 0xc0000000 and above (making 0xc0000000 - 0xffffffff unavailable to any user process).
  * The GDT and IDT pages will be identify mapped.
  * The last page table entry in every page mapping structure will map to the page containing the page directory (which must be page aligned)
  */
@@ -133,9 +129,6 @@ u32* identity_page( u32 from_dir_entry, u32 from_table_entry, u32 thru_dir_entry
     return (table);
 }
 
-
-u16 next_check_dir_entry = 0;
-u16 next_check_tbl_entry = 0;
 
 
 static inline void clear_directory( u32* dir ) {
@@ -221,18 +214,63 @@ static u32* create_or_return_page_table( memptr for_virt_page_base_addr ) {
 }
 
 
+// XXX: THIS DOES NOT WORK WHEN next_check_dir_entry IS SET TO ZERO
+u16 next_check_dir_entry  = 4;
+u16 next_check_tbl_entry  = 0;
+
+#ifndef TEST
+static
+#endif
+u32* get_next_available_virt_page( void ) {
+    u32* dir      = (u32*)0xfffff000;
+    u32* tbls_tbl = (u32*)0xffffe000;    // as described above, this is the virt addr of the last page table, which provides virt addrs for each page table
+    u32* tbl;
+
+    u16 start_dir_entry = next_check_dir_entry;
+    u16 start_tbl_entry = next_check_tbl_entry;
+
+    if (next_check_dir_entry > 1023)
+        next_check_dir_entry = 0;
+
+//    for ( ; next_check_dir_entry < 1024; next_check_dir_entry++) {
+    do {
+        if ((dir[next_check_dir_entry] & 0x1) == 0) {      // entire dir entry is not present
+            next_check_tbl_entry = 0;
+            return (u32*)(next_check_dir_entry * 1024 * 4096);
+        }
+        else {      // dir entry is present
+            tbl = get_virt_addr_for_table_entry( next_check_dir_entry );
+
+            for ( ; next_check_tbl_entry < 1024; next_check_tbl_entry++) {
+                if ((tbl[next_check_tbl_entry] & 0x1) == 0) {
+                    next_check_tbl_entry++;
+                    return (u32*)(next_check_dir_entry * 1024 * 4096 + ((next_check_tbl_entry - 1) * 4096));
+                }
+            }
+
+            // no unallocated table entries; prep for next dir entry
+            next_check_tbl_entry = 0;
+            next_check_dir_entry = (next_check_dir_entry + 1) & 1023;     // i.e., next_check_dir_entry = (next_check_dir_entry + 1) % 1024;
+        }
+    }
+    while (next_check_dir_entry != start_dir_entry && next_check_tbl_entry != start_tbl_entry);
+
+    // no free entries found in scan
+    return 0;
+}
+
+
 u32* allocate_virtual_page( u32* va, u32* pa ) {
-    int i, j;
     u32* virt_addr = 0;          // the base address of the virtual page for this allocation
     u32* phys_addr = 0;          // the base address of the physical page actually allocated
     u32  page_tbl_entry;
     u32* page_tbl_virt_addr;
 
-    u32* dir      = (u32*)0xfffff000;
-    u32* tbls_tbl = (u32*)0xffffe000;    // as described above, this is the virt addr of the last page table, which provides virt addrs for each page table
-
     phys_addr = get_phys_page();  // (u32*)0x900000;
-    virt_addr = (u32*)0xc0000000;
+    virt_addr = get_next_available_virt_page();
+
+    if (phys_addr == 0 || virt_addr == 0)
+        return 0;
 
     page_tbl_entry  = ((u32)virt_addr & 0x3fffff) >> 12;   // i.e., (for_virt_page_base_addr % (1024 * 4096)) / 4096
 
@@ -243,54 +281,7 @@ u32* allocate_virtual_page( u32* va, u32* pa ) {
     *pa = (u32)phys_addr;
 
     return virt_addr;
-
-//    // find an unassigned page starting from where we last left off
-//    for (i = next_check_dir_entry; i < 1024 && !virt_addr; i++) {
-//        if ((dir[i] & 0x1) == 0) { // not present
-//            tbl_phys = (u32*)pop_phys_page();
-//
-//            tbls_tbl[i] = (u32)tbl_phys | KERNEL_VIRTUAL_PAGE_ATTRS;    // so we can manipulate the new page table
-//            dir[i]      = (u32)tbl_phys | KERNEL_VIRTUAL_PAGE_ATTRS;    // so the MMU uses the page table to map
-//
-//            tbl_virt = (u32*)(0xffc00000 + 4096 * i);
-//
-//            clear_table( tbl_virt );
-//            phys_addr = pop_phys_page();
-//            virt_addr = i * 1024 * 4096;
-//            tbl_virt[0] = phys_addr;
-//            next_check_tbl_entry = 1;
-//
-//            *va = virt_addr;
-//            *pa = phys_addr;
-//
-//            return (u32*)phys_addr;
-//        }
-//        else {
-//            return 0;
-//            //tbl_phys = (u32*)(dir[i]);
-//        }
-//
-//        for (j = next_check_tbl_entry; j < 1024; j++) {
-//            if (j == 1024 && next_check_dir_entry > 1022)      // ick.  We can't use the last two virtual 4 MiB blocks; they're set aside for page tables
-//                return 0;
-//            return 0;
-////            if ((table[j] | 0x1) == 0) { // not present
-////                table[j] = pop_phys_page();
-////                virt_addr = i * 1024 * 4096 + j * 4096;
-////                phys_addr = table[j];
-////                next_check_tbl_entry = j + 1;
-////                return ((u64)((u64)phys_addr << 32) | (u64)virt_addr);
-////            }
-//        }
-//
-//        // didn't find empty entry in this table
-//        next_check_tbl_entry = 0;
-//    }
-//
-//    // didn't find empty entry in this dir
-//    return 0;
 }
-
 
 #ifndef TEST
 void enable_paging_mode( memptr dirptr ) {
