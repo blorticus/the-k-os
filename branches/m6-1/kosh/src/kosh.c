@@ -201,26 +201,26 @@ int main( void ) {
                     u8  regval8;
 
                     switch (next_instruction->reg) {
-                        case EAX: M_GR_EAX(regval32); kterm_window_puts( top_win, " eax = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case EBX: M_GR_EBX(regval32); kterm_window_puts( top_win, " ebx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case ECX: M_GR_ECX(regval32); kterm_window_puts( top_win, " ecx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case EDX: M_GR_EDX(regval32); kterm_window_puts( top_win, " edx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case AX:  M_GR_AX (regval16); kterm_window_puts( top_win, " ax  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case BX:  M_GR_BX (regval16); kterm_window_puts( top_win, " bx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case CX:  M_GR_CX (regval16); kterm_window_puts( top_win, " cx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case DX:  M_GR_DX (regval16); kterm_window_puts( top_win, " dx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case AL:  M_GR_AL (regval8);  kterm_window_puts( top_win, " al  = " ); kterm_window_puth( top_win, regval8  ); kterm_window_putc( top_win, '\n' ); break;
-                        case AH:  M_GR_AH (regval8);  kterm_window_puts( top_win, " ah  = " ); kterm_window_puth( top_win, regval8  ); kterm_window_putc( top_win, '\n' ); break;
-                        case SS:  M_GR_SS (regval16); kterm_window_puts( top_win, " ss  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case CS:  M_GR_CS (regval16); kterm_window_puts( top_win, " cs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case DS:  M_GR_DS (regval16); kterm_window_puts( top_win, " ds  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case ES:  M_GR_ES (regval16); kterm_window_puts( top_win, " es  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case FS:  M_GR_FS (regval16); kterm_window_puts( top_win, " fs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case GS:  M_GR_GS (regval16); kterm_window_puts( top_win, " gs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case ESP: M_GR_ESP(regval32); kterm_window_puts( top_win, " esp = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case SP:  M_GR_SP (regval16); kterm_window_puts( top_win, " sp  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case EAX: M_GR_EAX(regval32); kterm_window_printf( top_win, " eax = 0x%x\n", regval32 ); break;
+                        case EBX: M_GR_EBX(regval32); kterm_window_printf( top_win, " ebx = 0x%x\n", regval32 ); break;
+                        case ECX: M_GR_ECX(regval32); kterm_window_printf( top_win, " ecx = 0x%x\n", regval32 ); break;
+                        case EDX: M_GR_EDX(regval32); kterm_window_printf( top_win, " edx = 0x%x\n", regval32 ); break;
+                        case AX:  M_GR_AX (regval16); kterm_window_printf( top_win, " ax  = 0x%x\n", regval16 ); break;
+                        case BX:  M_GR_BX (regval16); kterm_window_printf( top_win, " bx  = 0x%x\n", regval16 ); break;
+                        case CX:  M_GR_CX (regval16); kterm_window_printf( top_win, " cx  = 0x%x\n", regval16 ); break;
+                        case DX:  M_GR_DX (regval16); kterm_window_printf( top_win, " dx  = 0x%x\n", regval16 ); break;
+                        case AL:  M_GR_AL (regval8);  kterm_window_printf( top_win, " al  = 0x%x\n", regval8  ); break;
+                        case AH:  M_GR_AH (regval8);  kterm_window_printf( top_win, " ah  = 0x%x\n", regval8  ); break;
+                        case SS:  M_GR_SS (regval16); kterm_window_printf( top_win, " ss  = 0x%x\n", regval16 ); break;
+                        case CS:  M_GR_CS (regval16); kterm_window_printf( top_win, " cs  = 0x%x\n", regval16 ); break;
+                        case DS:  M_GR_DS (regval16); kterm_window_printf( top_win, " ds  = 0x%x\n", regval16 ); break;
+                        case ES:  M_GR_ES (regval16); kterm_window_printf( top_win, " es  = 0x%x\n", regval16 ); break;
+                        case FS:  M_GR_FS (regval16); kterm_window_printf( top_win, " fs  = 0x%x\n", regval16 ); break;
+                        case GS:  M_GR_GS (regval16); kterm_window_printf( top_win, " gs  = 0x%x\n", regval16 ); break;
+                        case ESP: M_GR_ESP(regval32); kterm_window_printf( top_win, " esp = 0x%x\n", regval32 ); break;
+                        case SP:  M_GR_SP (regval16); kterm_window_printf( top_win, " sp  = 0x%x\n", regval16 ); break;
 
-                        default : kterm_window_puts( top_win, "Code Incomplete For That Register\n" );
+                        default : kterm_window_printf( top_win, "Code Incomplete For That Register\n" );
                     }
                 }
                 else if (next_instruction->flags & KOSH_INSTRUCTION_FLAG_MEMADDR_SET) {
@@ -319,19 +319,15 @@ int main( void ) {
             case TEST:
                 dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
 
-                u32* t1;
-
-                t1 = (u32*)(dir[1023] & 0xfffff000);
-
-                kterm_window_printf( top_win, "BEFORE: DIR = 0x%x, TBL = 0x%x,\n   TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)dir, (u32)t1, t1[1023], t1[1022] );
+                kterm_window_printf( top_win, "BEFORE: DIR = 0x%x, DIR[1023] = 0x%x\n", (u32)dir, dir[1023] );
 
                 enable_paging_mode( dir );
 
-                u32* da, *ta, *tb;
+                u32* da, *ta;
                 da = (u32*)0xfffff000;
-                ta = (u32*)0xffffe000;
+                ta = (u32*)0xffc00000;
 
-                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, TBL = 0x%x,\n   TBL[1023] = 0x%x, TBL[1022] = 0x%x\n", (u32)da, (u32)ta, ta[1023], ta[1022] );
+                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, DIR[0] = 0x%x, DIR[1023] = 0x%x (%d)\n  TA = 0x%x (%d), TA[3] = 0x%x (%d)\n", (u32)da, da[0], da[1023], da[1023], (u32)ta, (u32)ta, ta[3], ta[3] );
 
                 va = allocate_virtual_page( &virt_addr, &phys_addr );
                 kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
