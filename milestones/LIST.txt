@@ -31,3 +31,14 @@ MILESTONE 5:
 IDT, IRQs, ISRs, Skeleton for Keyboard Driver
 Provides IDT, remaps IRQ interrupts, adds handlers for all exceptions, and handlers for all IRQs
 Adds the skeleton of a keyboard driver
+
+
+MILESTONE 6:
+------------
+ < not annotated >
+
+
+MILESTONE 7:
+------------
+Basic kernel paging for 4 KiB pages
+Basic kmalloc
