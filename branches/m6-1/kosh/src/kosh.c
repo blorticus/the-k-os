@@ -6,8 +6,9 @@
 #include <platform/ia-32/cpu.h>
 #include <platform/ia-32/interrupts.h>
 #include <sys/kernelsyms.h>
-
 #include <memory/paging.h>
+#include <memory/kmalloc.h>
+
 extern void phys_core_set_window( KTERM_WINDOW w );
 
 #define INPUT_BUFFER_SIZE   100
@@ -169,6 +170,9 @@ int main( void ) {
     char *TEST_A, *TEST_B, *t;
     u32 phys_addr, virt_addr;
     u32 va;
+    char *s1, *cs1, *ct1;
+    const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
+    u32* da, *ta;
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -257,6 +261,7 @@ int main( void ) {
                 kterm_window_puts( top_win, " int               - activates interrupt diagnostics\n" );
                 kterm_window_puts( top_win, " cpuid             - Show CPUID support and characteristics\n" );
                 kterm_window_puts( top_win, " kernel            - Information about the kernel\n" );
+                kterm_window_puts( top_win, " kmalloc           - Test kmalloc/kfree implementation\n" );
                 break;
 
             case BIOS:
@@ -317,51 +322,51 @@ int main( void ) {
                 break;
 
             case KMALLOC:
-                char *s1 = kmalloc( 100 );
+                s1 = (char*)kmalloc( 100 );
 
                 if (!s1) {
                     kterm_window_printf( top_win, "s1 kmalloc() returned NULL\n" );
                 }
                 else {
-                    char *cs1 = s1;
-                    const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
-                    char *ct1 = c1;
+                    cs1 = s1;
+                    ct1 = (char*)c1;
 
-                    while (*cs1++ = *ct1++) ;
+                    while ((*cs1++ = *ct1++)) ;
 
-                    kterm_window_printf( "STRING 1: vmaddr = 0x%x\n          string = %s\n", (u32)s1, s1 );
+                    kterm_window_printf( top_win, "STRING 1: vmaddr = 0x%x\n          string = %s\n", (u32)s1, s1 );
                 }
-                
+
+                kfree( s1 );
+
                 break;
 
             case TEST:
-                u32* da, *ta;
-                da = (u32*)0xfffff000;
-                ta = (u32*)0xffc00000;
-
-                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, DIR[0] = 0x%x, DIR[1023] = 0x%x (%d)\n  TA = 0x%x (%d), TA[3] = 0x%x (%d)\n", (u32)da, da[0], da[1023], da[1023], (u32)ta, (u32)ta, ta[3], ta[3] );
-
-                va = allocate_virtual_page( &virt_addr, &phys_addr );
-                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-                TEST_A = (char*)va;
-                TEST_B = (char*)"Take it to the limit and beyond";
-                while (*TEST_B) *TEST_A++ = *TEST_B++;
-                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
-
-                va = allocate_virtual_page( &virt_addr, &phys_addr );
-
-                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-                TEST_A = (char*)va;
-                TEST_B = (char*)"AND DO IT AGAIN!!!!! AND AGAIN!!!! AND AGAIN!!!!!!!!!!!!!!!!!!!!!!!!";
-                while (*TEST_B) *TEST_A++ = *TEST_B++;
-                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
-
-                va = allocate_virtual_page( &virt_addr, &phys_addr );
-                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-                TEST_A = (char*)va;
-                TEST_B = (char*)"Then one more\n  time\n foo";
-                while (*TEST_B) *TEST_A++ = *TEST_B++;
-                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
+//                da = (u32*)0xfffff000;
+//                ta = (u32*)0xffc00000;
+//
+//                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, DIR[0] = 0x%x, DIR[1023] = 0x%x (%d)\n  TA = 0x%x (%d), TA[3] = 0x%x (%d)\n", (u32)da, da[0], da[1023], da[1023], (u32)ta, (u32)ta, ta[3], ta[3] );
+//
+//                va = allocate_virtual_page( &virt_addr, &phys_addr );
+//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+//                TEST_A = (char*)va;
+//                TEST_B = (char*)"Take it to the limit and beyond";
+//                while (*TEST_B) *TEST_A++ = *TEST_B++;
+//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
+//
+//                va = allocate_virtual_page( &virt_addr, &phys_addr );
+//
+//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+//                TEST_A = (char*)va;
+//                TEST_B = (char*)"AND DO IT AGAIN!!!!! AND AGAIN!!!! AND AGAIN!!!!!!!!!!!!!!!!!!!!!!!!";
+//                while (*TEST_B) *TEST_A++ = *TEST_B++;
+//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
+//
+//                va = allocate_virtual_page( &virt_addr, &phys_addr );
+//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+//                TEST_A = (char*)va;
+//                TEST_B = (char*)"Then one more\n  time\n foo";
+//                while (*TEST_B) *TEST_A++ = *TEST_B++;
+//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
 
                 break;
 

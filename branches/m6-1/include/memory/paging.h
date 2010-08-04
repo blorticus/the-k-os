@@ -11,14 +11,20 @@
  * SEE:             -
  ***/
 
-u64 get_phys_mem_stack_attrs( void );
-u32 get_phys_mem_stack_size( void );
-memaddr* init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_entry* mmap, u32 mmap_length, memptr start_of_kernel, memptr end_of_kernel );
-memaddr allocate_physical_page( void );
-void free_physical_page( memaddr page_start );
-memaddr* get_phys_mem_stack_value_at( u32 offset );
 memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void );
+u32* allocate_virtual_page( void );  // ( u32* va, u32* pa );
 void enable_paging_mode( memptr dirptr );
+void deallocate_virtual_page( memptr vpage );
+
+
+//u64 get_phys_mem_stack_attrs( void );
+//u32 get_phys_mem_stack_size( void );
+//memaddr* init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_entry* mmap, u32 mmap_length, memptr start_of_kernel, memptr end_of_kernel );
+//memaddr allocate_physical_page( void );
+//void free_physical_page( memaddr page_start );
+//memaddr* get_phys_mem_stack_value_at( u32 offset );
+//memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void );
+//void enable_paging_mode( memptr dirptr );
 
 
 #endif

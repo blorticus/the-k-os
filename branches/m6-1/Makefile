@@ -36,7 +36,7 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
-OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
@@ -175,6 +175,9 @@ $(OBJDIR)/phys_core.o: src/memory/phys_core.c
 
 $(OBJDIR)/paging.o: src/memory/paging.c
 	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/paging.o src/memory/paging.c
+
+$(OBJDIR)/kmalloc.o: src/memory/kmalloc.c
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/kmalloc.o src/memory/kmalloc.c
 
 $(OBJDIR)/stringmem.o: src/memory/stringmem.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/stringmem.o src/memory/stringmem.c

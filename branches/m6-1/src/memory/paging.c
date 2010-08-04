@@ -219,15 +219,15 @@ memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void ) {
 #ifndef TEST
 static inline
 #endif
-u32* get_virt_addr_for_table_entry( u32 e ) {
+u32* get_virt_addr_for_table( u32 e ) {
     return (u32*)(0xffc00000 + 4096 * e);
 }
 
 #ifdef TEST
-extern u32* test_get_virt_addr_for_table_entry( u32 e );
-#define m_get_virt_addr_for_table_entry( e ) (test_get_virt_addr_for_table_entry( e ))
+extern u32* test_get_virt_addr_for_table( u32 e );
+#define m_get_virt_addr_for_table( e ) (test_get_virt_addr_for_table( e ))
 #else
-#define m_get_virt_addr_for_table_entry( e ) (get_virt_addr_for_table_entry( e ))
+#define m_get_virt_addr_for_table( e ) (get_virt_addr_for_table( e ))
 #endif
 
 
@@ -251,7 +251,7 @@ static u32* create_or_return_page_table( memptr vpage ) {
         vdir[dir_entry] = (u32)ptable | KERNEL_VIRTUAL_PAGE_ATTRS;
     }
 
-    return m_get_virt_addr_for_table_entry( dir_entry );
+    return m_get_virt_addr_for_table( dir_entry );
 }
 
 
@@ -274,7 +274,7 @@ u32* get_next_available_virt_page( void ) {
             return (u32*)(next_check_dir_entry * 1024 * 4096);
         }
         else {      // dir entry is present
-            vtable = m_get_virt_addr_for_table_entry( next_check_dir_entry );
+            vtable = m_get_virt_addr_for_table( next_check_dir_entry );
 
             for ( ; next_check_tbl_entry < 1024; next_check_tbl_entry++) {
                 if ((vtable[next_check_tbl_entry] & 0x1) == 0) {
@@ -295,7 +295,8 @@ u32* get_next_available_virt_page( void ) {
 }
 
 
-u32* allocate_virtual_page( u32* va, u32* pa ) {
+//u32* allocate_virtual_page( u32* va, u32* pa ) {
+u32* allocate_virtual_page( void ) {
     u32* ppage = 0;
     u32* vpage = 0;
     u32* vtable;
@@ -312,11 +313,30 @@ u32* allocate_virtual_page( u32* va, u32* pa ) {
     vtable = create_or_return_page_table( (memptr)vpage );
     vtable[page_tbl_entry] = (u32)ppage | KERNEL_VIRTUAL_PAGE_ATTRS;
 
-    *va = (u32)vpage;
-    *pa = (u32)ppage;
+//    *va = (u32)vpage;
+//    *pa = (u32)ppage;
 
     return vpage;
 }
+
+void deallocate_virtual_page( memptr vpage ) {
+    // if vpage really is mapped to a ppage, release the ppage back to the page stack and recover the virtual page
+    u32 page_tbl_entry;
+    u32 ppage;
+    u32* vtable;
+
+    vtable = m_get_virt_addr_for_table( (u32)vpage >> 22 );
+
+    page_tbl_entry = ((u32)vpage & 0x3fffff) >> 12;   // i.e., (vpage % (1024 * 4096)) / 4096
+
+    if (vtable[page_tbl_entry] > 4096) {    // i.e., it contains more than just flags
+        ppage = vtable[page_tbl_entry] & 0xfffff000;
+        kernel_stack_push( phys_stack, ppage );
+    }
+
+    CLEAN_TABLE_ENTRY( vtable[page_tbl_entry] );
+}
+
 
 #ifndef TEST
 void enable_paging_mode( memptr dirptr ) {
