@@ -316,13 +316,25 @@ int main( void ) {
                 kterm_window_printf( top_win, "KERNEL START = 0x%x  END = 0x%x\n", (u32)START_OF_KERNEL, (u32)END_OF_KERNEL );
                 break;
 
+            case KMALLOC:
+                char *s1 = kmalloc( 100 );
+
+                if (!s1) {
+                    kterm_window_printf( top_win, "s1 kmalloc() returned NULL\n" );
+                }
+                else {
+                    char *cs1 = s1;
+                    const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
+                    char *ct1 = c1;
+
+                    while (*cs1++ = *ct1++) ;
+
+                    kterm_window_printf( "STRING 1: vmaddr = 0x%x\n          string = %s\n", (u32)s1, s1 );
+                }
+                
+                break;
+
             case TEST:
-                dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
-
-                kterm_window_printf( top_win, "BEFORE: DIR = 0x%x, DIR[1023] = 0x%x\n", (u32)dir, dir[1023] );
-
-                enable_paging_mode( dir );
-
                 u32* da, *ta;
                 da = (u32*)0xfffff000;
                 ta = (u32*)0xffc00000;

@@ -104,6 +104,26 @@ extern u32* test_get_table_mapper();
  * not, so don't be an idiot
  */
 
+
+// used to find the next available virtual page
+u16 next_check_dir_entry  = 0;
+u16 next_check_tbl_entry  = 0;
+
+static inline void set_vpage_scan_start( u16 next_dir, u16 next_tbl ) {
+    next_check_dir_entry = next_dir;
+    next_check_tbl_entry = next_tbl;
+}
+
+#ifdef TEST
+void test_reset_virt_page_start_point( u16 start_at_dir_entry, u16 start_at_tbl_entry ) {
+    next_check_dir_entry = start_at_dir_entry;
+    next_check_tbl_entry = start_at_tbl_entry;
+}
+#endif
+
+
+
+
 #ifndef TEST
 static
 #endif
@@ -184,6 +204,8 @@ memptr configure_kernel_page_directory_32bit_4kpages_non_pae( void ) {
 
     pdir[0] = (u32)ptable | KERNEL_VIRTUAL_PAGE_ATTRS;
 
+    set_vpage_scan_start( 1, 0 );   // skip first table when finding free virt page because it is now identity paged
+
     // 0xfffff000 corresponds to the dir, and 0xffffe000 corresponds to page that maps the physical pages for each table starting at 0xffc00000
     pdir[1023] = (u32)pdir | KERNEL_VIRTUAL_PAGE_ATTRS;
 
@@ -231,19 +253,6 @@ static u32* create_or_return_page_table( memptr vpage ) {
 
     return m_get_virt_addr_for_table_entry( dir_entry );
 }
-
-
-// XXX: THIS DOES NOT WORK WHEN next_check_dir_entry IS SET TO ZERO
-u16 next_check_dir_entry  = 10;
-u16 next_check_tbl_entry  = 0;
-
-
-#ifdef TEST
-void test_reset_virt_page_start_point( u16 start_at_dir_entry, u16 start_at_tbl_entry ) {
-    next_check_dir_entry = start_at_dir_entry;
-    next_check_tbl_entry = start_at_tbl_entry;
-}
-#endif
 
 
 #ifndef TEST

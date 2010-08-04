@@ -21,6 +21,7 @@ extern memptr sys_stack;
 
 void kmain( void ) {
     struct multiboot_relocated_info* mbi;
+    u32* dir;
 
     multiboot_relocate();
 
@@ -28,10 +29,15 @@ void kmain( void ) {
 
     create_gdt();
 
-//    if (!init_physical_paging_32( 12, mbi->mmap_addr, mbi->mmap_length, START_OF_KERNEL, END_OF_KERNEL )) {
-//        kterm_panic_msg( "Physical Paging Failed" );
-//        halt_os();
-//    }
+    
+    dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
+
+    if (!dir) {
+        kterm_panic_msg( "Physical Paging Failed" );
+        halt_os();
+    }
+
+    enable_paging_mode( dir );
 
     idt_install();
     isrs_install();
