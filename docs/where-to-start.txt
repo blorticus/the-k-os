@@ -1,15 +1,41 @@
 BOOTING:
 --------
-Currently, K-OS uses GRUB for bootloading.  There is a limited bootloader, boot/kos-silly-loader.asm.  It
-sets up an environment for 32-bit protected mode, loads some sectors off disk to 1MB, and jumps there, but
-it is not completely correct.  I will return to it later.
+
+Currently, K-OS assumes it is loaded by a multiboot [1] complaint bootloader,
+and has been tested against GRUB [2].  Because of this, the output file format
+for the kernel must be ELF [3].  For testing, I compile the kernel (see below)
+and copy it to a virtual floppy.  The floppy must be configured by GRUB for
+proper booting (see below).  The vm/ directory contains an image that has had
+this operation performed, so when it is mounted (see below), the kernel.bin
+file that results from compilation can simply be copied to it.
+
+I wrote a rudimentary boot loader which mostly works, but have set it aside
+in favor of GRUB for now.
+
 
 KERNEL ENTRY:
 -------------
-The kernel starts with start.asm which sets up a system stack, adds a multiboot compliant header,
-then jumps to kmain, which is defined in kmain.c.  At this point, kmain() uses VGA B8000 video primitives
-to clear the screen, then write a message to the screen.  Finally, it invokes KoSH (the K-OS Kernel Shell),
-which provides the ability to analyze the system.
+
+Conforming with the multiboot format, the kernel assumes that the CPU register
+EAX contains the address where the multiboot data structure [4] is located.  It
+makes no particular assumption about whether a GDT [5] or IDT [6] have been set
+up, but it does assume that interrupts [7] are disabled [8].  It also assumes
+that 32-bit pmode has been enabled [9].  The first task is to create a GDT [10]
+and an IDT [11].  The memory required for these tables is part of the loaded
+kernel image, so no additional memory must be allocated for this.  The kernel
+uses a 32-bit flat memory model, so sets up only four GDT entries: the
+required null entry [12], and one each for the stack segment, code segments and
+data segments.  All have a base of 0 and a limit of 2^32 - 1 (all addressable
+linear memory [13]), in the usual way.  A basic set of ISRs [14] are installed
+[15], the IRQs are remapped [16] and IRQ ISRs are installed.  Currently, the
+primary IRQs handled are for the keyboard [17] and the PIT [18].  Interrupts are
+then re-enabled [19].
+
+A VGA color textmode [20] driver is available, as is a primitive shell environment
+called KoSH (K-OS Kernel Shell).
+
+Only parts of the C standard library that I've actually implemented are currently
+available.
 
 
 SOME SPECIFIC CHOICES:
@@ -22,3 +48,31 @@ o specific #defined variable sizes are defined in sys/types.h, e.g., u8 for unsi
 o base kernel video uses VGA color textmode (B8000) memory text mode because it is easy
 o I re-implement methods (e.g., math functions) available in the gcc standard C libraries because this is
   a learning OS.  Later, I'll switch to using other people's code ... because it's better and they're smarter
+
+
+REFERENCES:
+-----------
+[1] http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
+    http://en.wikipedia.org/wiki/Multiboot_Specification
+[2] http://www.gnu.org/software/grub/manual/grub.html
+[3] http://en.wikipedia.org/wiki/Executable_and_Linkable_Format
+[4] http://www.gnu.org/software/grub/manual/multiboot/multiboot.html#OS-image-format
+[5] http://en.wikipedia.org/wiki/Global_Descriptor_Table
+    http://wiki.osdev.org/Global_Descriptor_Table
+[6] http://en.wikipedia.org/wiki/Interrupt_descriptor_table
+    http://www.acm.uiuc.edu/sigops/roll_your_own/i386/idt.html
+[7] http://en.wikipedia.org/wiki/Interrupts
+    http://wiki.osdev.org/Interrupt
+[8] http://www.nolm.org/TAE/c017p06.htm
+[9] http://www.nondot.org/sabre/os/files/ProtectedMode/PMTUT.txt
+[10] http://wiki.osdev.org/GDT_Tutorial
+[11] http://www.osdever.net/tutorials/view/brans-kernel-development-tutorial
+[12] http://www.rcollins.org/Productivity/NullDescriptor.html
+[13] http://www.0x90.org/releases/memory.pdf
+[14] http://en.wikipedia.org/wiki/Interrupt_handler
+[15] http://wiki.osdev.org/Interrupt_Service_Routines
+[16] http://www.jamesmolloy.co.uk/tutorial_html/5.-IRQs%20and%20the%20PIT.html
+[17] http://tldp.org/LDP/lkmpg/2.4/html/x1210.html
+[18] http://en.wikipedia.org/wiki/Intel_8253
+[19] http://faydoc.tripod.com/cpu/sti.htm
+[20] http://docs.google.com/viewer?a=v&q=cache:6YbepWnOfY8J:guideme.itgo.com/atozofc/ch20.pdf+vga+b8000&hl=en&gl=us&pid=bl&srcid=ADGEEShmYKo7kH7m06pIQdgOgfqJlWKEEePOmEy-Rbm70qAfIL3yeiPtiHDEGwl5F00FpjoPC8UCVigyZyQkEmtR3JWXiF5J05qB9-YhCramZXuLpjFzlJ8xXQRh3aymNTpVBdSxBEd7&sig=AHIEtbTETDI0ZUsIpY6LvsOQkWt4qvYCeQ

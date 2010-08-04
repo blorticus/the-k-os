@@ -2,6 +2,7 @@
 #include <lcheck.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 lcheck_suite* create_suite( const char* name ) {
     lcheck_suite* s = (lcheck_suite*)malloc( sizeof( lcheck_suite ) );
@@ -21,6 +22,16 @@ void fail_unless( lcheck_suite* s, int result, char* testname ) {
         s->tests_failed++;
         fprintf( stderr, " -- failed test number [%d], named [%s]\n", s->tests_run, testname );
     }
+}
+
+
+char fmt_buf[1024];
+
+void fmt_fail_unless( lcheck_suite *s, int result, char* testname_fmt, ... ) {
+    va_list argptr;
+    va_start( argptr, testname_fmt );
+    vsnprintf( fmt_buf, 1023, testname_fmt, argptr );
+    fail_unless( s, result, fmt_buf ); 
 }
 
 
@@ -71,3 +82,15 @@ char* __strcat_realloc( const char* dest, const char* src ) {
 int __strlen( const char* s ) {
     return strlen( s );
 }
+
+int __sprintf( char* s, const char* fmt, ... ) {
+    va_list argptr;
+    va_start( argptr, fmt );
+    return vsprintf( s, fmt, argptr );
+}
+
+
+void* __memset( void *b, int c, unsigned int len ) {
+    return memset( b, c, len );
+}
+

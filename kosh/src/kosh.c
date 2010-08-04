@@ -5,6 +5,11 @@
 #include <sys/types.h>
 #include <platform/ia-32/cpu.h>
 #include <platform/ia-32/interrupts.h>
+#include <sys/kernelsyms.h>
+#include <memory/paging.h>
+#include <memory/kmalloc.h>
+
+extern void phys_core_set_window( KTERM_WINDOW w );
 
 #define INPUT_BUFFER_SIZE   100
 
@@ -99,6 +104,7 @@ kosh_instruction* prompt( void ) {
 }
 
 
+
 /* Multiboot_relocated_info->drive_info is four bytes: [partition-sub3, partition-sub2, partition1, bios_drive].
  * This routine kterm_puts() each in a single line as:
  *  drive 0xnn [name], partition 0xnn:0xnn:0xnn
@@ -160,6 +166,14 @@ int main( void ) {
     cpuid_retval crv;
     int pos_count;              // for cpuid function
 
+    u32 *dir, *table, paddr;
+    char *TEST_A, *TEST_B, *t;
+    u32 phys_addr, virt_addr;
+    u32 va;
+    char *s1, *cs1, *ct1;
+    const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
+    u32* da, *ta;
+
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
     kterm_create_window( divider_win, 1600, 1, 80 );
@@ -191,26 +205,26 @@ int main( void ) {
                     u8  regval8;
 
                     switch (next_instruction->reg) {
-                        case EAX: M_GR_EAX(regval32); kterm_window_puts( top_win, " eax = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case EBX: M_GR_EBX(regval32); kterm_window_puts( top_win, " ebx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case ECX: M_GR_ECX(regval32); kterm_window_puts( top_win, " ecx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case EDX: M_GR_EDX(regval32); kterm_window_puts( top_win, " edx = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case AX:  M_GR_AX (regval16); kterm_window_puts( top_win, " ax  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case BX:  M_GR_BX (regval16); kterm_window_puts( top_win, " bx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case CX:  M_GR_CX (regval16); kterm_window_puts( top_win, " cx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case DX:  M_GR_DX (regval16); kterm_window_puts( top_win, " dx  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case AL:  M_GR_AL (regval8);  kterm_window_puts( top_win, " al  = " ); kterm_window_puth( top_win, regval8  ); kterm_window_putc( top_win, '\n' ); break;
-                        case AH:  M_GR_AH (regval8);  kterm_window_puts( top_win, " ah  = " ); kterm_window_puth( top_win, regval8  ); kterm_window_putc( top_win, '\n' ); break;
-                        case SS:  M_GR_SS (regval16); kterm_window_puts( top_win, " ss  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case CS:  M_GR_CS (regval16); kterm_window_puts( top_win, " cs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case DS:  M_GR_DS (regval16); kterm_window_puts( top_win, " ds  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case ES:  M_GR_ES (regval16); kterm_window_puts( top_win, " es  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case FS:  M_GR_FS (regval16); kterm_window_puts( top_win, " fs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case GS:  M_GR_GS (regval16); kterm_window_puts( top_win, " gs  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
-                        case ESP: M_GR_ESP(regval32); kterm_window_puts( top_win, " esp = " ); kterm_window_puth( top_win, regval32 ); kterm_window_putc( top_win, '\n' ); break;
-                        case SP:  M_GR_SP (regval16); kterm_window_puts( top_win, " sp  = " ); kterm_window_puth( top_win, regval16 ); kterm_window_putc( top_win, '\n' ); break;
+                        case EAX: M_GR_EAX(regval32); kterm_window_printf( top_win, " eax = 0x%x\n", regval32 ); break;
+                        case EBX: M_GR_EBX(regval32); kterm_window_printf( top_win, " ebx = 0x%x\n", regval32 ); break;
+                        case ECX: M_GR_ECX(regval32); kterm_window_printf( top_win, " ecx = 0x%x\n", regval32 ); break;
+                        case EDX: M_GR_EDX(regval32); kterm_window_printf( top_win, " edx = 0x%x\n", regval32 ); break;
+                        case AX:  M_GR_AX (regval16); kterm_window_printf( top_win, " ax  = 0x%x\n", regval16 ); break;
+                        case BX:  M_GR_BX (regval16); kterm_window_printf( top_win, " bx  = 0x%x\n", regval16 ); break;
+                        case CX:  M_GR_CX (regval16); kterm_window_printf( top_win, " cx  = 0x%x\n", regval16 ); break;
+                        case DX:  M_GR_DX (regval16); kterm_window_printf( top_win, " dx  = 0x%x\n", regval16 ); break;
+                        case AL:  M_GR_AL (regval8);  kterm_window_printf( top_win, " al  = 0x%x\n", regval8  ); break;
+                        case AH:  M_GR_AH (regval8);  kterm_window_printf( top_win, " ah  = 0x%x\n", regval8  ); break;
+                        case SS:  M_GR_SS (regval16); kterm_window_printf( top_win, " ss  = 0x%x\n", regval16 ); break;
+                        case CS:  M_GR_CS (regval16); kterm_window_printf( top_win, " cs  = 0x%x\n", regval16 ); break;
+                        case DS:  M_GR_DS (regval16); kterm_window_printf( top_win, " ds  = 0x%x\n", regval16 ); break;
+                        case ES:  M_GR_ES (regval16); kterm_window_printf( top_win, " es  = 0x%x\n", regval16 ); break;
+                        case FS:  M_GR_FS (regval16); kterm_window_printf( top_win, " fs  = 0x%x\n", regval16 ); break;
+                        case GS:  M_GR_GS (regval16); kterm_window_printf( top_win, " gs  = 0x%x\n", regval16 ); break;
+                        case ESP: M_GR_ESP(regval32); kterm_window_printf( top_win, " esp = 0x%x\n", regval32 ); break;
+                        case SP:  M_GR_SP (regval16); kterm_window_printf( top_win, " sp  = 0x%x\n", regval16 ); break;
 
-                        default : kterm_window_puts( top_win, "Code Incomplete For That Register\n" );
+                        default : kterm_window_printf( top_win, "Code Incomplete For That Register\n" );
                     }
                 }
                 else if (next_instruction->flags & KOSH_INSTRUCTION_FLAG_MEMADDR_SET) {
@@ -235,6 +249,7 @@ int main( void ) {
                 fp f;
                 f = (fp) dumpregs;
                 f();
+                kterm_window_printf( top_win, "CR0: %x  CR3: %x\n", read_from_control_register_0(), read_from_control_register_3() );
                 break;
 
             case HELP:
@@ -245,6 +260,8 @@ int main( void ) {
                 kterm_window_puts( top_win, " bios              - prints out relocated bios values\n" );
                 kterm_window_puts( top_win, " int               - activates interrupt diagnostics\n" );
                 kterm_window_puts( top_win, " cpuid             - Show CPUID support and characteristics\n" );
+                kterm_window_puts( top_win, " kernel            - Information about the kernel\n" );
+                kterm_window_puts( top_win, " kmalloc           - Test kmalloc/kfree implementation\n" );
                 break;
 
             case BIOS:
@@ -298,6 +315,59 @@ int main( void ) {
             case INTDIAG:
                 kterm_window_printf( bottom_win, "WAITING FOR IRQ0 ... " );
                 ihr = irq_install_handler( 0, &int_diag_pit_handler );
+                break;
+
+            case KERNEL_INFO:
+                kterm_window_printf( top_win, "KERNEL START = 0x%x  END = 0x%x\n", (u32)START_OF_KERNEL, (u32)END_OF_KERNEL );
+                break;
+
+            case KMALLOC:
+                s1 = (char*)kmalloc( 100 );
+
+                if (!s1) {
+                    kterm_window_printf( top_win, "s1 kmalloc() returned NULL\n" );
+                }
+                else {
+                    cs1 = s1;
+                    ct1 = (char*)c1;
+
+                    while ((*cs1++ = *ct1++)) ;
+
+                    kterm_window_printf( top_win, "STRING 1: vmaddr = 0x%x\n          string = %s\n", (u32)s1, s1 );
+                }
+
+                kfree( s1 );
+
+                break;
+
+            case TEST:
+//                da = (u32*)0xfffff000;
+//                ta = (u32*)0xffc00000;
+//
+//                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, DIR[0] = 0x%x, DIR[1023] = 0x%x (%d)\n  TA = 0x%x (%d), TA[3] = 0x%x (%d)\n", (u32)da, da[0], da[1023], da[1023], (u32)ta, (u32)ta, ta[3], ta[3] );
+//
+//                va = allocate_virtual_page( &virt_addr, &phys_addr );
+//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+//                TEST_A = (char*)va;
+//                TEST_B = (char*)"Take it to the limit and beyond";
+//                while (*TEST_B) *TEST_A++ = *TEST_B++;
+//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
+//
+//                va = allocate_virtual_page( &virt_addr, &phys_addr );
+//
+//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+//                TEST_A = (char*)va;
+//                TEST_B = (char*)"AND DO IT AGAIN!!!!! AND AGAIN!!!! AND AGAIN!!!!!!!!!!!!!!!!!!!!!!!!";
+//                while (*TEST_B) *TEST_A++ = *TEST_B++;
+//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
+//
+//                va = allocate_virtual_page( &virt_addr, &phys_addr );
+//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
+//                TEST_A = (char*)va;
+//                TEST_B = (char*)"Then one more\n  time\n foo";
+//                while (*TEST_B) *TEST_A++ = *TEST_B++;
+//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
+
                 break;
 
             default:
