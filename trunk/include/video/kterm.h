@@ -38,6 +38,19 @@ typedef struct kterm_window {
 
 typedef kterm_window* KTERM_WINDOW;
 
+/**
+ *
+ * DESCRIPTION:     Print "Kernel Panic! <msg>" using VGA.
+ * RETURN:          void
+ * SIDE-EFFECTS:    -
+ * NOTES:           Does not require kterm_init to be run and prints directly to first row.  However, screen
+ *                  will not be cleared (so characters from pre-panic may be there) and does not scroll.  So,
+ *                  keep 'msg' short.
+ * RE-ENTRANT?:     NO
+ *
+ */ 
+void kterm_panic_msg( char* msg );
+
 
 /**
  *

@@ -87,4 +87,10 @@ int cpuid_is_supported( void );  // in cpuid.asm
 inline void execute_cpuid_function( u32 function, cpuid_retval* result );
 int has_cpuid_feature( u32 cpuid_feature );
 
+inline void write_to_control_register_0( u32 value );
+inline void write_to_control_register_3( u32 value );
+inline u32 read_from_control_register_0( void );
+inline u32 read_from_control_register_3( void );
+
+
 #endif

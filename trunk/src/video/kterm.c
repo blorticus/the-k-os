@@ -24,18 +24,21 @@
     #define M_kterm_window_putc(w,c) (kterm_window_putc( w, c ))
 #endif
 
-//typedef struct kterm_window {
-//    u8 width;
-//    u8 height;
-//    u16 base_offset;
-//    u16 end_offset;
-//    u16 current_offset;
-//    u8 colors;
-//} kterm_window;
-
-//typedef kterm_window* KTERM_WINDOW;
 static kterm_window rw;
 static KTERM_WINDOW root_window = &rw;
+
+const char* panic_base_msg = "Kernel Panic! ";
+void kterm_panic_msg( char* msg ) {
+    unsigned int i = 0;
+    char* t = panic_base_msg;
+
+    while (*t)
+        M_B8000_write_char_at( i++, 0xf0, *t++ );
+
+    while (*msg)
+        M_B8000_write_char_at( i++, 0xf0, *msg++ );
+}
+
 
 void kterm_create_window( KTERM_WINDOW w, u16 window_start, u8 window_height, u8 window_width ) {
     w->width = window_width;
@@ -48,6 +51,7 @@ void kterm_create_window( KTERM_WINDOW w, u16 window_start, u8 window_height, u8
 
 void kterm_init( u8 screen_height, u8 screen_width ) {
     kterm_create_window( root_window, 0, screen_height, screen_width );
+    vga_disable_hardware_cursor();
 }
 
 KTERM_WINDOW kterm_get_root_window( void ) {

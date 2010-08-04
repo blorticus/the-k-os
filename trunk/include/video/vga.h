@@ -65,7 +65,6 @@ enum TEXTMODE_COLOR
 void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back );
 
 
-
 /**
  *
  * DESCRIPTION:     Each VGA slot is a character (lower half) and an attribute (upper half).  This
@@ -79,6 +78,19 @@ void textmode_copy_back( u16 first_pos, u16 last_pos, u16 copy_back );
  *
  */ 
 #define make_b8000_colors( fgcolor, bgcolor ) ((u8)((bgcolor << 4) | fgcolor))
+
+
+/**
+ *
+ * DESCRIPTION:     There is a hardware vga cursor, which usually appears as a single line at the
+ *                  bottom of character slots.  This method turns that cursor off.
+ * RETURN:          void
+ * SIDE-EFFECTS:    -
+ * NOTES:           -
+ * RE-ENTRANT?:     NO (and if other VGA registers are being written to, this cause all sorts of hurt)
+ *
+ */ 
+void vga_disable_hardware_cursor( void );
 
 
 #endif

@@ -39,6 +39,8 @@ typedef long long           s64;
 typedef u32                 memaddr;
 #endif
 
+typedef void*               memptr;
+
 /* if using /check/ library for checking code, or otherwise need to include
  * stdinc, some types will conflict.  Set -DTESTING.  Others that use these
  * type definitions should be prepared to use the localized (with leading
@@ -47,7 +49,11 @@ typedef u32                 memaddr;
 #if defined (TESTING)
 typedef u32                 _size_t;
 #else
-typedef u32                 size_t;
+    #if P64BIT
+    typedef u64             size_t;
+    #else
+    typedef u32             size_t;
+    #endif
 #endif
 
 #endif

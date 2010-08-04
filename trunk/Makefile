@@ -19,7 +19,8 @@ MK_BOCHS_IMG_DISK ?= bin/mkbochs
 # --
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
-CC_FLAGS = -fno-builtin -nostdinc -Wall
+#CC_FLAGS = -fno-builtin -nostdinc -Wall
+CC_FLAGS = -nostdinc -Wall
 MAKEFLAGS = -e
 DEFS =
 OBJDIR = i386-obj
@@ -35,10 +36,11 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o
 
 # TARGET: build kernel image
-kernel.bin: $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(KMAIN_LD) $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o kosh.o libkoshlib.a libstd.a $(OBJDIR)/multiboot.o cprintf.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o
-	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJDIR)/start.o $(OBJDIR)/kmain.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o kosh/kosh.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o src/stdlib/cprintf.o $(OBJDIR)/cpu.o $(OBJDIR)/cpuid.o $(OBJDIR)/pic.o -L./src/stdlib -lstd -L./kosh -lkoshlib
+kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
+	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB
@@ -64,7 +66,7 @@ boot.bin: boot/kos-silly-loader.asm
 
 
 cprintf.o:
-	$(MAKE) -C src/stdlib cprintf.o
+	$(MAKE) -C src/stdlib ../../$(OBJDIR)/cprintf.o
 
 # TARGET: pseudo target for libkoshlib.a
 libkoshlib.a:
@@ -78,7 +80,7 @@ kosh.o:
 
 # TARGET: pseudo target for libstdlib.a
 libstd.a:
-	$(MAKE) -C src/stdlib libstd.a
+	$(MAKE) -C src/stdlib ../../$(OBJDIR)/libstd.a
 
 
 # TARGET: build asm kernel entry point
@@ -155,6 +157,7 @@ $(OBJDIR)/asm.o: src/platform/$(PLATFORM)/asm.c
 $(OBJDIR)/string.o: src/string.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/string.o src/string.c
 
+
 $(OBJDIR)/reboot.o: src/reboot.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/reboot.o src/reboot.c
 
@@ -167,6 +170,20 @@ $(OBJDIR)/cpuid.o: src/platform/$(PLATFORM)/cpuid.asm
 $(OBJDIR)/pic.o: src/platform/$(PLATFORM)/pic.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pic.o src/platform/$(PLATFORM)/pic.c
 
+$(OBJDIR)/phys_core.o: src/memory/phys_core.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/phys_core.o src/memory/phys_core.c
+
+$(OBJDIR)/paging.o: src/memory/paging.c
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/paging.o src/memory/paging.c
+
+$(OBJDIR)/kmalloc.o: src/memory/kmalloc.c
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/kmalloc.o src/memory/kmalloc.c
+
+$(OBJDIR)/stringmem.o: src/memory/stringmem.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/stringmem.o src/memory/stringmem.c
+
+$(OBJDIR)/kernel_stack.o: src/util/kernel_stack.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kernel_stack.o src/util/kernel_stack.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
