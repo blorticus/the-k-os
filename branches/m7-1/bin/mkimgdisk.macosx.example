@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# The root-level Makefile calls this in order to create a virtual image that can be boot, e.g., in vmware
+# This is included as an example, and will probably need to be tailored to your own environment.  Notice
+# that this script uses a mnt/ directory at the same level as the Makefile, as well as vm/ dir (relative
+# to the Makefile).  It assumes that there is already a floppy image (ext2.img) that has an ext2 filesystem
+# on it, and grub's first- and second-stage bootloaders installed.  The SVN repository should also contain
+# such a floppy image with some arbitrary version of the kernel installed.
+# This version requires MacFuse and fuse-ext2
+
+echo "Mounting virtual image..."
+/usr/local/bin/fuse-ext2 vm/ext2.img mnt -o force
+
+sleep 1
+
+if [ ! -f mnt/kernel.bin ]; then
+    echo "No kernel.bin on disk, probably not mounted"
+#    exit 1
+fi
+
+rm mnt/kernel.bin
+
+if [ -f mnt/kernel.bin ]; then
+    echo "Failed to remove kernel.bin on disk"
+    exit 2
+fi
+
+cp i386-obj/kernel.bin mnt
+
+if [ ! -f mnt/kernel.bin ]; then
+    echo "Failed to copy kernel.bin to disk"
+    exit 1
+fi
+
+export FILESIZE=`ls -l mnt/kernel.bin | perl -pe 's/ +/\t/g' | cut -f 5`
+if [[ "$FILESIZE" -lt 1 ]]; then
+    echo "kernel.bin zero size"
+    exit 1
+fi
+
+echo "Unmounting virutal image..."
+umount -f mnt
+
+echo "Copying virtual image..."
+cp vm/ext2.img ../..
