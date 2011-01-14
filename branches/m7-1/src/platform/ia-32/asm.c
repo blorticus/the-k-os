@@ -8,3 +8,12 @@ inline u8 ioport_readb( u16 port ) {
                     : "dN" (port));
     return value;
 }  __attribute__((always_inline));
+
+
+inline u32 ioport_readl( u16 port ) { 
+    u32 value;
+    asm volatile ("in %1, %0" 
+                    : "=a" (value) 
+                    : "dN" (port));
+    return value;
+}  __attribute__((always_inline));

@@ -36,7 +36,7 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
-OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
@@ -184,6 +184,9 @@ $(OBJDIR)/stringmem.o: src/memory/stringmem.c
 
 $(OBJDIR)/kernel_stack.o: src/util/kernel_stack.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kernel_stack.o src/util/kernel_stack.c
+
+$(OBJDIR)/pci.o: src/bus/pci.c
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/pci.o src/bus/pci.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
