@@ -179,8 +179,6 @@ int main( void ) {
     pci_device pd;
     pci_device* pdp = &pd;
     PCI_SCAN_ITERATOR psip = &psi;
-    u8 bus, slot;
-    u16 vendor;
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -353,8 +351,10 @@ int main( void ) {
                 init_pci_scan( psip );
 
                 while (continue_pci_scan( psip, pdp )) {
-                    kterm_window_printf( top_win, "  BUS = 0x%x  SLOT = 0x%x  VENDOR = 0x%x  DEVICEID = 0x%x\n",
-                                                  pdp->bus_number, pdp->device_number, pdp->vendor_id, pdp->device_id );
+                    kterm_window_printf( top_win, "- BUS:SLOT = %d:%d VENDOR:DEVICE = 0x%x:0x%x\n  CLASS = %d (%s)\n  SUBCLASS = 0x%x  ProgIF = 0x%x  RevID = 0x%x\n",
+                                                  pdp->bus_number, pdp->slot_number, (u32)(pdp->vendor_id), (u32)(pdp->device_id),
+                                                  (u32)(pdp->class_code), get_static_pci_class_description( pdp->class_code ),
+                                                  (u32)(pdp->subclass), (u32)(pdp->programming_interface), (u32)(pdp->revision_id) );
                 }
 
                 if (pdp == NULL) {
