@@ -186,7 +186,7 @@ $(OBJDIR)/kernel_stack.o: src/util/kernel_stack.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kernel_stack.o src/util/kernel_stack.c
 
 $(OBJDIR)/pci.o: src/bus/pci.c
-	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/pci.o src/bus/pci.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pci.o src/bus/pci.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean

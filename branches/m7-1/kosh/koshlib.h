@@ -18,6 +18,7 @@ typedef enum {
     CPUID,          // CPUID support and info
     KERNEL_INFO,    // information about the kernel
     KMALLOC,        // test for kmalloc
+    PCI_BUS_SCAN,   // scan PCI bus
     TEST,           // for temporary testing of features
 } kosh_base_command;
 

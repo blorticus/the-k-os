@@ -18,17 +18,17 @@ char input_buffer[INPUT_BUFFER_SIZE];
 char token_buffer[TOKEN_BUFFER_SIZE];
 
 
-/* parses 'str' looking for the next sequence of characters that end with NULL or whitespace, up to 'limit' number
- * of characters.  If 'limit' is reached, chop the string to 'limit' and add NULL (so return might be 'limit' + 1).
- * Otherwise, return the string, with NULL terminator.  If zero or more whitespace followed by NULL is reached, return
- * NULL string.  If 'str' is NULL, then the next_word in the most recent non-NULL 'str' entry is searched again.  (this works
- * like strtok()).  Result is written to 'buffer', and a pointer to first character after 'buffer' word in 'str' is returned. */
 char* last_searched = NULL;
 
 
 /* this will be localized later, but for now, represents the current instruction */
 kosh_instruction g_instruction;
 
+/* parses 'str' looking for the next sequence of characters that end with NULL or whitespace, up to 'limit' number
+ * of characters.  If 'limit' is reached, chop the string to 'limit' and add NULL (so return might be 'limit' + 1).
+ * Otherwise, return the string, with NULL terminator.  If zero or more whitespace followed by NULL is reached, return
+ * NULL string.  If 'str' is NULL, then the next_word in the most recent non-NULL 'str' entry is searched again.  (this works
+ * like strtok()).  Result is written to 'buffer', and a pointer to first character after 'buffer' word in 'str' is returned. */
 char* next_word( char* str, char* buffer, u32 limit ) {
     int i;
 
@@ -221,6 +221,19 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
 }
 
 
+static int remaining_command_line_is_empty( char* token_buffer, kosh_instruction* instruction ) {
+    next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+    if (token_buffer[0] != NULL) {
+        instruction->command = HELP;
+        instruction->error   = "Extra Input After Command";
+        return 0;
+    }
+    else {
+        return 1;
+    }
+}
+
+
 kosh_instruction* input_to_instruction( char* input ) {
     /* right now, no malloc() or equivalent, so use global var */
 //    kosh_instruction instruction;  /* right now, no malloc() or equivalent, so we cannot return a pointer to this variable.  Thus, use global var */
@@ -361,6 +374,19 @@ kosh_instruction* input_to_instruction( char* input ) {
         }
         else {
             instruction->command = KMALLOC;
+        }
+    }
+    else if (strcmp( token_buffer, "pci" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+
+        if (strcmp( token_buffer, "scan" ) == 0) {
+            if (remaining_command_line_is_empty( token_buffer, instruction )) {
+                instruction->command = PCI_BUS_SCAN;
+            }
+        }
+        else {
+            instruction->command = HELP;
+            instruction->error   = "Incomplete Command";
         }
     }
     else if (strcmp( token_buffer, "test" ) == 0) {

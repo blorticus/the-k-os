@@ -26,10 +26,10 @@
 #define pci_config_init( pci_config_word )                                  (pci_config_word = pci_config_word ^ pci_config_word)
 #define pci_config_set_enable_bit( pci_config_word )                        (pci_config_word |= 0x80000000)
 #define pci_config_unset_enable_bit( pci_config_word )                      (pci_config_word &= 0x7fffffff)
-#define pci_config_set_bus_number( pci_config_word, bus_number )            (pci_config_word |= ((u32)bus_number << 23))        // MUST BE >= 0 && < 256 
-#define pci_config_set_device_number( pci_config_word, device_number)       (pci_config_word |= ((u32)device_number << 15))     // MUST BE >= 0 && < 32
-#define pci_config_set_function_number( pci_config_word, function_number)   (pci_config_word |= ((u32)function_number << 10))   // MUST BE >= 0 && < 8
-#define pci_config_set_register_number( pci_config_word, register_number)   (pci_config_word |= ((u32)register_number << 7))    // MUST BE >= 0 && < 64
+#define pci_config_set_bus_number( pci_config_word, bus_number )            (pci_config_word |= ((u32)bus_number << 16))        // MUST BE >= 0 && < 256 
+#define pci_config_set_device_number( pci_config_word, device_number)       (pci_config_word |= ((u32)device_number << 11))     // MUST BE >= 0 && < 32
+#define pci_config_set_function_number( pci_config_word, function_number)   (pci_config_word |= ((u32)function_number << 8))    // MUST BE >= 0 && < 8
+#define pci_config_set_register_number( pci_config_word, register_number)   (pci_config_word |= ((u32)register_number << 2))    // MUST BE >= 0 && < 64
 
 // PCI class codes and text descriptions
 #define PCI_CLASS_PRE_PCI               0x00
@@ -52,13 +52,6 @@
 #define PCI_CLASS_DATA_AQU_SIGNAL_PROC_CNTRLR   0x11
 #define PCI_CLASS_NONE                  0xff
 
-char* PCI_CLASS_DESCRIPTIONS[] = {  "Pre PCI",                  "Mass Storage Controller",          "Network Controller",
-                                    "Display Controller",       "Multimedia Controller",            "Memory Controller",
-                                    "Bridge Device",            "Simple Communication Controller",  "Base System Peripheral",
-                                    "Input Device",             "Docking Station",                  "Processor",
-                                    "Serial Bus Controller",    "Wireless Controller",              "Intellegent I/O Controller",
-                                    "Satellite Controller",     "Encryption/Decryption Controller", "Data Aquisition and Signal Processing Controller"
-                                  };
 
 typedef enum pci_registers {
     TYPE00_DEVICE_AND_VENDOR_IDS        = 0x00,
@@ -82,23 +75,25 @@ typedef enum pci_registers {
 typedef struct pci_scan_iterator {
     u32 next_bus_index;
     u32 next_device_index;
-} * PCI_SCAN_ITERATOR;
+} pci_scan_iterator;
+
+typedef struct pci_scan_iterator* PCI_SCAN_ITERATOR;
 
 
 typedef struct pci_device {
     u8 bus_number;
     u8 device_number;
     u8 function_number;
-    u8 vendor_id;
-    u8 device_id;
+    u32 vendor_id;
+    u16 device_id;
 } pci_device;
 
 
 // To scan the PCI bus, call 'init_oci_scan' and provide offset struct.  Call 'continue_pci_scan' on the offset struct.
 // When this method encounters a device, it fills in 'next_device' and updates 'offset'.  Keep calling with updated
 // 'offset' until 'next_device' is NULL, meaning the end of the bus has been reached.
-void init_pci_scan    ( PCI_SCAN_ITERATOR itr );
-void continue_pci_scan( PCI_SCAN_ITERATOR itr, pci_device* next_device );
-
+void        init_pci_scan    ( PCI_SCAN_ITERATOR itr );
+pci_device* continue_pci_scan( PCI_SCAN_ITERATOR itr, pci_device* next_device );
+const char* get_static_pci_class_description( u8 class_number );
 
 #endif

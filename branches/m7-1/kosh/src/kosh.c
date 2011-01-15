@@ -8,6 +8,8 @@
 #include <sys/kernelsyms.h>
 #include <memory/paging.h>
 #include <memory/kmalloc.h>
+#include <bus/pci.h>
+#include <platform/ia-32/asm.h>
 
 extern void phys_core_set_window( KTERM_WINDOW w );
 
@@ -166,13 +168,19 @@ int main( void ) {
     cpuid_retval crv;
     int pos_count;              // for cpuid function
 
-    u32 *dir, *table, paddr;
-    char *TEST_A, *TEST_B, *t;
-    u32 phys_addr, virt_addr;
-    u32 va;
+//    u32 *dir, *table, paddr;
+//    char *TEST_A, *TEST_B, *t;
+//    u32 phys_addr, virt_addr;
+//    u32 va;
     char *s1, *cs1, *ct1;
     const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
-    u32* da, *ta;
+//    u32* da, *ta;
+    pci_scan_iterator psi;
+    pci_device pd;
+    pci_device* pdp = &pd;
+    PCI_SCAN_ITERATOR psip = &psi;
+    u8 bus, slot;
+    u16 vendor;
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -262,6 +270,7 @@ int main( void ) {
                 kterm_window_puts( top_win, " cpuid             - Show CPUID support and characteristics\n" );
                 kterm_window_puts( top_win, " kernel            - Information about the kernel\n" );
                 kterm_window_puts( top_win, " kmalloc           - Test kmalloc/kfree implementation\n" );
+                kterm_window_puts( top_win, " pci scan          - Scan the PCI bus\n" );
                 break;
 
             case BIOS:
@@ -338,6 +347,22 @@ int main( void ) {
 
                 kfree( s1 );
 
+                break;
+
+            case PCI_BUS_SCAN:
+                init_pci_scan( psip );
+
+                while (continue_pci_scan( psip, pdp )) {
+                    kterm_window_printf( top_win, "  BUS = 0x%x  SLOT = 0x%x  VENDOR = 0x%x  DEVICEID = 0x%x\n",
+                                                  pdp->bus_number, pdp->device_number, pdp->vendor_id, pdp->device_id );
+                }
+
+                if (pdp == NULL) {
+                    kterm_window_printf( top_win, "--> ERROR, no match on scan" );
+                }
+                else {
+                }
+                
                 break;
 
             case TEST:
