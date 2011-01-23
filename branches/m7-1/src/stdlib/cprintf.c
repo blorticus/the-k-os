@@ -1,11 +1,12 @@
 #include <stdio.h>
+#include <string.h>
 #include <video/kterm.h>
 
 /* Given a particular number base (currently 10 and 16 are supported), convert 'value' into its ascii numeric representation.
  * Place the acsii representation in 'buf', which will be null terminated.  If 'max_len' greater than characters needed to
  * fulfill request (not including the training null), the state of 'buf' will be undefined and the return value will be 0.
  * Returns length of string in 'buf' */
-static unsigned int itoa( const char* buf, long value, unsigned int base, unsigned short max_len ) {
+static unsigned int atoi( const char* buf, long value, unsigned int base, unsigned short max_len ) {
     int i = 0;
     unsigned char v;
     char* sbuf = (char*)buf;
@@ -67,6 +68,8 @@ static unsigned int itoa( const char* buf, long value, unsigned int base, unsign
 }
 
 
+
+
 char buf[20];
 int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, ... ) {
     const char** next_vararg = &fmt + 1;
@@ -100,7 +103,7 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
                     l = (long)*next_vararg;
                     next_vararg++;
                     s = buf;
-                    count = itoa( buf, l, 10, 19 );
+                    count = atoi( buf, l, 10, 19 );
 
                     if (count > 0) {
                         padding -= count; 
@@ -113,7 +116,7 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
                     l = (long)*next_vararg;
                     next_vararg++;
                     s = buf;
-                    count = itoa( buf, l, 16, 19 );
+                    count = atoi( buf, l, 16, 19 );
 
                     if (count > 0) {
                         padding -= count;

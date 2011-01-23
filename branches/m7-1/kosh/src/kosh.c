@@ -10,6 +10,7 @@
 #include <memory/kmalloc.h>
 #include <bus/pci.h>
 #include <platform/ia-32/asm.h>
+#include <string.h>
 
 extern void phys_core_set_window( KTERM_WINDOW w );
 
@@ -161,6 +162,14 @@ void int_diag_pit_handler( struct regs *r ) {
 }
 
 
+static inline print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
+    kterm_window_printf( win, "- BUS:SLOT.FUNC = %d:%d.%d VENDOR:DEVICE = 0x%x:0x%x\n  CLASS = %d (%s)\n  SUBCLASS = 0x%x  ProgIF = 0x%x  RevID = 0x%x\n",
+                              pdp->bus_number, pdp->slot_number, pdp->function_number, (u32)(pdp->vendor_id), (u32)(pdp->device_id),
+                              (u32)(pdp->class_code), get_static_pci_class_description( pdp->class_code ),
+                              (u32)(pdp->subclass), (u32)(pdp->programming_interface), (u32)(pdp->revision_id) );
+}
+
+
 int main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
@@ -179,6 +188,10 @@ int main( void ) {
     pci_device pd;
     pci_device* pdp = &pd;
     PCI_SCAN_ITERATOR psip = &psi;
+
+    long pci_class;
+    int linecnt;
+    char buf[10];
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -259,16 +272,16 @@ int main( void ) {
                 break;
 
             case HELP:
-                kterm_window_puts( top_win, " echo <text>       - repeat <text>\n" );
-                kterm_window_puts( top_win, " peek <reg|mem>    - see value at register <reg> or memory location 0x<mem>\n" );
-                kterm_window_puts( top_win, " poke <reg|mem>    - change value at register <reg> or memory location 0x<mem>\n" );
-                kterm_window_puts( top_win, " regs              - dump all register values\n" );
-                kterm_window_puts( top_win, " bios              - prints out relocated bios values\n" );
-                kterm_window_puts( top_win, " int               - activates interrupt diagnostics\n" );
-                kterm_window_puts( top_win, " cpuid             - Show CPUID support and characteristics\n" );
-                kterm_window_puts( top_win, " kernel            - Information about the kernel\n" );
-                kterm_window_puts( top_win, " kmalloc           - Test kmalloc/kfree implementation\n" );
-                kterm_window_puts( top_win, " pci scan          - Scan the PCI bus\n" );
+                kterm_window_puts( top_win, " echo <text>            - repeat <text>\n" );
+                kterm_window_puts( top_win, " peek <reg|mem>         - see value at register <reg> or memory location 0x<mem>\n" );
+                kterm_window_puts( top_win, " poke <reg|mem>         - change value at register <reg> or memory location 0x<mem>\n" );
+                kterm_window_puts( top_win, " regs                   - dump all register values\n" );
+                kterm_window_puts( top_win, " bios                   - prints out relocated bios values\n" );
+                kterm_window_puts( top_win, " int                    - activates interrupt diagnostics\n" );
+                kterm_window_puts( top_win, " cpuid                  - Show CPUID support and characteristics\n" );
+                kterm_window_puts( top_win, " kernel                 - Information about the kernel\n" );
+                kterm_window_puts( top_win, " kmalloc                - Test kmalloc/kfree implementation\n" );
+                kterm_window_puts( top_win, " pci scan [class <n>]   - Scan the PCI bus (optionally only for class <n> devices)\n" );
                 break;
 
             case BIOS:
@@ -350,19 +363,32 @@ int main( void ) {
             case PCI_BUS_SCAN:
                 init_pci_scan( psip );
 
+                linecnt = 0;
                 while (continue_pci_scan( psip, pdp )) {
-                    kterm_window_printf( top_win, "- BUS:SLOT = %d:%d VENDOR:DEVICE = 0x%x:0x%x\n  CLASS = %d (%s)\n  SUBCLASS = 0x%x  ProgIF = 0x%x  RevID = 0x%x\n",
-                                                  pdp->bus_number, pdp->slot_number, (u32)(pdp->vendor_id), (u32)(pdp->device_id),
-                                                  (u32)(pdp->class_code), get_static_pci_class_description( pdp->class_code ),
-                                                  (u32)(pdp->subclass), (u32)(pdp->programming_interface), (u32)(pdp->revision_id) );
+                    print_pci_scan_element( top_win, pdp );
+
+                    linecnt += 3;
+                    if (linecnt >= 18) {
+                        kterm_window_printf( top_win, " ----- MORE -----" );
+                        kterm_window_readline( top_win, buf, 9 );
+                        linecnt = 0;
+                    }
                 }
 
-                if (pdp == NULL) {
-                    kterm_window_printf( top_win, "--> ERROR, no match on scan" );
+                break;
+
+            case PCI_BUS_SCAN_CLASS:
+                pci_class = strtol( next_instruction->remaining_command_line, NULL, 0 );
+
+                kterm_window_printf( top_win, "looking for class [%d]\n", pci_class );
+
+                init_pci_scan( psip );
+
+                while (continue_pci_scan( psip, pdp )) {
+                    if (pdp->class_code == pci_class)
+                        print_pci_scan_element( top_win, pdp );
                 }
-                else {
-                }
-                
+
                 break;
 
             case TEST:

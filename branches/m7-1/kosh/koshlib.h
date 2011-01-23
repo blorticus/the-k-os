@@ -19,6 +19,7 @@ typedef enum {
     KERNEL_INFO,    // information about the kernel
     KMALLOC,        // test for kmalloc
     PCI_BUS_SCAN,   // scan PCI bus
+    PCI_BUS_SCAN_CLASS, // scan PCI bus for class, remainig_command_line is int for class match
     TEST,           // for temporary testing of features
 } kosh_base_command;
 

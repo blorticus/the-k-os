@@ -13,7 +13,7 @@ char* PCI_CLASS_DESCRIPTIONS[] =
 
 
 const char* get_static_pci_class_description( u8 class_number ) {
-    if (class_number > 17) {
+    if (class_number > sizeof( PCI_CLASS_DESCRIPTIONS ) / 4) {
         return "Unknown";
     }
     else {
@@ -22,8 +22,7 @@ const char* get_static_pci_class_description( u8 class_number ) {
 }
 
 
-/* On bus device 'slot' in bus 'bus', execute function 'function' and read return register 'register'
- * (which is in the range 00 .. 3c step 0x4).  Return register word selected.
+/* On bus device 'slot' in bus 'bus', execute function 'function' and read return register word 'register'.  Return register word selected.
  */
 static inline u32 pci_read_config_register( u8 bus, u8 slot, u8 function, pci_registers read_register ) {
     u32 pci_config_word = 0;
@@ -40,8 +39,9 @@ static inline u32 pci_read_config_register( u8 bus, u8 slot, u8 function, pci_re
 
 
 void init_pci_scan( PCI_SCAN_ITERATOR itr ) {
-    itr->next_bus_index   = 0;
-    itr->next_slot_index  = 0;
+    itr->next_bus_index      = 0;
+    itr->next_slot_index     = 0;
+    itr->next_function_index = 0;
 }
 
 
@@ -49,28 +49,30 @@ void init_pci_scan( PCI_SCAN_ITERATOR itr ) {
  * slot in current bus, increment bus.  May increment bus past last possible
  * value */
 static inline void increment_pci_iterator( PCI_SCAN_ITERATOR itr ) {
-    if (++itr->next_slot_index > 32) {    // 2 ** 5 == 32
-        itr->next_slot_index = 0;
-        itr->next_bus_index++;
+    if (++itr->next_function_index >= 8) {  // 2 ** 3 == 8
+        itr->next_function_index = 0;
+        if (++itr->next_slot_index >= 32) {    // 2 ** 5 == 32
+            itr->next_slot_index = 0;
+            itr->next_bus_index++;
+        }
     }
 }
 
 
 pci_device* continue_pci_scan( PCI_SCAN_ITERATOR itr, pci_device* next_device ) {
     u32 pci_register_value;
-    u16 vendor, device_id;
 
     while (itr->next_bus_index <= 0xff) {   // sizeof(bus) is one byte
-        pci_register_value = pci_read_config_register( itr->next_bus_index, itr->next_slot_index, 0, DEVICE_AND_VENDOR_IDS );
+        pci_register_value = pci_read_config_register( itr->next_bus_index, itr->next_slot_index, itr->next_function_index, DEVICE_AND_VENDOR_IDS );
 
         if ((u16)pci_register_value != 0xffff) {    // lower 16 bits are vendor id and 0xffff is invalid vendor id
             next_device->bus_number         = itr->next_bus_index;
             next_device->slot_number        = itr->next_slot_index;
-            next_device->function_number    = 0;
+            next_device->function_number    = itr->next_function_index;
             next_device->vendor_id          = pci_config_get_vendor_id( pci_register_value );
             next_device->device_id          = pci_config_get_device_id( pci_register_value );
 
-            pci_register_value = pci_read_config_register( itr->next_bus_index, itr->next_slot_index, 0, CLASS_PROG_REVISION );
+            pci_register_value = pci_read_config_register( itr->next_bus_index, itr->next_slot_index, itr->next_function_index, CLASS_PROG_REVISION );
 
             next_device->class_code             = pci_config_get_class_code           ( pci_register_value );
             next_device->subclass               = pci_config_get_subclass             ( pci_register_value );
@@ -89,8 +91,7 @@ pci_device* continue_pci_scan( PCI_SCAN_ITERATOR itr, pci_device* next_device ) 
     }
 
     // ASSERT: entire bus scanned
-    next_device = NULL;
-    return next_device;
+    return NULL;
 }
 
 

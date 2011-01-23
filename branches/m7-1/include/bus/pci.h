@@ -83,6 +83,7 @@ inline u8  pci_config_get_device_revision_id    ( u32 pci_register_value );
 typedef struct pci_scan_iterator {
     u32 next_bus_index;
     u32 next_slot_index;
+    u32 next_function_index;
 } pci_scan_iterator;
 
 typedef struct pci_scan_iterator* PCI_SCAN_ITERATOR;

@@ -236,7 +236,6 @@ static int remaining_command_line_is_empty( char* token_buffer, kosh_instruction
 
 kosh_instruction* input_to_instruction( char* input ) {
     /* right now, no malloc() or equivalent, so use global var */
-//    kosh_instruction instruction;  /* right now, no malloc() or equivalent, so we cannot return a pointer to this variable.  Thus, use global var */
     kosh_instruction* instruction = &g_instruction;
 
     instruction->flags = 0x00;
@@ -380,12 +379,31 @@ kosh_instruction* input_to_instruction( char* input ) {
         next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
 
         if (strcmp( token_buffer, "scan" ) == 0) {
-            if (remaining_command_line_is_empty( token_buffer, instruction )) {
+            next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+
+            if (token_buffer[0] == NULL) {  // 'pci scan' followed by nothing else
                 instruction->command = PCI_BUS_SCAN;
             }
+            else {  // 'pci scan' followed by additional tokens
+                if (strcmp( token_buffer, "class" ) == 0) {
+                    next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+                    if (isstringint( token_buffer )) {
+                        instruction->command = PCI_BUS_SCAN_CLASS;
+                        instruction->remaining_command_line = token_buffer;  // caller must extract int and verify value
+                    }
+                    else {
+                        instruction->command = _ERROR_;
+                        instruction->error   = "Invalid class integer";
+                    }
+                }
+                else {  // 'pci scan' followed by nothing or an invalid token
+                    instruction->command = _ERROR_;
+                    instruction->error   = "Parameter not understood";
+                }
+            }
         }
-        else {
-            instruction->command = HELP;
+        else {  // 'pci' followed by nothing or an invalid token
+            instruction->command = _ERROR_;
             instruction->error   = "Incomplete Command";
         }
     }
@@ -393,7 +411,7 @@ kosh_instruction* input_to_instruction( char* input ) {
         next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
         instruction->remaining_command_line = token_buffer;
         if (token_buffer[0] != NULL) {
-            instruction->command = HELP;
+            instruction->command = _ERROR_;
             instruction->error   = "Extra Input After Command";
         }
         else {

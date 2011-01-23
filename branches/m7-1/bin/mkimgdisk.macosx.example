@@ -43,3 +43,4 @@ umount -f mnt
 
 echo "Copying virtual image..."
 cp vm/ext2.img ../..
+cp vm/ext2.img ../../ext2.fdd
