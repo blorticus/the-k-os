@@ -53,5 +53,34 @@ int strntoupper( char *s, size_t n );
 void* memset( void *destination, int value, size_t len );
 
 
+/**
+ *
+ * DESCRIPTION:     test whether a string is an integer and only an integer
+ * RETURN:          return 0 if 's' is not integer (can include leading negation sign); non-zero if it is.  Return 0 if 's' is NULL or is an empty string
+ * SIDE-EFFECTS:    none
+ * RE-ENTRANT?:     yes
+ * NOTE:            not part of stdlib
+ *
+ */
+int isstringint( const char* s );
+
+
+/**
+ *
+ * DESCRIPTION:     convert null-terminated string ('str') to unsigned long integer.  Use base 'base'.  If 'base'
+ *                  is 0, then decimal is assumed unless it starts with 0x (base 16) or 0 (base 8).  On 'base'
+ *                  above 10, 'A' through 'Z' are 10 through 35, respectively, within the valid bounds of the 'base'
+ *                  (thus, A - F are valid for base 16, but G is not).  Leading '-' and '+' are honored.  Capitalization
+ *                  of characters is not relevant.
+ * RETURN:          converted long.  'endptr' points to everything starting with first invalid character (or NULL
+ *                  if no characters are invalid).
+ * SIDE-EFFECTS:    none
+ * RE-ENTRANT?:     yes
+ *
+ */
+
+long
+strtol( const char* str, char ** endptr, int base );
+
 
 #endif

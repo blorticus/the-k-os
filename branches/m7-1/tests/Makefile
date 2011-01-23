@@ -5,14 +5,15 @@ INCLUDES := -I../include -I../lcheck -I../include/stdlib
 LIBS := -L../lcheck -llcheck
 BASE_OBJDIR := i386-obj
 
-exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kmalloc.t kterm.t
+exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kterm.t strtol.t phys_core.t
 	$(MAKE) -C .. notest-distclean
 	@./cprintf.t
 	@./strntolower.t
 	@./kterm.t
 	@./kterm_readline.t
-	@./kmalloc.t
 	@./phys_core.t
+	@./strtol.t
+#	@./kmalloc.t
 #   @./stringmem.t      -- XXX: ADD THIS WHEN FINISHED
 
 
@@ -46,6 +47,11 @@ kterm.t: test_kterm.c liblcheck.a kterm.o
 kernel_stack.t: test_kernel_stack.c liblcheck.a kernel_stack.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o kernel_stack.t test_kernel_stack.c ../$(BASE_OBJDIR)/kernel_stack.o $(LIBS)
 
+isstringint.t: test_isstringint.c liblcheck.a string.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o isstringint.t test_isstringint.c ../$(BASE_OBJDIR)/string.o $(LIBS)
+
+strtol.t: test_strtol.c liblcheck.a string.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o strtol.t test_strtol.c ../$(BASE_OBJDIR)/string.o $(LIBS)
 
 liblcheck.a:
 	$(MAKE) -C ../lcheck liblcheck.a TESTING=1
