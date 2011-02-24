@@ -102,3 +102,67 @@ inline u8  pci_config_get_subclass              ( u32 pci_register_value ) { ret
 inline u8  pci_config_get_programming_interface ( u32 pci_register_value ) { return  (u8)(pci_register_value >>  8);   }
 inline u8  pci_config_get_device_revision_id    ( u32 pci_register_value ) { return  (u8)pci_register_value;           }
 
+// XXX: Change to non-static implementation!
+pci_device pci_devices_tbl[32];
+u8 pci_devices_tbl_len = 0;
+
+#include <video/kterm.h>
+
+pci_tbl_builder pci_build_table( void ) {
+    pci_scan_iterator i;
+    PCI_SCAN_ITERATOR itr = &i;
+    pci_device* pd;
+
+    init_pci_scan( itr );
+
+    for (pci_devices_tbl_len = 0; pci_devices_tbl_len < 32; pci_devices_tbl_len++)
+        if ((pd = continue_pci_scan( itr, &pci_devices_tbl[pci_devices_tbl_len] )) == NULL)
+            break;
+
+    if (pd != NULL)
+        return PCI_TBL_MEM;
+    else
+        return PCI_TBL_OK;
+}
+
+u8 pci_tbl_length() {
+    return pci_devices_tbl_len;
+}
+
+pci_device* pci_tbl_entry( u8 entry ) {
+    return &pci_devices_tbl[entry];
+}
+
+void init_pci_table_search( PCI_TBL_ITERATOR itr ) {
+    itr->next_tbl_entry  = 0;
+    itr->search_criteria = 0;
+}
+
+void pci_table_search_criteria_device_class( PCI_TBL_ITERATOR itr, u8 class ) {
+    itr->search_class = class;
+    itr->search_criteria |= PCI_TBL_SEARCH_FOR_CLASS;
+}
+
+void pci_table_search_criteria_device_subclass( PCI_TBL_ITERATOR itr, u8 subclass ) {
+    itr->search_subclass = subclass;
+    itr->search_criteria |= PCI_TBL_SEARCH_FOR_SUBCLASS;
+}
+
+
+pci_device* continue_pci_table_search( PCI_TBL_ITERATOR itr ) {
+    int i;
+
+    for (i = itr->next_tbl_entry; i < pci_devices_tbl_len; i++) {
+        if (itr->search_criteria & PCI_TBL_SEARCH_FOR_CLASS)
+            if (pci_devices_tbl[i].class_code != itr->search_class)
+                continue;
+        if (itr->search_criteria & PCI_TBL_SEARCH_FOR_SUBCLASS)
+            if (pci_devices_tbl[i].subclass != itr->search_subclass)
+                continue;
+
+        itr->next_tbl_entry = i + 1;
+        return &pci_devices_tbl[i];
+    }
+
+    return NULL;
+}

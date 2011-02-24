@@ -152,17 +152,14 @@ void puts_bios_drive_info( u32 drive_info ) {
 irq_handler_routine ihr = 0;    // for int_diag function
 
 /* for int_diag, replace the irq0 handler with this one.  When it receives irq0, it
- * prints a message to bottom_win, then restores the old handler, stored in
- * the global ihr.  Not thread safe in so, so many ways */
+ * prints a single dot in the lower window
+ */
 void int_diag_pit_handler( struct regs *r ) {
-    kterm_window_printf( bottom_win, "RECEIVED IRQ0\n" );
-
-    kterm_window_printf( bottom_win, "Reinstalling Original Handler...\n" );
-    irq_install_handler( 0, ihr );
+    kterm_window_printf( bottom_win, "." );
 }
 
 
-static inline print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
+static inline void print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
     kterm_window_printf( win, "- BUS:SLOT.FUNC = %d:%d.%d VENDOR:DEVICE = 0x%x:0x%x\n  CLASS = %d (%s)\n  SUBCLASS = 0x%x  ProgIF = 0x%x  RevID = 0x%x\n",
                               pdp->bus_number, pdp->slot_number, pdp->function_number, (u32)(pdp->vendor_id), (u32)(pdp->device_id),
                               (u32)(pdp->class_code), get_static_pci_class_description( pdp->class_code ),
@@ -184,10 +181,12 @@ int main( void ) {
     char *s1, *cs1, *ct1;
     const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
 //    u32* da, *ta;
-    pci_scan_iterator psi;
+//    pci_scan_iterator psi;
     pci_device pd;
     pci_device* pdp = &pd;
-    PCI_SCAN_ITERATOR psip = &psi;
+//    PCI_SCAN_ITERATOR psip = &psi;
+    struct pci_tbl_iterator pti;
+    PCI_TBL_ITERATOR ptip = &pti;
 
     long pci_class;
     int linecnt;
@@ -333,8 +332,16 @@ int main( void ) {
                 break;
 
             case INTDIAG:
-                kterm_window_printf( bottom_win, "WAITING FOR IRQ0 ... " );
-                ihr = irq_install_handler( 0, &int_diag_pit_handler );
+                if (!ihr) {
+                    kterm_window_printf( bottom_win, "Counting IRQ0 ticks: " );
+                    irq_install_handler( 0, &int_diag_pit_handler );
+                    ihr = &int_diag_pit_handler;
+                }
+                else {
+                    kterm_window_printf( bottom_win, "\nStopping IRQ0 counting\n" );
+                    irq_install_handler( 0, 0 );
+                    ihr = 0;
+                }
                 break;
 
             case KERNEL_INFO:
@@ -361,10 +368,10 @@ int main( void ) {
                 break;
 
             case PCI_BUS_SCAN:
-                init_pci_scan( psip );
+                init_pci_table_search( ptip );
 
                 linecnt = 0;
-                while (continue_pci_scan( psip, pdp )) {
+                while ((pdp = continue_pci_table_search( ptip )) != NULL) {
                     print_pci_scan_element( top_win, pdp );
 
                     linecnt += 3;
@@ -382,11 +389,19 @@ int main( void ) {
 
                 kterm_window_printf( top_win, "looking for class [%d]\n", pci_class );
 
-                init_pci_scan( psip );
+                init_pci_table_search( ptip );
+                pci_table_search_criteria_device_class( ptip, (u8)pci_class );
 
-                while (continue_pci_scan( psip, pdp )) {
-                    if (pdp->class_code == pci_class)
-                        print_pci_scan_element( top_win, pdp );
+                linecnt = 0;
+                while ((pdp = continue_pci_table_search( ptip )) != NULL) {
+                    print_pci_scan_element( top_win, pdp );
+
+                    linecnt += 3;
+                    if (linecnt >= 18) {
+                        kterm_window_printf( top_win, " ----- MORE -----" );
+                        kterm_window_readline( top_win, buf, 9 );
+                        linecnt = 0;
+                    }
                 }
 
                 break;

@@ -103,11 +103,65 @@ typedef struct pci_device {
 } pci_device;
 
 
+
 // To scan the PCI bus, call 'init_oci_scan' and provide offset struct.  Call 'continue_pci_scan' on the offset struct.
 // When this method encounters a device, it fills in 'next_device' and updates 'offset'.  Keep calling with updated
 // 'offset' until 'next_device' is NULL, meaning the end of the bus has been reached.
 void        init_pci_scan    ( PCI_SCAN_ITERATOR itr );
 pci_device* continue_pci_scan( PCI_SCAN_ITERATOR itr, pci_device* next_device );
 const char* get_static_pci_class_description( u8 class_number );
+
+// These methods perform a complete bus scan and build a list of pci_device structures.  The other method can be used
+// to iterate through the table entries.
+
+
+typedef enum pci_tbl_builder {
+    PCI_TBL_OK,
+    PCI_TBL_MEM
+} pci_tbl_builder;
+
+/**
+ * DESCRIPTION      : create an internal table of pci_device entries by performing a PCI bus scan
+ * RETURNS          : PCI_TBL_OK on success; PCI_TBL_MEM on failure to allocate sufficient memory
+ * RE-ENTRANT?      : no
+ **/
+pci_tbl_builder pci_build_table( void );
+
+// masks for pci_tbl_iterator.search_criteria
+#define PCI_TBL_SEARCH_FOR_CLASS        0x1
+#define PCI_TBL_SEARCH_FOR_SUBCLASS     0x2
+
+typedef struct pci_tbl_iterator {
+    u32 next_tbl_entry;
+    u8  search_class;
+    u8  search_subclass;
+    u8  search_criteria;
+} * PCI_TBL_ITERATOR;
+
+/**
+ * DESCRIPTION      : an iterator method for finding devices of particular types
+ * RETURNS          : first create an iterator via pci_table_iterator_create(); then to search using pci_table_search() method
+ *                    appropriate to what you're searching.  These methods return pci_device pointers (to the original table
+ *                    entries, so DO NOT MODIFY their values) or NULL if there is nothing else.  If no search criteria are set
+ *                    then all table entries match.
+ * RE-ENTRANT?      : no, unless only searches are considered and iterator is not used in more than one thread
+ * NOTES            : these methods require that pci_build_table() has been called
+ **/
+void        init_pci_table_search                    ( PCI_TBL_ITERATOR itr );
+void        pci_table_search_criteria_device_class   ( PCI_TBL_ITERATOR itr, u8 class );
+void        pci_table_search_criteria_device_subclass( PCI_TBL_ITERATOR itr, u8 subclass );
+pci_device* continue_pci_table_search                ( PCI_TBL_ITERATOR itr );
+
+
+/**
+ * DESCRIPTION      : an alternative method treats the table like an array.  'pci_tbl_length' returns the number
+ *                    of entries in the table.  'pci_tbl_entry' retrieves the entry identified.  If an attempt to
+ *                    retrieve an entry at or equal to 'pci_tbl_length' is made, the result is undefined.
+ * RETURNS          : The pointer returned is the actual table entry so should NOT be modified.
+ * RE-ENTRANT?      : yes
+ **/
+u8 pci_tbl_length();
+pci_device* pci_tbl_entry( u8 entry );
+
 
 #endif

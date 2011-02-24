@@ -221,17 +221,17 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
 }
 
 
-static int remaining_command_line_is_empty( char* token_buffer, kosh_instruction* instruction ) {
-    next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-    if (token_buffer[0] != NULL) {
-        instruction->command = HELP;
-        instruction->error   = "Extra Input After Command";
-        return 0;
-    }
-    else {
-        return 1;
-    }
-}
+//static int remaining_command_line_is_empty( char* token_buffer, kosh_instruction* instruction ) {
+//    next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+//    if (token_buffer[0] != NULL) {
+//        instruction->command = HELP;
+//        instruction->error   = "Extra Input After Command";
+//        return 0;
+//    }
+//    else {
+//        return 1;
+//    }
+//}
 
 
 kosh_instruction* input_to_instruction( char* input ) {
