@@ -7,6 +7,7 @@
 #include <multiboot.h>
 #include <memory/paging.h>
 #include <sys/kernelsyms.h>
+#include <bus/pci.h>
 
 int main( void );
 
@@ -28,7 +29,6 @@ void kmain( void ) {
     mbi = retrieve_multiboot_relocate_info();
 
     create_gdt();
-
     
     dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
 
@@ -38,6 +38,11 @@ void kmain( void ) {
     }
 
     enable_paging_mode( dir );
+
+    if (pci_build_table() != PCI_TBL_OK) {
+        kterm_panic_msg( "PCI Bus Scan Failed" );
+        halt_os();
+    }
 
     idt_install();
     isrs_install();

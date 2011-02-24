@@ -28,6 +28,13 @@
                           : "g" (port), "g" (data)                       \
                           : "%al", "%dx")
 
+#define ioport_writel( port, data ) \
+    __asm__ __volatile__ ("mov %0, %%dx; movl %1, %%eax; out %%eax, %%dx;" \
+                          :                                              \
+                          : "g" (port), "g" (data)                       \
+                          : "%eax", "%dx")
+
+
 
 /**
  *
@@ -38,7 +45,8 @@
  * RE-ENTRANT?:     Essentially no, but that's because most callers want reliable access to the port value
  *
  */ 
-inline u8 ioport_readb( u16 port ) __attribute__((always_inline));
+__attribute__((always_inline)) u8 ioport_readb( u16 port );
+__attribute__((always_inline)) u32 ioport_readl( u16 port );
 
 
 /**
