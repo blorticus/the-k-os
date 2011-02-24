@@ -30,7 +30,7 @@ static KTERM_WINDOW root_window = &rw;
 const char* panic_base_msg = "Kernel Panic! ";
 void kterm_panic_msg( char* msg ) {
     unsigned int i = 0;
-    char* t = panic_base_msg;
+    char* t = (char*)panic_base_msg;
 
     while (*t)
         M_B8000_write_char_at( i++, 0xf0, *t++ );

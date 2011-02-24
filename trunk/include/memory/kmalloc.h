@@ -81,7 +81,7 @@ void* kmalloc( size_t size );
  * RE-ENTRANT?:     NO
  *
  */
-//void kfree( void* ptr );
+void kfree( void* ptr );
 
 
 //const struct kmalloc_mem_element* kmalloc_get_head( void );

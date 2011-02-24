@@ -19,7 +19,7 @@ global irq13
 global irq14
 global irq15
 
-; 32: IRQ0
+; 32: IRQ0 (PIT Timer Channel 0)
 irq0:
     cli
     push byte 0

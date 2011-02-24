@@ -53,34 +53,11 @@ irq_handler_routine irq_uninstall_handler(int irq)
     return current_handler;
 }
 
-/* Normally, IRQs 0 to 7 are mapped to entries 8 to 15. This
-*  is a problem in protected mode, because IDT entry 8 is a
-*  Double Fault! Without remapping, every time IRQ0 fires,
-*  you get a Double Fault Exception, which is NOT actually
-*  what's happening. We send commands to the Programmable
-*  Interrupt Controller (PICs - also called the 8259's) in
-*  order to make IRQ0 to 15 be remapped to IDT entries 32 to
-*  47 */
-//void irq_remap(void)
-//{
-//    ioport_writeb(0x20, 0x11);
-//    ioport_writeb(0xA0, 0x11);
-//    ioport_writeb(0x21, 0x20);
-//    ioport_writeb(0xA1, 0x28);
-//    ioport_writeb(0x21, 0x04);
-//    ioport_writeb(0xA1, 0x02);
-//    ioport_writeb(0x21, 0x01);
-//    ioport_writeb(0xA1, 0x01);
-//    ioport_writeb(0x21, 0x0);
-//    ioport_writeb(0xA1, 0x0);
-//}
-
 /* We first remap the interrupt controllers, and then we install
 *  the appropriate ISRs to the correct entries in the IDT. This
 *  is just like installing the exception handlers */
 void irq_install()
 {
-//    irq_remap();
     PIC_remap_irq_interrupts( IRQ_0_REMAP_ISR, IRQ_0_REMAP_ISR + 15 );
 
     idt_set_entry( IRQ_0_REMAP_ISR + 0,  (unsigned)irq0,  0x08, 0x8E );

@@ -127,10 +127,8 @@ static inline struct multiboot_mmap_entry* find_last_free_mmap_chunk( const stru
 
 memaddr*
 init_physical_paging_32( u32 bits_for_page_size, const struct multiboot_mmap_entry* mmap, u32 mmap_length, memptr start_of_kernel, memptr end_of_kernel ) {
-    u32 free_memory = 0;        // XXX: too small if using PAE!
     u32 traversed;
     struct multiboot_mmap_entry* next_mmap_entry;
-    struct multiboot_mmap_entry* last_free_chunk;
     u32 chunk_offset;
     u32 end_of_chunk;
     u32 page_cmp = 0xffffffff >> (32 - bits_for_page_size); // page_size - 1
