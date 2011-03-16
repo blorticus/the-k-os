@@ -53,6 +53,12 @@ isstringint.t: test_isstringint.c liblcheck.a string.o
 strtol.t: test_strtol.c liblcheck.a string.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o strtol.t test_strtol.c ../$(BASE_OBJDIR)/string.o $(LIBS)
 
+kqueue.t: test_kqueue.c liblcheck.a kqueue.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o kqueue.t test_kqueue.c ../$(BASE_OBJDIR)/kqueue.o $(LIBS)
+
+kcirc_list.t: test_kcirc_list.c liblcheck.a kcirc_list.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -arch i386 -o kcirc_list.t test_kcirc_list.c ../$(BASE_OBJDIR)/kcirc_list.o $(LIBS)
+
 liblcheck.a:
 	$(MAKE) -C ../lcheck liblcheck.a TESTING=1
 
@@ -88,6 +94,13 @@ phys_core.o:
 
 kernel_stack.o:
 	$(MAKE) -C .. $(BASE_OBJDIR)/kernel_stack.o TESTING=1
+
+kqueue.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/kqueue.o TESTING=1
+
+kcirc_list.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/kcirc_list.o TESTING=1
+
 
 
 .PHONY: clean

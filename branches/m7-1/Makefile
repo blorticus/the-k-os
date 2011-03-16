@@ -36,7 +36,7 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
-OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
@@ -187,6 +187,15 @@ $(OBJDIR)/kernel_stack.o: src/util/kernel_stack.c
 
 $(OBJDIR)/pci.o: src/bus/pci.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pci.o src/bus/pci.c
+
+$(OBJDIR)/scheduler.o: src/process/scheduler.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/scheduler.o src/process/scheduler.c
+
+$(OBJDIR)/kqueue.o: src/util/kqueue.c include/util/kqueue.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kqueue.o src/util/kqueue.c
+
+$(OBJDIR)/kcirc_list.o: src/util/kcirc_list.c include/util/kcirc_list.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kcirc_list.o src/util/kcirc_list.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
