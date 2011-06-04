@@ -32,8 +32,6 @@ void kcirc_list_add ( kcirc_list* kl, kernel_common_ds_node* node ) {
 }
 
 kernel_common_ds_node* kcirc_list_advance( kcirc_list* kl ) {
-    kernel_common_ds_node* r;
-
     if (kcirc_list_is_empty( kl ))
         return NULL;
 

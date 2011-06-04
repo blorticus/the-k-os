@@ -167,6 +167,21 @@ static inline void print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
 }
 
 
+void test_task_switch( void ) {
+    kterm_window_printf( bottom_win, "HERE!\n" );
+    for ( ; ; )
+        ;
+//    int i, j;
+//
+//    for (i = 0; i < 10; i++) {
+//        kterm_window_printf( bottom_win, "%d", i );
+//        for (j = 0; j < 1000; j++)
+//            ;
+//        kterm_window_printf( bottom_win, "\b" );
+//    }
+}
+
+
 int main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
@@ -332,16 +347,19 @@ int main( void ) {
                 break;
 
             case INTDIAG:
-                if (!ihr) {
-                    kterm_window_printf( bottom_win, "Counting IRQ0 ticks: " );
-                    irq_install_handler( 0, &int_diag_pit_handler );
-                    ihr = &int_diag_pit_handler;
-                }
-                else {
-                    kterm_window_printf( bottom_win, "\nStopping IRQ0 counting\n" );
-                    irq_install_handler( 0, 0 );
-                    ihr = 0;
-                }
+                thread_create( test_task_switch );
+                raise_int_128();
+                kterm_window_printf( top_win, "Done\n" );
+//                if (!ihr) {
+//                    kterm_window_printf( bottom_win, "Counting IRQ0 ticks: " );
+//                    irq_install_handler( 0, &int_diag_pit_handler );
+//                    ihr = &int_diag_pit_handler;
+//                }
+//                else {
+//                    kterm_window_printf( bottom_win, "\nStopping IRQ0 counting\n" );
+//                    irq_install_handler( 0, 0 );
+//                    ihr = 0;
+//                }
                 break;
 
             case KERNEL_INFO:
