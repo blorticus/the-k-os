@@ -8,6 +8,7 @@
 #include <memory/paging.h>
 #include <sys/kernelsyms.h>
 #include <bus/pci.h>
+#include <process/scheduler.h>
 
 int main( void );
 
@@ -57,6 +58,12 @@ void kmain( void ) {
 
     kterm_window_cls( kterm );
     kterm_window_puts( kterm, "The K-OS is now loaded.\n\n\n" );
+
+//    thread_create( main );
+//    thread_switch();
+
+    task_create( 1, main );
+    raise_int_128();
 
     main();  /* call into KoSH */
 

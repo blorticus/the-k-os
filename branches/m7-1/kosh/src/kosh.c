@@ -168,9 +168,11 @@ static inline void print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
 
 
 void test_task_switch( void ) {
-    kterm_window_printf( bottom_win, "HERE!\n" );
-    for ( ; ; )
-        ;
+    kterm_window_printf( bottom_win, "TASK 2!\n" );
+    kterm_window_printf( bottom_win, "... should get here :)\n" );
+    raise_int_128();
+    kterm_window_printf( bottom_win, "... but should not get here :(\n" );
+    for ( ; ; ) ;
 //    int i, j;
 //
 //    for (i = 0; i < 10; i++) {
@@ -180,6 +182,7 @@ void test_task_switch( void ) {
 //        kterm_window_printf( bottom_win, "\b" );
 //    }
 }
+
 
 
 int main( void ) {
@@ -347,7 +350,7 @@ int main( void ) {
                 break;
 
             case INTDIAG:
-                thread_create( test_task_switch );
+                task_create( 2, test_task_switch );
                 raise_int_128();
                 kterm_window_printf( top_win, "Done\n" );
 //                if (!ihr) {

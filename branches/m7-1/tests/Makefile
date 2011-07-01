@@ -1,6 +1,6 @@
 #TOOLBIN := /usr/bin
 #GCC := $(TOOLBIN)/gcc
-CC_FLAGS := -g -Wall -arch i386
+CC_FLAGS := -g -Wall -arch i386 -fno-stack-protector
 INCLUDES := -I../include -I../lcheck -I../include/stdlib
 LIBS := -L../lcheck -llcheck
 BASE_OBJDIR := i386-obj

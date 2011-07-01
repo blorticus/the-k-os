@@ -1,7 +1,7 @@
 ASM := /usr/bin/nasm
 INCLUDES := -I../../include -I../../include/stdlib
 #CC_FLAGS := -fno-builtin -nostdinc -Wall
-CC_FLAGS := -nostdinc -Wall
+CC_FLAGS := -nostdinc -Wall -fno-stack-protector
 DEFS =
 OBJDIR = ../../i386-obj
 

@@ -267,8 +267,8 @@ isr31:
     push byte 31
     jmp isr_common_stub
 
-extern test_scheduler
 extern thread_switch
+extern task_switch
 
 isr128:
     cli
@@ -286,7 +286,26 @@ isr128:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    jmp thread_switch
+
+    push esp
+
+    call task_switch
+
+    mov esp, eax
+
+;    mov al, 0x20
+;    out 0x20, al
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
+
+    popa
+
+    iret
+
+;    jmp thread_switch
 
 ;    mov eax, esp
 ;    mov esp, temp_stack

@@ -163,10 +163,10 @@ void soft_int_handler(struct regs *r)
     if (r->int_no < 32)
     {
         if (kterm_win != NULL)
-            kterm_window_printf( kterm_win, "ISR TRAP: %s\n", exception_messages[r->int_no] );
+            kterm_window_printf( kterm_win, "ISR TRAP: %s [0x%x]\n", exception_messages[r->int_no], r->err_code );
         for ( ;; );
     }
-    else if (h = isr_routines[r->int_no]) {
+    else if ((h = isr_routines[r->int_no])) {
         h( r );
     }
 }

@@ -19,6 +19,11 @@ typedef struct thread {
 
 typedef thread* THREAD;
 
+typedef struct task {
+    u32 esp0;
+    u32 esp3;
+} task;
+
 typedef u32 pid_t;
 
 /**

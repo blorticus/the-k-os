@@ -124,6 +124,7 @@ void test_reset_virt_page_start_point( u16 start_at_dir_entry, u16 start_at_tbl_
 
 
 
+#if 0
 #ifndef TEST
 static
 #endif
@@ -168,7 +169,7 @@ u32* identity_page( u32 from_dir_entry, u32 from_table_entry, u32 thru_dir_entry
 
     return (table);
 }
-
+#endif
 
 
 static inline void clear_directory( u32* dir ) {

@@ -69,10 +69,58 @@ u32 stacks[20 * 4096];
 //  *                    The execution start point is given by 'start'
 //  * RETURNS          : 0 on success, non-zero on failure
 //  **/
-thread _t1, _t2;;
+
+task tasks[3];
+u8 active_task = 0;
+u32 task_stack[3 * 4096];
+
+u8 task_create( int id, void (*start)(void) ) {
+    u32* stack;
+
+    stack = &task_stack[id * 4096 - 1];
+
+    *--stack = 0x0202;      // eflags
+    *--stack = 0x08;        // cs
+    *--stack = (u32)start;  // eip
+
+    *--stack = 0; //EDI
+    *--stack = 0; //ESI
+    *--stack = 0; //EBP
+    *--stack = 0; //ESP
+    *--stack = 0; //EBX
+    *--stack = 0; //EDX
+    *--stack = 0; //ECX
+    *--stack = 0; //EAX
+
+    //Now these are the data segments pushed by the IRQ handler
+    *--stack = 0x10; //DS
+    *--stack = 0x10; //ES
+    *--stack = 0x10; //FS
+    *--stack = 0x10; //GS
+
+    tasks[id].esp0 = (u32)stack;
+
+    return id;
+}
+
+
+u32 task_switch( u32 previous_task_esp ) {
+    if (active_task)
+        tasks[active_task].esp0 = previous_task_esp;
+
+    if (active_task == 1)
+        active_task = 2;
+    else
+        active_task = 1;
+
+    return tasks[active_task].esp0;
+}
+
+
+thread _t1, _t2;
 THREAD t1 = &_t1;
 THREAD t2 = &_t2;
-u8 active_thread = 1;  // 1 or 2
+u8 active_thread = 0;  // 1 or 2
  
 int thread_create( void (*start)(void) ) {
     THREAD newt;
@@ -86,42 +134,50 @@ int thread_create( void (*start)(void) ) {
     stack = &stacks[0] + 4095;
 
     newt->ebp = newt->esp = (u32)stack;
-    newt->eflags = 0x02;  // all flags, but the require '1' in the second bit slot is one
+    newt->eflags = 0x0202;  // penultimate bit must be one, and set IF to 1
 
     return active_thread == 1 ? 2 : 1;
 }
 
 
+THREAD from, to;
 void thread_switch() {
-    THREAD from, to;
-
-    if (active_thread == 1) {
+    if (active_thread == 0) {
+        from = NULL;
+        to   = t1;
+        active_thread = 1;
+    }
+    else if (active_thread == 1) {
         from = t1;
         to   = t2;
+        active_thread = 2;
     }
     else {
         from = t2;
         to   = t1;
+        active_thread = 1;
     }
 
-//    asm( "pop %%eax" : : : "eax" );  // address of this function
-    asm( "pop %%eax" : : : "eax" );  // gs
-    asm( "pop %%eax" : : : "eax" );  // fs
-    asm( "pop %%eax" : : : "eax" );  // es
-    asm( "pop %%eax" : : : "eax" );  // ds
-    asm( "pop %0" : "=m"(from->edi) : );
-    asm( "pop %0" : "=m"(from->esi) : );
-    asm( "pop %0" : "=m"(from->ebp) : );
-    asm( "pop %0" : "=m"(from->esp) : );
-    asm( "pop %0" : "=m"(from->ebx) : );
-    asm( "pop %0" : "=m"(from->edx) : );
-    asm( "pop %0" : "=m"(from->ecx) : );
-    asm( "pop %0" : "=m"(from->eax) : );
-//    asm( "pop %%eax" : : : "eax" );  // irq number
-//    asm( "pop %%eax" : : : "eax" );  // error code
-    asm( "pop %0" : "=m"(from->eip) : );
-    asm( "pop %%eax" : : : "eax" );  // cs
-    asm( "pop %0" : "=m"(from->eflags) : );
+    if (from != NULL) {
+//        asm( "pop %%eax" : : : "eax" );  // address of this function
+        asm( "pop %%eax" : : : "eax" );  // gs
+        asm( "pop %%eax" : : : "eax" );  // fs
+        asm( "pop %%eax" : : : "eax" );  // es
+        asm( "pop %%eax" : : : "eax" );  // ds
+        asm( "pop %0" : "=m"(from->edi) : );
+        asm( "pop %0" : "=m"(from->esi) : );
+        asm( "pop %0" : "=m"(from->ebp) : );
+        asm( "pop %0" : "=m"(from->esp) : );
+        asm( "pop %0" : "=m"(from->ebx) : );
+        asm( "pop %0" : "=m"(from->edx) : );
+        asm( "pop %0" : "=m"(from->ecx) : );
+        asm( "pop %0" : "=m"(from->eax) : );
+//        asm( "pop %%eax" : : : "eax" );  // irq number
+//        asm( "pop %%eax" : : : "eax" );  // error code
+        asm( "pop %0" : "=m"(from->eip) : );
+        asm( "pop %%eax" : : : "eax" );  // cs
+        asm( "pop %0" : "=m"(from->eflags) : );
+    }
 
     asm( "mov %0, %%eax " : : "m"(to->eax) : "eax" );
     asm( "mov %0, %%ebx " : : "m"(to->ebx) : "ebx" );
