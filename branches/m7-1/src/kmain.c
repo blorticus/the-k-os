@@ -9,6 +9,7 @@
 #include <sys/kernelsyms.h>
 #include <bus/pci.h>
 #include <process/scheduler.h>
+#include <process/task.h>
 
 int main( void );
 
@@ -62,10 +63,12 @@ void kmain( void ) {
 //    thread_create( main );
 //    thread_switch();
 
+    initialize_scheduler();
+
     task_create( 1, main );
     raise_int_128();
 
-    main();  /* call into KoSH */
+//    main();  /* call into KoSH */
 
     kterm_window_cls( kterm );
     kterm_window_puts( kterm, "System Halted.\n" );
