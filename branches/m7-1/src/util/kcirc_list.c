@@ -41,7 +41,7 @@ kernel_common_ds_node* kcirc_list_advance( kcirc_list* kl ) {
 }
 
 
-kernel_common_ds_node* kcirc_list_remove( kcirc_list* kl ) {
+kernel_common_ds_node* kcirc_list_remove_current( kcirc_list* kl ) {
     kernel_common_ds_node* r;
 
     if (kcirc_list_is_empty( kl ))
@@ -61,3 +61,27 @@ kernel_common_ds_node* kcirc_list_remove( kcirc_list* kl ) {
     return r;
 }
 
+
+kernel_common_ds_node* kcirc_list_remove_node( kcirc_list* kl, kernel_common_ds_node* node ) {
+    // if node == current_node, then simply execute kcirc_list_remove_current
+    // otherwise, if list is empty, do nothing
+    // otherwise, straighten up pointer for next and prev wrt node
+    if (kcirc_list_is_empty( kl ))
+        return NULL;
+
+    if (kl->current == node)
+        return kcirc_list_remove_current( kl );
+
+    if (node->prev == NULL && node->next == NULL)
+        return NULL;
+
+    node->prev->next = node->next;
+    node->next->prev = node->prev;
+
+    return node;
+}
+
+
+kernel_common_ds_node* kcirc_list_peek_current( kcirc_list* kl ) {
+    return kl->current;
+}

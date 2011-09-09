@@ -16,7 +16,9 @@ int main( void );
 kterm_window rw;
 KTERM_WINDOW kterm = &rw;
 
-static inline void halt_os( void ) {
+void halt_os( void ) {
+    kterm_window_puts( kterm, "System Halted.\n" );
+
     for ( ;; ) ;
 }
 
@@ -65,13 +67,13 @@ void kmain( void ) {
 
     initialize_scheduler();
 
-    task_create( 1, main );
+    task_create( main );
     raise_int_128();
 
 //    main();  /* call into KoSH */
 
-    kterm_window_cls( kterm );
-    kterm_window_puts( kterm, "System Halted.\n" );
+//    kterm_window_cls( kterm );
+//    kterm_window_puts( kterm, "System Halted.\n" );
 
     halt_os();
 }
