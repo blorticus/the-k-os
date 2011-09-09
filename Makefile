@@ -12,7 +12,7 @@
 VM_DIR ?= /home/vwells/svn/the-k-os/vm
 FLOPPY_FILLER ?= /dev/zero
 MK_IMG_DISK ?= bin/mkimgdisk
-MK_BOCHS_IMG_DISK ?= bin/mkbochs
+#MK_BOCHS_IMG_DISK ?= bin/mkbochs
 
 
 # -- COMPILER ARGS
