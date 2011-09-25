@@ -62,6 +62,9 @@ kcirc_list.t: test_kcirc_list.c liblcheck.a kcirc_list.o
 kbit_field.t: test_kbit_field.c liblcheck.a kbit_field.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o kbit_field.t test_kbit_field.c ../$(BASE_OBJDIR)/kbit_field.o $(LIBS)
 
+task_impl.t: test_IMPL_task.c liblcheck.a kbit_field.o kcirc_list.o kqueue.o task.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o task_impl.t test_IMPL_task.c ../$(BASE_OBJDIR)/kbit_field.o ../$(BASE_OBJDIR)/kcirc_list.o  ../$(BASE_OBJDIR)/kqueue.o ../$(BASE_OBJDIR)/task.o $(LIBS)
+
 liblcheck.a:
 	$(MAKE) -C ../lcheck liblcheck.a TESTING=1
 
@@ -106,6 +109,9 @@ kcirc_list.o:
 
 kbit_field.o:
 	$(MAKE) -C .. $(BASE_OBJDIR)/kbit_field.o TESTING=1
+
+task.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/task.o TESTING=1
 
 
 

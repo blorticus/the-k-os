@@ -17,7 +17,12 @@ typedef struct task {
 typedef task* TASK;
 
 /* The maximum number of allocated tasks for the system */
-#define MAX_TASKS   16
+#define MAX_TASKS   8
+
+void init_task_sys( void );
+void task_release( TASK t );
+TASK task_create( void (*task_start)(void) );
+u32 task_switch( u32 previous_task_esp );
 
 
 #endif

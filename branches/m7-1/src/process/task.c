@@ -10,13 +10,22 @@ u32 task_stack[MAX_TASKS][4096];
 kqueue free_task_queue;
 kcirc_list running_task_list;
 
-kernel_common_ds_node _task_nodes[MAX_TASKS];
-task tasks[MAX_TASKS];
+kernel_common_ds_node _task_nodes[MAX_TASKS + 1];
+task tasks[MAX_TASKS + 1];  // tasks[0] is the null task
 
 kbit_field tasks_allocated;
 u32 _tasks_allocated_bf[(int)(MAX_TASKS / 32) + 1];
 
 TASK active_task;
+
+#ifdef TEST
+kqueue*     get_free_task_queue()       { return &free_task_queue;      }
+kcirc_list* get_running_task_list()     { return &running_task_list;    }
+kbit_field* get_tasks_allocated()       { return &tasks_allocated;      }
+TASK        get_active_task()           { return active_task;           }
+task*       get_tasks_array()           { return tasks;                 }
+u32*        get_stacks_array()          { return (u32*)task_stack;      }
+#endif
 
 extern void halt_os();
 
@@ -26,15 +35,18 @@ void init_task_sys( void ) {
     kqueue_init( &free_task_queue );
     kcirc_list_init( &running_task_list );
 
-    for (i = 0; i < MAX_TASKS; i++) {
+    _task_nodes[0].data = (void*)&tasks[0];
+    tasks[0].id = 0;
+
+    for (i = 1; i <= MAX_TASKS; i++) {
         _task_nodes[i].data = (void*)&tasks[i];
-        tasks[i].id = i + 1;
+        tasks[i].id = i;
         kqueue_enqueue( &free_task_queue, &_task_nodes[i] );
     }
 
     kbit_field_init( &tasks_allocated, _tasks_allocated_bf, MAX_TASKS );
 
-    active_task = NULL;
+    active_task = &tasks[0];
 }
 
 // XXX: why would I ever release based on a TASK rather than task id?
@@ -66,16 +78,16 @@ void task_release( TASK t ) {
 TASK task_create( void (*task_start)(void) ) {
     u32* stack;
     TASK t;
-    u32 toff;
+    u32 tid;
 
     if (kqueue_is_empty( &free_task_queue ))
         return NULL;
 
     t = (TASK)(kqueue_dequeue( &free_task_queue)->data);
 
-    toff = t->id - 1;
+    tid = t->id;
 
-    stack = task_stack[toff];  // same as &task_stack[id - 1][4096]; reference 4096 because stack grows down
+    stack = &task_stack[tid];  // same as [tid - 1][4096]; first stack assignment decrements pointer first (to [tid - 1][4095])
 
     *--stack = 0x0202;      // eflags: required one bit and allow interrupts bit set
     *--stack = 0x08;        // cs
@@ -94,14 +106,11 @@ TASK task_create( void (*task_start)(void) ) {
     *--stack = 0x10; // fs
     *--stack = 0x10; // gs
 
-    tasks[toff].uesp = (u32)stack;
+    t->uesp = (u32)stack;
 
-    kbit_field_set( &tasks_allocated, t->id );
+    kbit_field_set( &tasks_allocated, tid );
 
-    kcirc_list_add( &running_task_list, &_task_nodes[toff] );
-
-    if (active_task == NULL)
-        active_task = t;
+    kcirc_list_add( &running_task_list, &_task_nodes[tid] );
 
     return t;
 }

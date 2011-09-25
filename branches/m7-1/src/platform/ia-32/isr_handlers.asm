@@ -293,14 +293,14 @@ isr128:
 
     mov esp, eax
 
-;    mov al, 0x20
-;    out 0x20, al
-
+;;    mov al, 0x20
+;;    out 0x20, al
+;
     pop gs
     pop fs
     pop es
     pop ds
-
+;
     popa
 
     iret

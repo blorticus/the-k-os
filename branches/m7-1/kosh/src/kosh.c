@@ -173,14 +173,6 @@ void test_task_switch( void ) {
     raise_int_128();
     kterm_window_printf( bottom_win, "... but should not get here :(\n" );
     for ( ; ; ) ;
-//    int i, j;
-//
-//    for (i = 0; i < 10; i++) {
-//        kterm_window_printf( bottom_win, "%d", i );
-//        for (j = 0; j < 1000; j++)
-//            ;
-//        kterm_window_printf( bottom_win, "\b" );
-//    }
 }
 
 
@@ -350,7 +342,7 @@ int main( void ) {
                 break;
 
             case INTDIAG:
-                task_create( 2, test_task_switch );
+                task_create( test_task_switch );
                 raise_int_128();
                 kterm_window_printf( top_win, "Done\n" );
 //                if (!ihr) {

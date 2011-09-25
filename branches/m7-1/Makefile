@@ -192,7 +192,7 @@ $(OBJDIR)/scheduler.o: src/process/scheduler.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/scheduler.o src/process/scheduler.c
 
 $(OBJDIR)/task.o: src/process/task.c $(OBJDIR)/kbit_field.o
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/task.o src/process/task.c
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/task.o src/process/task.c
 
 $(OBJDIR)/kqueue.o: src/util/kqueue.c include/util/kqueue.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kqueue.o src/util/kqueue.c
