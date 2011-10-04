@@ -170,14 +170,35 @@ static inline void print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
 void test_task_switch( void ) {
     kterm_window_printf( bottom_win, "TASK 2!\n" );
     kterm_window_printf( bottom_win, "... should get here :)\n" );
-    raise_int_128();
+    task_exit();
     kterm_window_printf( bottom_win, "... but should not get here :(\n" );
     for ( ; ; ) ;
 }
 
+void test_task_1( void ) {
+    int i, j;
+
+    for (i = 0; i < 10; i++) {
+        for (j = 0; j < 30; j++)
+            kterm_window_putc( bottom_win, '#' );
+        for (j = 0; j < 30; j++) {
+            kterm_window_putc( bottom_win, '\b' );
+            kterm_window_putc( bottom_win, ' ' );
+            kterm_window_putc( bottom_win, '\b' );
+        }
+    }
+}
+
+void test_task_2( void ) {
+    while (1) ;
+}
+
+void test_task_3( void ) {
+    while (1) ;
+}
 
 
-int main( void ) {
+void kosh_main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
     int i;
@@ -199,6 +220,7 @@ int main( void ) {
     PCI_TBL_ITERATOR ptip = &pti;
 
     long pci_class;
+    long tid;
     int linecnt;
     char buf[10];
 
@@ -286,7 +308,8 @@ int main( void ) {
                 kterm_window_puts( top_win, " poke <reg|mem>         - change value at register <reg> or memory location 0x<mem>\n" );
                 kterm_window_puts( top_win, " regs                   - dump all register values\n" );
                 kterm_window_puts( top_win, " bios                   - prints out relocated bios values\n" );
-                kterm_window_puts( top_win, " int                    - activates interrupt diagnostics\n" );
+//                kterm_window_puts( top_win, " int                    - activates interrupt diagnostics\n" );
+                kterm_window_puts( top_win, " task [start|end|kill] <num> - Start or end task 1,2 or 3 or kill a pid\n" );
                 kterm_window_puts( top_win, " cpuid                  - Show CPUID support and characteristics\n" );
                 kterm_window_puts( top_win, " kernel                 - Information about the kernel\n" );
                 kterm_window_puts( top_win, " kmalloc                - Test kmalloc/kfree implementation\n" );
@@ -341,10 +364,41 @@ int main( void ) {
 
                 break;
 
+            case TASK_START:
+                tid = strtol( next_instruction->remaining_command_line, NULL, 0 );
+                if (tid == 1) {
+                    task_create( test_task_1 );
+                }
+                else if (tid == 2) {
+                    task_create( test_task_2 );
+                }
+                else if (tid == 3) {
+                    task_create( test_task_3 );
+                }
+                else {
+                    kterm_window_printf( top_win, "Valid task selectors are 1, 2 or 3\n" );
+                }
+
+                break;
+
+            case TASK_END:
+                pci_class = strtol( next_instruction->remaining_command_line, NULL, 0 );
+                if (tid < 1 || tid > 3) {
+                    kterm_window_printf( top_win, "Valid task selectors are 1, 2 or 3\n" );
+                }
+                break;
+
+            case TASK_KILL:
+                pci_class = strtol( next_instruction->remaining_command_line, NULL, 0 );
+                if (tid < 1 || tid > 3) {
+                }
+                break;
+
             case INTDIAG:
-                task_create( test_task_switch );
-                raise_int_128();
-                kterm_window_printf( top_win, "Done\n" );
+                kterm_window_printf( top_win, "INT DIAG\n" );
+//                task_create( test_task_switch );
+//                raise_int_128();
+//                kterm_window_printf( top_win, "Done\n" );
 //                if (!ihr) {
 //                    kterm_window_printf( bottom_win, "Counting IRQ0 ticks: " );
 //                    irq_install_handler( 0, &int_diag_pit_handler );

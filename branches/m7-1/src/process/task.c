@@ -2,6 +2,12 @@
 #include <util/kqueue.h>
 #include <util/kcirc_list.h>
 #include <util/kbit_field.h>
+#include <video/kterm.h>
+#ifndef TEST
+#include <platform/ia-32/asm.h>
+#else
+extern void raise_int_128();
+#endif
 
 // stacks allocated to tasks; stacks[t - 1][4095] corresponds to start of stack for task with id (t)
 // XXX: when this is working, convert to kmalloc with more refined stack management
@@ -28,6 +34,7 @@ u32*        get_stacks_array()          { return (u32*)task_stack;      }
 #endif
 
 extern void halt_os();
+extern void map_timer_for_multitasking();
 
 void init_task_sys( void ) {
     int i;
@@ -47,31 +54,33 @@ void init_task_sys( void ) {
     kbit_field_init( &tasks_allocated, _tasks_allocated_bf, MAX_TASKS );
 
     active_task = &tasks[0];
+
+    map_timer_for_multitasking();
 }
 
-// XXX: why would I ever release based on a TASK rather than task id?
-void task_release( TASK t ) {
-    u32 toff = t->id - 1;
+void task_exit() {
+    if (active_task != NULL)
+        task_release( active_task->id );
+}
 
-    if (toff >= MAX_TASKS)
+void task_release( tid_t id ) {
+    if (id > MAX_TASKS || id == 0)
         return;
 
-    if (!kbit_field_is_set( &tasks_allocated, t->id ))
+    if (!kbit_field_is_set( &tasks_allocated, id ))
         return;
 
-    kcirc_list_remove_node( &running_task_list, &_task_nodes[toff] );
+    kcirc_list_remove_node( &running_task_list, &_task_nodes[id] );
 
     if (kcirc_list_is_empty( &running_task_list ))
         halt_os();
 
-    kqueue_enqueue( &free_task_queue, &_task_nodes[toff] );
+    kqueue_enqueue( &free_task_queue, &_task_nodes[id] );
 
-    kbit_field_clear( &tasks_allocated, t->id );
+    kbit_field_clear( &tasks_allocated, id );
 
-    if (active_task->id == t->id) {
-        active_task = (TASK)(kcirc_list_peek_current( &running_task_list )->data);
-        // XXX: Must launch scheduler here
-    }
+    if (active_task->id == id)
+        raise_int_128();    // force task switch now
 }
 
 //TASK task_create( tid_t id, void (*task_start)(void) ) {
@@ -87,7 +96,7 @@ TASK task_create( void (*task_start)(void) ) {
 
     tid = t->id;
 
-    stack = &task_stack[tid];  // same as [tid - 1][4096]; first stack assignment decrements pointer first (to [tid - 1][4095])
+    stack = task_stack[tid];  // same as [tid - 1][4096]; first stack assignment decrements pointer first (to [tid - 1][4095])
 
     *--stack = 0x0202;      // eflags: required one bit and allow interrupts bit set
     *--stack = 0x08;        // cs
@@ -119,9 +128,11 @@ TASK task_create( void (*task_start)(void) ) {
 // XXX: Calls to this method must be atomic.  If this is called before a task
 //      is created, the results are undefined
 u32 task_switch( u32 previous_task_esp ) {
+//  lock_scheduler();    <---- XXX: NEED TO IMPLEMENT THIS
     active_task->uesp = previous_task_esp;
 
     active_task = (TASK)(kcirc_list_advance( &running_task_list )->data);
+//  unlock_scheduler();   <---- XXX: NEED TO IMPLEMENT THIS
 
     return active_task->uesp;
 }

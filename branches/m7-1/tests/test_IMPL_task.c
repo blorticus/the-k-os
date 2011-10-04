@@ -14,6 +14,12 @@ extern TASK         get_active_task();
 extern task*        get_tasks_array();
 extern u32*         get_stacks_array();
 
+int int_128_fired = 0;
+
+void raise_int_128() {
+    int_128_fired = 1;;
+}
+
 /* stub */
 void halt_os() { return; }
 
@@ -66,8 +72,32 @@ int main( void ) {
     t3 = task_create( method2 );
 
     next_esp = task_switch( t1->uesp );
-    fail_unless( s, next_esp == (u32)(&stacks_array[3 * 4096 - 15]),   "third task_switch() returns bottom of third stack array entry" );
-    fail_unless( s, get_active_task() == &task_array[3],               "After third task_switch() active task is not task 3" );
+    fail_unless( s, next_esp == (u32)(&stacks_array[2 * 4096 - 15]),   "third task_switch() returns bottom of second stack array entry" );
+    fail_unless( s, get_active_task() == &task_array[2],               "After third task_switch() active task is not task 2" );
+
+    next_esp = task_switch( t2->uesp );
+    fail_unless( s, next_esp == (u32)(&stacks_array[3 * 4096 - 15]),   "fourth task_switch() returns bottom of third stack array entry" );
+    fail_unless( s, get_active_task() == &task_array[3],               "After fourth task_switch() active task is not task 3" );
+
+    next_esp = task_switch( t3->uesp );
+    fail_unless( s, next_esp == (u32)(&stacks_array[1 * 4096 - 15]),   "fifth task_switch() returns bottom of first stack array entry" );
+    fail_unless( s, get_active_task() == &task_array[1],               "After fifth task_switch() active task is not task 1" );
+
+    task_release( 2 );
+
+    next_esp = task_switch( t1->uesp );
+    fail_unless( s, next_esp == (u32)(&stacks_array[3 * 4096 - 15]),   "sixth task_switch() returns bottom of third stack array entry" );
+    fail_unless( s, get_active_task() == &task_array[3],               "After sixth task_switch() active task is not task 3" );
+    fail_unless( s, !int_128_fired,                                    "After sixth task_switch() int_128 fired" );
+
+    int_128_fired = 0;
+
+    task_release( 3 );
+
+    next_esp = task_switch( t1->uesp );
+    fail_unless( s, next_esp == (u32)(&stacks_array[1 * 4096 - 15]),   "seventh task_switch() returns bottom of first stack array entry" );
+    fail_unless( s, get_active_task() == &task_array[1],               "After seventh task_switch() active task is not task 1" );
+    fail_unless( s, int_128_fired,                                     "After seventh task_switch() int_128 did not fire" );
 
     return conclude_suite( s );
 }

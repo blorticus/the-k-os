@@ -11,7 +11,7 @@
 #include <process/scheduler.h>
 #include <process/task.h>
 
-int main( void );
+void kosh_main( void );
 
 kterm_window rw;
 KTERM_WINDOW kterm = &rw;
@@ -23,6 +23,7 @@ void halt_os( void ) {
 }
 
 extern memptr sys_stack;
+extern void task_switch_container();
 
 void kmain( void ) {
     struct multiboot_relocated_info* mbi;
@@ -69,13 +70,16 @@ void kmain( void ) {
 
     init_task_sys();
 
-    task_create( main );
-    raise_int_128();
+    task_create( kosh_main );
+
+    for ( ; ; ) ;   // wait for task scheduling
+    
+//    raise_int_128();
 
 //    main();  /* call into KoSH */
 
-    kterm_window_cls( kterm );
-    kterm_window_puts( kterm, "System Halted (1).\n" );
+//    kterm_window_cls( kterm );
+//    kterm_window_puts( kterm, "System Halted (1).\n" );
 
 //    halt_os();
 }

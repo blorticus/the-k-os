@@ -19,6 +19,35 @@ global irq13
 global irq14
 global irq15
 
+extern task_switch
+global task_switch_container
+task_switch_container:
+    cli
+    pusha
+    push ds
+    push es
+    push fs
+    push gs
+    mov ax, 0x10
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    push esp
+
+    call task_switch
+
+    mov esp, eax
+
+    pop gs
+    pop fs
+    pop es
+    pop ds
+    popa
+
+    iret
+
 ; 32: IRQ0 (PIT Timer Channel 0)
 irq0:
     cli
