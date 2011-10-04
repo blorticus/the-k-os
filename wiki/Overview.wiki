@@ -1,0 +1,13 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+The K-OS is a hobby OS.  The ostensible objective is to build a gaming console system for the ia-32 and ia-32e platforms, but the most important underlying purpose is for the developers to learn more about OS design and implementation.
+
+= Overview =
+
+Currently, the implementation is as a reasonably simple monolithic kernel.  Ultimately, the intention is to morph it into a microkernel system.
+
+The code can be retrieved from the project svn.  The trunk should contain the latest stable (for some value of stable) milestone.  It is known to compile on Ubuntu linux.  Packages that must be installed include gcc, makeutils and nasm.  One should be able to simply {{{make}}} from the trunk directory.  In the {{{bin}}} directory, there are scripts for making a virtual floppy image disk, which is known to run on both VirtualBox and Parallels.
+
+The system uses grub to boot, and launches a single-user shell called KoSH.  {{{help}}} will show available commands.  At this point, they're basically used for debugging, so documentation is essentially non-existent and output is often obscure.
