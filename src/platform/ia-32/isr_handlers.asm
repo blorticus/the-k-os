@@ -39,22 +39,10 @@ global isr128
 
 ;  0: Divide By Zero Exception
 isr0:
-    pusha
-    push gs
-    push fs
-    push es
-    push ds
-
-    pop ds
-    pop es
-    pop fs
-    pop gs
-    popa
-    iret
-;    cli
-;    push byte 0
-;    push byte 0
-;    jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 0
+    jmp isr_common_stub
 
 ;  1: Debug Exception
 isr1:
@@ -267,12 +255,11 @@ isr31:
     push byte 31
     jmp isr_common_stub
 
+extern thread_switch
+extern task_switch
 
-extern system_soft_interrupt
 isr128:
     cli
-    push byte 0
-    push word 128
     pusha
     push ds
     push es
@@ -283,21 +270,24 @@ isr128:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov eax, esp
-    push eax
-    mov eax, system_soft_interrupt
-    call eax
-    pop eax
+
+    push esp
+
+    call task_switch
+
+    mov esp, eax
+
     pop gs
     pop fs
     pop es
     pop ds
+;
     popa
-    add esp, 8
+
     iret
 
 
-extern fault_handler
+extern soft_int_handler
 
 ; This is our common ISR stub. It saves the processor state, sets
 ; up for kernel mode segments, calls the C-level fault handler,
@@ -315,7 +305,7 @@ isr_common_stub:
     mov gs, ax
     mov eax, esp
     push eax
-    mov eax, fault_handler
+    mov eax, soft_int_handler
     call eax
     pop eax
     pop gs
@@ -327,26 +317,10 @@ isr_common_stub:
     iret
 
 global isr_do_nothing
-extern print_isr_trap
 isr_do_nothing:
-    pusha
-    push ds
-    push es
-    push fs
-    push gs
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov eax, esp
-;    //push eax
-;    //mov eax, print_isr_trap
-;    //call eax
-;    //pop eax
-    pop gs
-    pop es
-    pop ds
-    popa
-    add esp, 8
     iret
+
+SECTION .bss
+    resb 8192
+temp_stack:
+

@@ -11,6 +11,7 @@
 #include <bus/pci.h>
 #include <platform/ia-32/asm.h>
 #include <string.h>
+#include <process/task.h>
 
 extern void phys_core_set_window( KTERM_WINDOW w );
 
@@ -167,28 +168,107 @@ static inline void print_pci_scan_element( KTERM_WINDOW win, pci_device* pdp ) {
 }
 
 
-int main( void ) {
+kterm_window _bottom_sub_1;
+KTERM_WINDOW bottom_sub_1 = &_bottom_sub_1;
+kterm_window _bottom_sub_2;
+KTERM_WINDOW bottom_sub_2 = &_bottom_sub_2;
+kterm_window _bottom_sub_3;
+KTERM_WINDOW bottom_sub_3 = &_bottom_sub_3;
+
+void test_task_switch( void ) {
+    kterm_window_printf( bottom_win, "TASK 2!\n" );
+    kterm_window_printf( bottom_win, "... should get here :)\n" );
+    task_exit();
+    kterm_window_printf( bottom_win, "... but should not get here :(\n" );
+    for ( ; ; ) ;
+}
+
+
+
+void test_task_forward_char( KTERM_WINDOW w, char c ) {
+    int j;
+    for (j = 0; j < 30; j++)
+        kterm_window_putc( w, c );
+}
+
+
+void test_task_clear_line( KTERM_WINDOW w ) {
+    int j;
+    for (j = 0; j < 30; j++) {
+        kterm_window_putc( w, '\b' );
+        kterm_window_putc( w, ' ' );
+        kterm_window_putc( w, '\b' );
+    }
+}
+
+
+
+int end_tt_1, end_tt_2, end_tt_3;
+
+void test_task_1( void ) {
+    while (1) {
+        test_task_forward_char( bottom_sub_1, '1' );
+        test_task_clear_line( bottom_sub_1 );
+
+        if (end_tt_1) {
+            kterm_window_printf( bottom_sub_1, "TASK 1 ENDED" );
+            task_exit();
+        }
+    }
+}
+
+void test_task_2( void ) {
+    while (1) {
+        test_task_forward_char( bottom_sub_2, '2' );
+        test_task_clear_line( bottom_sub_2 );
+
+        if (end_tt_2) {
+            kterm_window_printf( bottom_sub_2, "TASK 2 ENDED" );
+            task_exit();
+        }
+    }
+}
+
+void test_task_3( void ) {
+    while (1) {
+        test_task_forward_char( bottom_sub_3, '3' );
+        test_task_clear_line( bottom_sub_3 );
+
+        if (end_tt_3) {
+            kterm_window_printf( bottom_sub_3, "TASK 3 ENDED" );
+            task_exit();
+        }
+    }
+}
+
+void test_task_1_clear_task_ended_line() {
+    kterm_window_printf( bottom_sub_1, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+}
+
+void test_task_2_clear_task_ended_line() {
+    kterm_window_printf( bottom_sub_2, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+}
+
+void test_task_3_clear_task_ended_line() {
+    kterm_window_printf( bottom_sub_3, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+}
+
+void kosh_main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
     int i;
     cpuid_retval crv;
     int pos_count;              // for cpuid function
 
-//    u32 *dir, *table, paddr;
-//    char *TEST_A, *TEST_B, *t;
-//    u32 phys_addr, virt_addr;
-//    u32 va;
     char *s1, *cs1, *ct1;
     const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
-//    u32* da, *ta;
-//    pci_scan_iterator psi;
     pci_device pd;
     pci_device* pdp = &pd;
-//    PCI_SCAN_ITERATOR psip = &psi;
     struct pci_tbl_iterator pti;
     PCI_TBL_ITERATOR ptip = &pti;
 
     long pci_class;
+    long tid;
     int linecnt;
     char buf[10];
 
@@ -200,6 +280,10 @@ int main( void ) {
     kterm_window_cls( top_win );
     kterm_window_cls( divider_win );
     kterm_window_cls( bottom_win );
+
+    kterm_create_window( bottom_sub_1, 1680, 1, 80 );
+    kterm_create_window( bottom_sub_2, 1760, 1, 80 );
+    kterm_create_window( bottom_sub_3, 1840, 1, 80 );
 
     fault_handler_set_kterm_window( bottom_win );   /* if processor exception raised, print message in bottom window */
 
@@ -276,7 +360,8 @@ int main( void ) {
                 kterm_window_puts( top_win, " poke <reg|mem>         - change value at register <reg> or memory location 0x<mem>\n" );
                 kterm_window_puts( top_win, " regs                   - dump all register values\n" );
                 kterm_window_puts( top_win, " bios                   - prints out relocated bios values\n" );
-                kterm_window_puts( top_win, " int                    - activates interrupt diagnostics\n" );
+//                kterm_window_puts( top_win, " int                    - activates interrupt diagnostics\n" );
+                kterm_window_puts( top_win, " task [start|end|kill] <num> - Start or end task 1,2 or 3 or kill a pid\n" );
                 kterm_window_puts( top_win, " cpuid                  - Show CPUID support and characteristics\n" );
                 kterm_window_puts( top_win, " kernel                 - Information about the kernel\n" );
                 kterm_window_puts( top_win, " kmalloc                - Test kmalloc/kfree implementation\n" );
@@ -331,7 +416,62 @@ int main( void ) {
 
                 break;
 
+            case TASK_START:
+                tid = strtol( next_instruction->remaining_command_line, NULL, 0 );
+                if (tid == 1) {
+                    if (end_tt_1)
+                        test_task_1_clear_task_ended_line();
+                    end_tt_1 = 0;
+                    task_create( test_task_1 );
+                }
+                else if (tid == 2) {
+                    if (end_tt_2)
+                        test_task_2_clear_task_ended_line();
+                    end_tt_2 = 0;
+                    task_create( test_task_2 );
+                }
+                else if (tid == 3) {
+                    if (end_tt_3)
+                        test_task_3_clear_task_ended_line();
+                    end_tt_3 = 0;
+                    task_create( test_task_3 );
+                }
+                else {
+                    kterm_window_printf( top_win, "Valid task selectors are 1, 2 or 3\n" );
+                }
+
+                break;
+
+            case TASK_END:
+                tid = strtol( next_instruction->remaining_command_line, NULL, 0 );
+                switch (tid) {
+                    case 1:
+                        end_tt_1 = 1;
+                        break;
+
+                    case 2:
+                        end_tt_2 = 1;
+                        break;
+
+                    case 3:
+                        end_tt_3 = 1;
+                        break;
+
+                    default:
+                        kterm_window_printf( top_win, "Valid task selectors are 1, 2 or 3\n" );
+                        break;
+                }
+
+                break;
+
+            case TASK_KILL:
+                pci_class = strtol( next_instruction->remaining_command_line, NULL, 0 );
+                if (tid < 1 || tid > 3) {
+                }
+                break;
+
             case INTDIAG:
+                kterm_window_printf( top_win, "INT DIAG\n" );
                 if (!ihr) {
                     kterm_window_printf( bottom_win, "Counting IRQ0 ticks: " );
                     irq_install_handler( 0, &int_diag_pit_handler );
@@ -407,33 +547,6 @@ int main( void ) {
                 break;
 
             case TEST:
-//                da = (u32*)0xfffff000;
-//                ta = (u32*)0xffc00000;
-//
-//                kterm_window_printf( top_win, "AFTER: DIR = 0x%x, DIR[0] = 0x%x, DIR[1023] = 0x%x (%d)\n  TA = 0x%x (%d), TA[3] = 0x%x (%d)\n", (u32)da, da[0], da[1023], da[1023], (u32)ta, (u32)ta, ta[3], ta[3] );
-//
-//                va = allocate_virtual_page( &virt_addr, &phys_addr );
-//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-//                TEST_A = (char*)va;
-//                TEST_B = (char*)"Take it to the limit and beyond";
-//                while (*TEST_B) *TEST_A++ = *TEST_B++;
-//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
-//
-//                va = allocate_virtual_page( &virt_addr, &phys_addr );
-//
-//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-//                TEST_A = (char*)va;
-//                TEST_B = (char*)"AND DO IT AGAIN!!!!! AND AGAIN!!!! AND AGAIN!!!!!!!!!!!!!!!!!!!!!!!!";
-//                while (*TEST_B) *TEST_A++ = *TEST_B++;
-//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
-//
-//                va = allocate_virtual_page( &virt_addr, &phys_addr );
-//                kterm_window_printf( top_win, "PHYS: 0x%x, VIRT: 0x%x, VA: 0x%x\n", phys_addr, virt_addr, (u32)va );
-//                TEST_A = (char*)va;
-//                TEST_B = (char*)"Then one more\n  time\n foo";
-//                while (*TEST_B) *TEST_A++ = *TEST_B++;
-//                kterm_window_printf( top_win, "TEST_A: %s\n", (char*)va );
-
                 break;
 
             default:

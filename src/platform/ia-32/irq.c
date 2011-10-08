@@ -26,6 +26,8 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
+extern void task_switch_container();
+
 
 /* This array is actually an array of function pointers. We use
 *  this to handle custom IRQ handlers for a given IRQ */
@@ -38,7 +40,6 @@ void *irq_routines[16] =
 
 /* This installs a custom IRQ handler for the given IRQ */
 irq_handler_routine irq_install_handler( int irq, irq_handler_routine handler )
-//void irq_install_handler(int irq, void (*handler)(struct regs *r))
 {
     irq_handler_routine current_handler = irq_routines[irq];
     irq_routines[irq] = handler;
@@ -51,6 +52,14 @@ irq_handler_routine irq_uninstall_handler(int irq)
     irq_handler_routine current_handler = irq_routines[irq];
     irq_routines[irq] = 0;
     return current_handler;
+}
+
+/* set irq 0 (timer) to handler for task switching.  This is a really barfy place to
+   do this as it creates some nasty spaghetti code.  However, we can't use the
+   generic handler routine mechanism because the underlying assembly is somewhat
+   different.  XXX: find a more general approach to this! */
+void map_timer_for_multitasking() {
+    idt_set_entry( IRQ_0_REMAP_ISR + 0,  (unsigned)task_switch_container, 0x08, 0x8E );
 }
 
 /* We first remap the interrupt controllers, and then we install

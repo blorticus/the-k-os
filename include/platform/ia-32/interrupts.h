@@ -65,7 +65,7 @@ void idt_install( void );
 
 /**
  *
- * DESCRIPTION:     When an IRQ ISR is invoked, we first push most registers to the stack.  We also push
+ * DESCRIPTION:     When an ISR is invoked, we first push most registers to the stack.  We also push
  *                  the interrupt number and an "error" code to distinguish exception types.  Generally,
  *                  it's okay to look at these values, but they shouldn't be changed, since most will
  *                  be popped back off of the stack on exit from the ISR.
@@ -74,12 +74,11 @@ void idt_install( void );
  */ 
 struct regs
 {
-    unsigned int gs, fs, es, ds;
-    unsigned int edi, esi, ebp, esp, ebx, edx, ecx, eax;
-    unsigned int int_no, err_code;
-    unsigned int eip, cs, eflags, useresp, ss;
+    u32 gs, fs, es, ds;
+    u32 edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    u32 int_no, err_code;
+    u32 eip, cs, eflags, useresp, ss;
 };
-
 
 
 /**

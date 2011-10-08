@@ -20,6 +20,9 @@ typedef enum {
     KMALLOC,        // test for kmalloc
     PCI_BUS_SCAN,   // scan PCI bus
     PCI_BUS_SCAN_CLASS, // scan PCI bus for class, remainig_command_line is int for class match
+    TASK_START,     // testing multi-tasking, task start
+    TASK_END,       // testing multi-tasking, task end
+    TASK_KILL,      // testing multi-tasking, kill by task id
     TEST,           // for temporary testing of features
     PAGING,         // enable or disable screen paging
 } kosh_base_command;

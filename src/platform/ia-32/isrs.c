@@ -38,6 +38,22 @@ void isr31( void );
 
 void isr128( void );
 
+//void test_scheduler( struct regs* r );
+
+typedef void(*isr_handler_routine)(struct regs *r);
+
+isr_handler_routine isr_routines[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0
+};
+
+static inline void isr_set_handler( u8 isr_number, isr_handler_routine handler ) {
+    isr_routines[isr_number] = handler;
+}
 
 
 /* This is a very repetitive function... it's not hard, it's
@@ -46,7 +62,7 @@ void isr128( void );
 *  for this, because there is no way to get the function names
 *  that correspond to that given entry. We set the access
 *  flags to 0x8E. This means that the entry is present, is
-*  running in ring 0 (kernel level), and has the lower 5 bits
+*  running w/ privilege level 0 (kernel level), and has the lower 5 bits
 *  set to the required '14', which is represented by 'E' in
 *  hex. */
 void isrs_install()
@@ -83,12 +99,9 @@ void isrs_install()
     idt_set_entry( 29, (u32)isr29, 0x08, 0x8E );
     idt_set_entry( 30, (u32)isr30, 0x08, 0x8E );
     idt_set_entry( 31, (u32)isr31, 0x08, 0x8E );
-
     idt_set_entry( 128, (u32)isr128, 0x08, 0x8E );
-}
 
-
-void system_soft_interrupt( struct regs* r ) {
+//    isr_set_handler( 128, test_scheduler );
 }
 
 
@@ -137,24 +150,28 @@ char *exception_messages[] =
 
 KTERM_WINDOW kterm_win = NULL;
 
+
 void fault_handler_set_kterm_window( KTERM_WINDOW w ) {
     kterm_win = w;
 }
 
-/* All of our Exception handling Interrupt Service Routines will
-*  point to this function. This will tell us what exception has
-*  happened! Right now, we simply halt the system by hitting an
-*  endless loop. All ISRs disable interrupts while they are being
-*  serviced as a 'locking' mechanism to prevent an IRQ from
-*  happening and messing up kernel data structures */
-void fault_handler(struct regs *r)
+
+void soft_int_handler(struct regs *r)
 {
+    isr_handler_routine h;
+
     if (r->int_no < 32)
     {
         if (kterm_win != NULL)
-            kterm_window_printf( kterm_win, "ISR TRAP: %s\n", exception_messages[r->int_no] );
+            kterm_window_printf( kterm_win, "ISR TRAP: %s [0x%x]\n", exception_messages[r->int_no], r->err_code );
         for ( ;; );
     }
+    else if ((h = isr_routines[r->int_no])) {
+        h( r );
+    }
+}
+
+void system_soft_interrupt( struct regs* r ) {
 }
 
 
