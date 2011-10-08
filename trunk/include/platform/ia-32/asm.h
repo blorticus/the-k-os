@@ -74,5 +74,14 @@ __attribute__((always_inline)) u32 ioport_readl( u16 port );
 #define enable_interrupts()         __asm__ __volatile__ ("sti");
 
 
+/**
+ * DESCRIPTION:     Raise software interrupt 0x80
+ * RETURN:          void
+ * SIDE-EFFECTS:    A software interrupt is raised (and an interrupt handler should be defined)
+ * NOTES:           -
+ * RE-ENTRANT?:     YES
+ */
+void raise_int_128( void );
+
 
 #endif

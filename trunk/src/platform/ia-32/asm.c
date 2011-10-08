@@ -17,3 +17,8 @@ __attribute__((always_inline)) u32 ioport_readl( u16 port ) {
                     : "dN" (port));
     return value;
 }
+
+
+__attribute__((always_inline)) void raise_int_128() {
+    asm volatile( "int $128" );
+}

@@ -8,17 +8,22 @@
 #include <memory/paging.h>
 #include <sys/kernelsyms.h>
 #include <bus/pci.h>
+#include <process/scheduler.h>
+#include <process/task.h>
 
-int main( void );
+void kosh_main( void );
 
 kterm_window rw;
 KTERM_WINDOW kterm = &rw;
 
-static inline void halt_os( void ) {
+void halt_os( void ) {
+    kterm_window_printf( kterm, "System Halted.\n" );
+
     for ( ;; ) ;
 }
 
 extern memptr sys_stack;
+extern void task_switch_container();
 
 void kmain( void ) {
     struct multiboot_relocated_info* mbi;
@@ -55,13 +60,10 @@ void kmain( void ) {
     kterm_init( 25, 80 );
     kterm_dup_root_window( kterm );
 
-    kterm_window_cls( kterm );
-    kterm_window_puts( kterm, "The K-OS is now loaded.\n\n\n" );
+    init_task_sys();
+    task_create( kosh_main );
 
-    main();  /* call into KoSH */
-
-    kterm_window_cls( kterm );
-    kterm_window_puts( kterm, "System Halted.\n" );
+    activate_scheduler();
 
     halt_os();
 }

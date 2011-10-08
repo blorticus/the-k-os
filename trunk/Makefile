@@ -20,7 +20,7 @@ MK_IMG_DISK ?= bin/mkimgdisk
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 #CC_FLAGS = -fno-builtin -nostdinc -Wall
-CC_FLAGS = -nostdinc -Wall
+CC_FLAGS = -nostdinc -Wall -fno-stack-protector
 MAKEFLAGS = -e
 DEFS =
 OBJDIR = i386-obj
@@ -28,7 +28,7 @@ PLATFORM = ia-32
 
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
-	CC_FLAGS := $(CC_FLAGS) -g -arch i386
+	CC_FLAGS := $(CC_FLAGS) -g # -arch i386
 endif
 
 
@@ -36,7 +36,7 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
-OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
@@ -187,6 +187,21 @@ $(OBJDIR)/kernel_stack.o: src/util/kernel_stack.c
 
 $(OBJDIR)/pci.o: src/bus/pci.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/pci.o src/bus/pci.c
+
+$(OBJDIR)/scheduler.o: src/process/scheduler.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/scheduler.o src/process/scheduler.c
+
+$(OBJDIR)/task.o: src/process/task.c $(OBJDIR)/kbit_field.o
+	$(CC) $(CC_FLAGS) $(DEFS) $(INCLUDES) -c -o $(OBJDIR)/task.o src/process/task.c
+
+$(OBJDIR)/kqueue.o: src/util/kqueue.c include/util/kqueue.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kqueue.o src/util/kqueue.c
+
+$(OBJDIR)/kcirc_list.o: src/util/kcirc_list.c include/util/kcirc_list.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kcirc_list.o src/util/kcirc_list.c
+
+$(OBJDIR)/kbit_field.o: src/util/kbit_field.c include/util/kbit_field.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kbit_field.o src/util/kbit_field.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
