@@ -42,3 +42,9 @@ MILESTONE 7:
 ------------
 Basic kernel paging for 4 KiB pages
 Basic kmalloc
+
+
+MILESTONE 8:
+------------
+Added pre-emptive multi-tasking without processor privilege level change using basic PIT
+
