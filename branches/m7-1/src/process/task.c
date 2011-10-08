@@ -54,7 +54,9 @@ void init_task_sys( void ) {
     kbit_field_init( &tasks_allocated, _tasks_allocated_bf, MAX_TASKS );
 
     active_task = &tasks[0];
+}
 
+void activate_scheduler( void ) {
     map_timer_for_multitasking();
 }
 

@@ -21,6 +21,7 @@ global irq15
 
 extern task_switch
 global task_switch_container
+
 task_switch_container:
     cli
     pusha
@@ -37,8 +38,12 @@ task_switch_container:
     push esp
 
     call task_switch
-
     mov esp, eax
+
+    ; master pic release
+    ; XXX: change this to method call
+    mov al, 0x20
+    out 0x20, al
 
     pop gs
     pop fs

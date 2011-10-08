@@ -54,7 +54,6 @@ irq_handler_routine irq_uninstall_handler(int irq)
     return current_handler;
 }
 
-
 /* set irq 0 (timer) to handler for task switching.  This is a really barfy place to
    do this as it creates some nasty spaghetti code.  However, we can't use the
    generic handler routine mechanism because the underlying assembly is somewhat

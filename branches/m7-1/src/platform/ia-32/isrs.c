@@ -175,22 +175,5 @@ void system_soft_interrupt( struct regs* r ) {
 }
 
 
-void die( u32 a, u32 b ) {
-    kterm_window_printf( kterm_win, "a = %d, b = %d\n", a, b );
-}
-
-void test_scheduler( struct regs* r ) {
-    kterm_window_printf( kterm_win, "test_scheduler\n" );
-    die( 18, 21 );
-    kterm_window_printf( kterm_win, "... and back again!\n" );
-    for( ; ; )
-        ;
-//    kterm_window_printf( kterm_win, "SOFT INTERRUPT: int = %d\n", r->int_no );
-//    kterm_window_printf( kterm_win, "DS,ES,FS,GS=%x,%x,%x,%x\n", r->ds, r->es, r->fs, r->gs );
-//    kterm_window_printf( kterm_win, "EIP,EFL,UR=%x,%x,%x\n", r->eip, r->eflags, r->useresp );
-//    thread_switch();
-}
-
-
 void print_isr_trap( void ) {
 }

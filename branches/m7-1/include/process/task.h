@@ -24,6 +24,6 @@ void task_exit( void );
 void task_release( tid_t id );
 TASK task_create( void (*task_start)(void) );
 u32 task_switch( u32 previous_task_esp );
-
+void activate_scheduler( void );
 
 #endif

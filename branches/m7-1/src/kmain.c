@@ -60,26 +60,10 @@ void kmain( void ) {
     kterm_init( 25, 80 );
     kterm_dup_root_window( kterm );
 
-    kterm_window_cls( kterm );
-    kterm_window_puts( kterm, "The K-OS is now loaded.\n\n\n" );
-
-//    thread_create( main );
-//    thread_switch();
-
-//    initialize_scheduler();
-
     init_task_sys();
-
     task_create( kosh_main );
 
-    for ( ; ; ) ;   // wait for task scheduling
-    
-//    raise_int_128();
+    activate_scheduler();
 
-//    main();  /* call into KoSH */
-
-//    kterm_window_cls( kterm );
-//    kterm_window_puts( kterm, "System Halted (1).\n" );
-
-//    halt_os();
+    halt_os();
 }

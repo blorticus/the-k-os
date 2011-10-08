@@ -39,22 +39,10 @@ global isr128
 
 ;  0: Divide By Zero Exception
 isr0:
-    pusha
-    push gs
-    push fs
-    push es
-    push ds
-
-    pop ds
-    pop es
-    pop fs
-    pop gs
-    popa
-    iret
-;    cli
-;    push byte 0
-;    push byte 0
-;    jmp isr_common_stub
+    cli
+    push byte 0
+    push byte 0
+    jmp isr_common_stub
 
 ;  1: Debug Exception
 isr1:
@@ -272,10 +260,6 @@ extern task_switch
 
 isr128:
     cli
-;    push dword 0
-;    push dword 128
-;    jmp isr_common_stub
-
     pusha
     push ds
     push es
@@ -293,9 +277,6 @@ isr128:
 
     mov esp, eax
 
-;;    mov al, 0x20
-;;    out 0x20, al
-;
     pop gs
     pop fs
     pop es
@@ -304,26 +285,6 @@ isr128:
     popa
 
     iret
-
-;    jmp thread_switch
-
-;    mov eax, esp
-;    mov esp, temp_stack
-;    push eax
-;    push dword 2
-;    push dword 8
-;    push test_scheduler
-;    iret
-;    mov eax, test_scheduler
-;    call eax
-;    pop esp
-;    pop gs
-;    pop fs
-;    pop es
-;    pop ds
-;    popa
-;;    add esp, 8
-;    iret
 
 
 extern soft_int_handler
@@ -357,22 +318,6 @@ isr_common_stub:
 
 global isr_do_nothing
 isr_do_nothing:
-;    pusha
-;    push ds
-;    push es
-;    push fs
-;    push gs
-;    mov ax, 0x10
-;    mov ds, ax
-;    mov es, ax
-;    mov fs, ax
-;    mov gs, ax
-;    mov eax, esp
-;    pop gs
-;    pop es
-;    pop ds
-;    popa
-;    add esp, 8
     iret
 
 SECTION .bss
