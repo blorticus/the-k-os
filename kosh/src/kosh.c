@@ -187,6 +187,7 @@ void test_task_switch( void ) {
 
 void test_task_forward_char( KTERM_WINDOW w, char c ) {
     int j;
+    kterm_window_putc( w, '\r' );
     for (j = 0; j < 30; j++)
         kterm_window_putc( w, c );
 }
@@ -202,15 +203,17 @@ void test_task_clear_line( KTERM_WINDOW w ) {
 }
 
 
-
 int end_tt_1, end_tt_2, end_tt_3;
+int killed_tt_1, killed_tt_2, killed_tt_3;
+tid_t task_id_1, task_id_2, task_id_3;
+TASK tt;
 
 void test_task_1( void ) {
     while (1) {
         test_task_forward_char( bottom_sub_1, '1' );
         test_task_clear_line( bottom_sub_1 );
 
-        if (end_tt_1) {
+        if (end_tt_1 == 1) {
             kterm_window_printf( bottom_sub_1, "TASK 1 ENDED" );
             task_exit();
         }
@@ -222,7 +225,7 @@ void test_task_2( void ) {
         test_task_forward_char( bottom_sub_2, '2' );
         test_task_clear_line( bottom_sub_2 );
 
-        if (end_tt_2) {
+        if (end_tt_2 == 1) {
             kterm_window_printf( bottom_sub_2, "TASK 2 ENDED" );
             task_exit();
         }
@@ -234,23 +237,27 @@ void test_task_3( void ) {
         test_task_forward_char( bottom_sub_3, '3' );
         test_task_clear_line( bottom_sub_3 );
 
-        if (end_tt_3) {
+        if (end_tt_3 == 1) {
             kterm_window_printf( bottom_sub_3, "TASK 3 ENDED" );
             task_exit();
         }
     }
 }
 
+void test_task_clear_task_ended_line( KTERM_WINDOW w ) {
+    kterm_window_printf( w, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+}
+
 void test_task_1_clear_task_ended_line() {
-    kterm_window_printf( bottom_sub_1, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+    test_task_clear_task_ended_line( bottom_sub_1 );
 }
 
 void test_task_2_clear_task_ended_line() {
-    kterm_window_printf( bottom_sub_2, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+    test_task_clear_task_ended_line( bottom_sub_2 );
 }
 
 void test_task_3_clear_task_ended_line() {
-    kterm_window_printf( bottom_sub_3, "\b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b\b \b" );
+    test_task_clear_task_ended_line( bottom_sub_3 );
 }
 
 void kosh_main( void ) {
@@ -268,7 +275,7 @@ void kosh_main( void ) {
     PCI_TBL_ITERATOR ptip = &pti;
 
     long pci_class;
-    long tid;
+    long tid, pid;
     int linecnt;
     char buf[10];
 
@@ -422,19 +429,25 @@ void kosh_main( void ) {
                     if (end_tt_1)
                         test_task_1_clear_task_ended_line();
                     end_tt_1 = 0;
-                    task_create( test_task_1 );
+                    tt = task_create( test_task_1 );
+                    task_id_1 = tt->id;
+                    kterm_window_printf( top_win, "Task created with pid [%d]\n", task_id_1 );
                 }
                 else if (tid == 2) {
                     if (end_tt_2)
                         test_task_2_clear_task_ended_line();
                     end_tt_2 = 0;
-                    task_create( test_task_2 );
+                    tt = task_create( test_task_2 );
+                    task_id_2 = tt->id;
+                    kterm_window_printf( top_win, "Task created with pid [%d]\n", task_id_2 );
                 }
                 else if (tid == 3) {
                     if (end_tt_3)
                         test_task_3_clear_task_ended_line();
                     end_tt_3 = 0;
-                    task_create( test_task_3 );
+                    tt = task_create( test_task_3 );
+                    task_id_3 = tt->id;
+                    kterm_window_printf( top_win, "Task created with pid [%d]\n", task_id_3 );
                 }
                 else {
                     kterm_window_printf( top_win, "Valid task selectors are 1, 2 or 3\n" );
@@ -465,9 +478,30 @@ void kosh_main( void ) {
                 break;
 
             case TASK_KILL:
-                pci_class = strtol( next_instruction->remaining_command_line, NULL, 0 );
-                if (tid < 1 || tid > 3) {
+                pid = strtol( next_instruction->remaining_command_line, NULL, 0 );
+
+                if (pid == 0) {
+                    kterm_window_printf( top_win, "Not a currently running pid\n" );
                 }
+                else if (pid == task_id_1) {
+                    task_release( pid );
+                    killed_tt_1 = 1;
+                    kterm_window_printf( bottom_sub_1, "\rKILLED                        " );
+                }
+                else if (pid == task_id_2) {
+                    task_release( pid );
+                    killed_tt_2 = 1;
+                    kterm_window_printf( bottom_sub_2, "\rKILLED                        " );
+                }
+                else if (pid == task_id_3) {
+                    task_release( pid );
+                    killed_tt_3 = 1;
+                    kterm_window_printf( bottom_sub_3, "\rKILLED                        " );
+                }
+                else {
+                    kterm_window_printf( top_win, "Not a currently running pid\n" );
+                }
+
                 break;
 
             case INTDIAG:
@@ -553,7 +587,5 @@ void kosh_main( void ) {
                 break;
         }
     } while (next_instruction->command != EXIT);
-
-    return 0;    
 }
 
