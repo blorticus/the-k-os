@@ -66,7 +66,7 @@ static void keyboard_handler( struct regs *r ) {
 /* bit field indicating what meta key is currently depressed */
 u8 G_meta_keys = 0x00;
 
-
+// This function is used by Vernon's home-brewed getchar function in src/stdlib/stdio.c
 u16 read_next_key_stroke( u16* scancodes ) {
     u16 scancode;
 
@@ -118,6 +118,20 @@ u16 read_next_key_stroke( u16* scancodes ) {
         case 0x38 | 0x80:
             G_meta_keys &= (~LEFT_META);
             break;
+
+        case 0xe0: // #### new case
+            // If e0 is the first byte then there will be a 2nd byte which will determine the key stroke.
+            scancode = keyboard_buffer_queue.slots[keyboard_buffer_queue.bottom++ % keyboard_buffer_queue.size];
+            // up arrow key that ISN'T in the numeric keypad
+            if (scancode == 0x48) {
+				c = 5; //'U';
+				break;
+			}
+            // down arrow key that ISN'T in the numeric keypad
+			else if (scancode == 0x50) {
+				c = 6; //'D';
+				break;
+			}
 
 //        case XXX:
 //            G_meta_keys |= RIGHT_ALT;
