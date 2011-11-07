@@ -1,6 +1,7 @@
 #include <kosh/koshlib.h>
 #include <sys/types.h>
 #include <string.h>
+#include <input/keyboard.h> //Added mkf; 7-31-2011
 
 
 /* Generally speaking, the procedure flow in this module isn't very tight because responsibilities
@@ -247,6 +248,16 @@ kosh_instruction* input_to_instruction( char* input ) {
     if (input == NULL) {
         return instruction;
     }
+    // If the up arrow key has been pressed then don't parse any further
+    if (input[0] == UP_ARROW_ASCII) { //#### new if-block; mkf 7-31-2011
+		instruction->command = UP_ARROW_ASCII;
+        return instruction;
+    }
+    // If the down arrow key has been pressed then don't parse any further
+    if (input[0] == DOWN_ARROW_ASCII) { //#### new if-block; mkf 7-31-2011
+		instruction->command = DOWN_ARROW_ASCII;
+        return instruction;
+    }
 
     after_command = next_word( input, token_buffer, TOKEN_BUFFER_SIZE - 1 );
 
@@ -405,54 +416,6 @@ kosh_instruction* input_to_instruction( char* input ) {
         else {  // 'pci' followed by nothing or an invalid token
             instruction->command = _ERROR_;
             instruction->error   = "Incomplete Command";
-        }
-    }
-    else if (strcmp( token_buffer, "task" ) == 0) {
-        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-
-        if (strcmp( token_buffer, "start" ) == 0) {
-            next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-
-            if (isstringint( token_buffer )) {
-                instruction->command = TASK_START;
-                instruction->remaining_command_line = token_buffer;
-            }
-            else {
-                instruction->command = _ERROR_;
-                instruction->error   = "Invalid task selector";
-            }
-        }
-        else if (strcmp( token_buffer, "end" ) == 0) {
-            next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-
-            if (isstringint( token_buffer )) {
-                instruction->command = TASK_END;
-                instruction->remaining_command_line = token_buffer;
-            }
-            else {
-                instruction->command = _ERROR_;
-                instruction->error   = "Invalid task selector";
-            }
-        }
-        else if (strcmp( token_buffer, "kill" ) == 0) {
-            next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
-
-            if (isstringint( token_buffer )) {
-                instruction->command = TASK_KILL;
-                instruction->remaining_command_line = token_buffer;
-            }
-            else {
-                instruction->command = _ERROR_;
-                instruction->error   = "Invalid task id";
-            }
-        }
-        else if (token_buffer[0] == NULL) {  // 'task' followed by nothing
-            instruction->command = _ERROR_;
-            instruction->error   = "Incomplete Command";
-        }
-        else {
-            instruction->command = _ERROR_;
-            instruction->error   = "Parameter not understood";
         }
     }
     else if (strcmp( token_buffer, "test" ) == 0) {
