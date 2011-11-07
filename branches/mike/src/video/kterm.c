@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <video/kterm.h>
+#include <input/keyboard.h> //Added mkf; 7-31-2011
 
 
 /**
@@ -229,6 +230,16 @@ void kterm_window_readline( KTERM_WINDOW w, char* buffer, unsigned int size ) {
                 continue;  // don't print backspace if we're at the start of the buffer
             }
         }
+        // Don't print the up arrow
+        else if (c == UP_ARROW_ASCII) { // #### new else-if block; mkf 7-31-2011
+			buffer[i++] = c;
+			return;
+		}
+        // Don't print the down arrow
+        else if (c == DOWN_ARROW_ASCII) { // #### new else-if block; mkf 7-31-2011
+			buffer[i++] = c;
+			return;
+		}
         else {
             buffer[i++] = c;
         }
