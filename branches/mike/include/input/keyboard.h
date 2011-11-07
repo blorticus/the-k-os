@@ -22,6 +22,11 @@
 #define RIGHT_CTRL      0x20
 #define RIGHT_SHIFT     0x40
 
+// Ascii values used to represent the up-arrow and down-arrow keys //#### Added by mkf, 7-31-2011
+// Those two keys have scan codes whose numbers are ascii characters so I chose two non-printable ascii characters to represent them.
+#define UP_ARROW_ASCII      5
+#define DOWN_ARROW_ASCII    6
+
 
 /**
  *
