@@ -24,11 +24,14 @@ global task_switch_container
 
 task_switch_container:
     cli
+
     pusha
+
     push ds
     push es
     push fs
     push gs
+
     mov ax, 0x10
     mov ds, ax
     mov es, ax

@@ -87,6 +87,11 @@ void irq_install()
     idt_set_entry( IRQ_0_REMAP_ISR + 15, (unsigned)irq15, 0x08, 0x8E );
 }
 
+//KTERM_WINDOW win;
+//void set_kterm_debug_win( KTERM_WINDOW w ) {
+//    win = w;
+//}
+
 /* Each of the IRQ ISRs point to this function, rather than
 *  the 'fault_handler' in 'isrs.c'. The IRQ Controllers need
 *  to be told when you are done servicing them, so you need
@@ -102,6 +107,9 @@ void irq_handler(struct regs *r)
     /* This is a blank function pointer */
     void (*handler)(struct regs *r);
 
+//    if (win != NULL)
+//        kterm_window_printf( win, "FLAG 1\n" );
+
     /* Find out if we have a custom handler to run for this
     *  IRQ, and then finally, run it */
     handler = irq_routines[r->int_no - IRQ_0_REMAP_ISR];
@@ -110,4 +118,7 @@ void irq_handler(struct regs *r)
 
     /* Must signal PIC(s) when IRQ handling completed */
     PIC_end_of_irq_handling( r->int_no - IRQ_0_REMAP_ISR );
+
+//    if (win != NULL)
+//        kterm_window_printf( win, "FLAG 2\n" );
 }

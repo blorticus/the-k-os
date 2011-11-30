@@ -10,6 +10,7 @@
 #include <memory/kmalloc.h>
 #include <bus/pci.h>
 #include <platform/ia-32/asm.h>
+#include <platform/ia-32/gdt.h>
 #include <string.h>
 #include <process/task.h>
 
@@ -278,6 +279,9 @@ void kosh_main( void ) {
     long tid, pid;
     int linecnt;
     char buf[10];
+//    u8* cgdt;
+//    extern u8* gdt_code_entry;
+//    extern u8* gdt_data_entry;
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -291,6 +295,8 @@ void kosh_main( void ) {
     kterm_create_window( bottom_sub_1, 1680, 1, 80 );
     kterm_create_window( bottom_sub_2, 1760, 1, 80 );
     kterm_create_window( bottom_sub_3, 1840, 1, 80 );
+
+//    set_kterm_debug_win( bottom_win );
 
     fault_handler_set_kterm_window( bottom_win );   /* if processor exception raised, print message in bottom window */
 
@@ -581,6 +587,16 @@ void kosh_main( void ) {
                 break;
 
             case TEST:
+//                cgdt = (u8*)&gdt_code_entry;
+//                kterm_window_printf( top_win, "gdt_code_entry:\n1: 0x%x 2: 0x%x 3: 0x%x 4: 0x%x\n5: 0X%x 6: 0x%x 7: 0x%x 8: 0x%x\n\n", (u8)cgdt[0], (u8)cgdt[1], (u8)cgdt[2], (u8)cgdt[3], (u8)cgdt[4], (u8)cgdt[5], (u8)cgdt[6], (u8)cgdt[7] ); 
+//                cgdt = (u8*)&gdt_data_entry;
+//                kterm_window_printf( top_win, "gdt_data_entry:\n1: 0x%x 2: 0x%x 3: 0x%x 4: 0x%x,\n5: 0X%x 6: 0x%x 7: 0x%x 8: 0x%x\n\n", (u8)cgdt[0], (u8)cgdt[1], (u8)cgdt[2], (u8)cgdt[3], (u8)cgdt[4], (u8)cgdt[5], (u8)cgdt[6], (u8)cgdt[7] ); 
+//                cgdt = (u8*)&gdt_table[0];
+//                kterm_window_printf( top_win, "gdt_table[0]:\n1: 0x%x 2: 0x%x 3: 0x%x 4: 0x%x,\n5: 0X%x 6: 0x%x 7: 0x%x 8: 0x%x\n\n", (u8)cgdt[0], (u8)cgdt[1], (u8)cgdt[2], (u8)cgdt[3], (u8)cgdt[4], (u8)cgdt[5], (u8)cgdt[6], (u8)cgdt[7] ); 
+//                cgdt = (u8*)&gdt_table[1];
+//                kterm_window_printf( top_win, "gdt_table[1]:\n1: 0x%x 2: 0x%x 3: 0x%x 4: 0x%x,\n5: 0X%x 6: 0x%x 7: 0x%x 8: 0x%x\n\n", (u8)cgdt[0], (u8)cgdt[1], (u8)cgdt[2], (u8)cgdt[3], (u8)cgdt[4], (u8)cgdt[5], (u8)cgdt[6], (u8)cgdt[7] ); 
+//                cgdt = (u8*)&gdt_table[2];
+//                kterm_window_printf( top_win, "gdt_table[2]:\n1: 0x%x 2: 0x%x 3: 0x%x 4: 0x%x,\n5: 0X%x 6: 0x%x 7: 0x%x 8: 0x%x\n\n", (u8)cgdt[0], (u8)cgdt[1], (u8)cgdt[2], (u8)cgdt[3], (u8)cgdt[4], (u8)cgdt[5], (u8)cgdt[6], (u8)cgdt[7] ); 
                 break;
 
             default:

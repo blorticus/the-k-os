@@ -10,6 +10,8 @@
 #include <bus/pci.h>
 #include <process/scheduler.h>
 #include <process/task.h>
+#include <platform/ia-32/gdt.h>
+#include <platform/ia-32/tss.h>
 
 void kosh_main( void );
 
@@ -25,6 +27,8 @@ void halt_os( void ) {
 extern memptr sys_stack;
 extern void task_switch_container();
 
+u32 buf[1024];
+
 void kmain( void ) {
     struct multiboot_relocated_info* mbi;
     u32* dir;
@@ -33,8 +37,10 @@ void kmain( void ) {
 
     mbi = retrieve_multiboot_relocate_info();
 
-    create_gdt();
-    
+    initialize_gdt();
+
+//    add_cpu_tss_to_gdt( 1 );
+
     dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
 
     if (!dir) {
@@ -43,6 +49,8 @@ void kmain( void ) {
     }
 
     enable_paging_mode( dir );
+
+    set_cpu_tss_esp0( 1, (u32)buf, 0x10 );
 
     if (pci_build_table() != PCI_TBL_OK) {
         kterm_panic_msg( "PCI Bus Scan Failed" );
@@ -60,10 +68,12 @@ void kmain( void ) {
     kterm_init( 25, 80 );
     kterm_dup_root_window( kterm );
 
-    init_task_sys();
-    task_create( kosh_main );
+//    init_task_sys();
+//    task_create( kosh_main );
 
-    activate_scheduler();
+//    activate_scheduler();
 
-    halt_os();
+    kosh_main();
+
+    for ( ; ; ) ;
 }

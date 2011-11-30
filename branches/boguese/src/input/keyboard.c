@@ -2,7 +2,7 @@
 #include <platform/ia-32/interrupts.h>
 #include <platform/ia-32/asm.h>
 #include <sys/types.h>
-
+#include <video/kterm.h>
 
 char us101_scancodes[] = {
 /*   0       1       2       3       4       5       6       7       8       9       a       b       c       d       e       f      */
@@ -66,7 +66,6 @@ static void keyboard_handler( struct regs *r ) {
 /* bit field indicating what meta key is currently depressed */
 u8 G_meta_keys = 0x00;
 
-
 u16 read_next_key_stroke( u16* scancodes ) {
     u16 scancode;
 
@@ -74,7 +73,6 @@ u16 read_next_key_stroke( u16* scancodes ) {
 
     if (keyboard_buffer_queue.bottom == keyboard_buffer_queue.top)    /* queue is empty */
         return 0x0000;
-
 
     /* ASSERT: this never wraps because of its adjustment in the isr */
     scancode = keyboard_buffer_queue.slots[keyboard_buffer_queue.bottom++ % keyboard_buffer_queue.size];  

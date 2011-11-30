@@ -7,11 +7,14 @@ typedef u32 tid_t;
 
  /*
   * DESCRIPTION:     A datastructure required for a task
-  * ELEMENTS:        - uesp    : the last ESP before task was interrupted (or top of stack on task create)
+  * ELEMENTS:        - id      : task id
+  *                  - uesp    : the last ESP before task was interrupted (or top of stack on task create)
+  *                  - esp0    : ESP for task-specrific privilege level 0
   */
 typedef struct task {
     tid_t id;
     u32 uesp;
+    u32 esp0;
 } task;
 
 typedef task* TASK;

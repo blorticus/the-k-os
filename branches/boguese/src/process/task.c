@@ -2,7 +2,7 @@
 #include <util/kqueue.h>
 #include <util/kcirc_list.h>
 #include <util/kbit_field.h>
-#include <video/kterm.h>
+#include <memory/kmalloc.h>
 #ifndef TEST
 #include <platform/ia-32/asm.h>
 #else
@@ -118,6 +118,7 @@ TASK task_create( void (*task_start)(void) ) {
     *--stack = 0x10; // gs
 
     t->uesp = (u32)stack;
+//    t->esp0 = (u32)kmalloc_page();
 
     kbit_field_set( &tasks_allocated, tid );
 
