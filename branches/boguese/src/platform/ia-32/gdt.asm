@@ -2,10 +2,10 @@
 
 SECTION .text
 
-global activate_gdt
+global install_gdt
 extern gdt_table_info
 
-activate_gdt:
+install_gdt:
     lgdt [gdt_table_info]
 
     mov ax, 0x10        ; 0x10 == the third GDT table entry == the data segment selector

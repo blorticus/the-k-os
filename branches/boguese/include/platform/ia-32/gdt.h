@@ -31,16 +31,7 @@
  * (0x28) will be used for the first CPU TSS; and subsequent segments will be
  * used for the other CPU TSS's -- one per CPU.
  *
- * A segment descriptor for a code segment looks like this (in processor
- * bit order):
- *
- * 0                8               16               24               32
- * |----------------|----------------|----------------|----------------|
- * | Limit Low                       | Base Low                        |
- * |----------------|----------------|----------------|----------------|
- * | Base Mid       |P|DPL |1|1|C|R|A|G|D|0|X|Lim Mid | Base High      |
- * |----------------|----------------|----------------|----------------|
- *
+ * A segment descriptor for a code segment looks like this:
  *
  * 0                8               16               24               32
  * |----------------|----------------|----------------|----------------|
@@ -76,11 +67,11 @@
  *     all of linear memory (4 GiB), this must be set.
  *
  * So, for the DPL 0 code segment, the flags will be:
- *    1001 1010 1100 [1111]
- * and thus, with [1111] as Lim-Mid, this is:
- *   0x  9    a      c    f
+ *    1100 [0000] 1001 1010
+ * and thus, with [0000] as Lim-Mid, this is:
+ *   0x  c      0    9    a
  * Remembering that byte order is little endian for each 16-bit word, this is:
- *   0x9acf
+ *   0xc09a
  *
  * A segment descriptor for a data segment looks like this:
  *
@@ -88,9 +79,9 @@
  * |----------------|----------------|----------------|----------------|
  * | Limit Low                       | Base Low                        |
  * |----------------|----------------|----------------|----------------|
- * | Base Mid       |P|DPL |1|0|E|W|A|G|B|0|X|Lim Mid | Base High      |
+ * | Base Mid       |G|B|0|X|Lim Mid |P|DPL |1|0|E|W|A| Base High      |
  * |----------------|----------------|----------------|----------------|
- *
+ *  
  * Again, for a flat-model, the DPL 0 data segment is all of linear
  * memory.  Limit and Base have the same meaning as for code segments,
  * and all of the flags are the same except:
@@ -113,45 +104,88 @@
  *     for a stack segment (since it grows "down").
  *
  * So, for the DPL 0 data segment, the flags will be:
- *    1001 0010 1100 [1111]
+ *    1100 [0000] 1001 0010
  * and thus, with [1111] as Lim-Mid, this is:
- *   0x  9    2    c    f
+ *   0x  c      0    9    2
  * Remembering that byte order is little endian for each 16-bit word, this is:
- *   0x92cf
+ *   0xc092
  *
  * For DPL 3 code and data segments, the base, limit and flags are all the
  * same as for DPL 0, except of course, the DPL flags themselves.
  *
  * So, for the DPL 3 code segment, the flags will be:
- *    1011 1111 1011
+ *    1100 [0000] 1111 1010
  * and thus, if Lim-Mid is all ones, this is:
- *    0xbffb
+ *    0xc0fa
  *
  * For the DPL 3 data segment, the flags will be: 
- *    1100 1111 1011
+ *    1100 [0000] 1111 0010
  * and thus, if Lim-Mid is all ones, this is:
- *    0xcffb
+ *    0xc0f2
+ *
+ * Task Segement Selectors (TSS) are nominally used for hardware assisted multi-tasking.
+ * The literature suggests that the actual performance boost from using the TSS is low
+ * to none, and the use of TSS reduces flexibility and restricts the number of tasks
+ * that are possible.  However, the processor will use two elements of a TSS when it
+ * must perform a task switch.  Specifically, it restores SS and ESP.  In a system
+ * that uses software multi-tasking, the only task switch the processor "knows" about
+ * is when an interrupt fires (and the privilege changes from 3 to 0).  Since each
+ * processor maintains its own system stack, there must be one TSS entry in the GDT
+ * is required for each processor on the system.  This OS loads one TSS in the GDT
+ * for each processor that could be supported.
+ *
+ * The structure of a TSS descriptor is:
+ *
+  * 0                8               16               24               32
+ * |----------------|----------------|----------------|----------------|
+ * | Limit Low                       | Base Low                        |
+ * |----------------|----------------|----------------|----------------|
+ * | Base Mid       |G|0|0|X|Lim Mid |P|DPL |0|1|0|B|1| Base High      |
+ * |----------------|----------------|----------------|----------------|
+ *
+ * [G], [P], [X] are the same as for code segments and data
+ * segments.  However, 'base' is the linear address of the TSS entry.
+ * 'limit' is the size of the entry.  Furthermore:
+ *
+ * [B] is set if the task represented by the TSS is active; cleared otherwise.
+ * [DPL] is the privilege level allowed to perform the task switch
+ *
+ * The flag set for each TSS entry, then, is:
+ *   1000 [0000] 1000 1001
+ * that is:
+ *  0x8089
  */
 
+/* Common to CODE, DATA and TSS */
 #define GDT_FLAG_4K_GRANULAR        0x8000  // 1000 0000 0000 0000
+#define GDT_FLAG_BYTE_GRANULAR      0x0000  // 0000 0000 0000 0000
+#define GDT_FLAG_PRESENT            0x0080  // 0000 0000 1000 0000
+#define GDT_FLAG_DPL_0              0x0000  // 0000 0000 0000 0000
+#define GDT_FLAG_DPL_1              0x0020  // 0000 0000 0010 0000
+#define GDT_FLAG_DPL_2              0x0040  // 0000 0000 0100 0000
+#define GDT_FLAG_DPL_3              0x0060  // 0000 0000 0110 0000
+
+/* Common to CODE, DATA */
 #define GDT_FLAG_32BIT_SIZE         0x4000  // 0100 0000 0000 0000
 #define GDT_FLAG_16BIT_SIZE         0x0000  // 0000 0000 0000 0000
 #define GDT_FLAG_4_GiB_UPPER_BOUND  0x4000  // 0100 0000 0000 0000
 #define GDT_FLAG_1_MiB_UPPER_BOUND  0x0000  // 0000 0000 0000 0000
 
-#define GDT_FLAG_PRESENT            0x0080  // 0000 0000 1000 0000
-#define GDT_FLAG_NOT_PRESENT        0x0000  // 0000 0000 0000 0000
-#define GDT_FLAG_DPL_0              0x0000  // 0000 0000 0000 0000
-#define GDT_FLAG_DPL_1              0x0020  // 0000 0000 0010 0000
-#define GDT_FLAG_DPL_2              0x0040  // 0000 0000 0100 0000
-#define GDT_FLAG_DPL_3              0x0060  // 0000 0000 0110 0000
-#define GDT_FLAG_IS_DATA_SEGMENT    0x0010  // 0000 0000 0001 0000
+/* CODE only */
 #define GDT_FLAG_IS_CODE_SEGMENT    0x0018  // 0000 0000 0001 1000
-#define GDT_FLAG_IS_SYSTEM_SEGMENT  0x0000  // 0000 0000 0000 0000
-#define GDT_FLAG_EXPAND_DOWN        0x0004  // 0000 0000 0000 0100
 #define GDT_FLAG_IS_CONFORMING      0x0004  // 0000 0000 0000 0100
 #define GDT_FLAG_IS_READABLE        0x0002  // 0000 0000 0000 0010
+
+/* DATA only */
+#define GDT_FLAG_IS_DATA_SEGMENT    0x0010  // 0000 0000 0001 0000
+#define GDT_FLAG_EXPAND_DOWN        0x0004  // 0000 0000 0000 0100
 #define GDT_FLAG_IS_WRITABLE        0x0002  // 0000 0000 0000 0010
+
+#define GDT_FLAG_IS_SYSTEM_SEGMENT  0x0000  // 0000 0000 0000 0000
+
+/* TSS only */
+#define GDT_FLAG_IS_TSS             0x0009  // 0000 0000 0000 1001
+#define GDT_TASK_IS_BUSY            0x0002  // 0000 0000 0000 0010
 
 
 typedef struct gdt_entry {
@@ -184,11 +218,33 @@ gdt_entry gdt_table[GDT_TABLE_SIZE];
  * ERRORS               : if 'element' is not a multiple of eight, is beyond the GDT table limit ((MAX_GDT_SEGMENTS - 1) * 8) or sets a
  *                        segment selector beyond the GDT table size ((GDT_TABLE_BASE_SIZE + MAX_CPUS - 1) * 8) raise #GP
  */
-void
-set_gdt_segment_descriptor( u16 element_offset, u32 addr, u16 limit, u16 flags );
+void set_gdt_segment_descriptor( u16 element_offset, u32 addr, u16 limit, u16 flags );
 
-void initialize_gdt();
 
+/**
+ * DESCRIPTION          : Add a task segment selector to the GDT for a particular CPU.  Assumes that GDT_TSS_SEGMENT_OFFSET_FOR_CPU()
+ *                        macro returns the proper GDT entry offset for cpu numbered 'cpu_num' (where CPUs are numbered starting at 1)
+ * RETURNS              : void
+ * ERRORS               : if 'cpu_num' > MAX_CPUS raise #GP
+ */
 void add_cpu_tss_to_gdt( u8 cpu_num  );
+
+
+/**
+ * DESCRIPTION          : Create GDT with a null descriptor, a code + data descriptor for DPL 0, a code + data descriptor for DPL 3,
+ *                        then one TSS per CPU up to MAX_CPUS, with GDT descriptor offsets in that order.  All of this sets values
+ *                        in gdt_table
+ * RETURNS              : void
+ * ERRORS               : -
+ */
+void create_system_canonical_gdt();
+ 
+
+/**
+ * DESCRIPTION          : Installs gdt_table as the system GDT
+ * RETURNS              : void
+ * ERRORS               : -
+ */
+void install_gdt();
 
 #endif

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <platform/ia-32/cpu.h>
 #include <util/kernel_stack.h>
+#include <util/debugging.h>
 
 #define KERNEL_VIRTUAL_PAGE_ATTRS   0x03
 
@@ -303,19 +304,36 @@ u32* allocate_virtual_page( void ) {
     u32* vtable;
     u32  page_tbl_entry;
 
+kterm_window_printf( get_debug_kterm_window(), "START allocate_virtual_page()\n" );
+
     ppage = get_phys_page();
+
+kterm_window_printf( get_debug_kterm_window(), "AFTER get_phys_page()\n" );
+
     vpage = get_next_available_virt_page();
+
+kterm_window_printf( get_debug_kterm_window(), "AFTER get_next_available_virt_page()\n" );
+
 
     if (ppage == 0 || vpage == 0)
         return 0;
 
     page_tbl_entry = ((u32)vpage & 0x3fffff) >> 12;   // i.e., (vpage % (1024 * 4096)) / 4096
 
+kterm_window_printf( get_debug_kterm_window(), "BEFORE create_or_return_page_table()\n" );
+
+
     vtable = create_or_return_page_table( (memptr)vpage );
+
+kterm_window_printf( get_debug_kterm_window(), "AFTER create_or_return_page_table()\n" );
+
     vtable[page_tbl_entry] = (u32)ppage | KERNEL_VIRTUAL_PAGE_ATTRS;
 
 //    *va = (u32)vpage;
 //    *pa = (u32)ppage;
+
+
+kterm_window_printf( get_debug_kterm_window(), "BEFORE return\n" );
 
     return vpage;
 }

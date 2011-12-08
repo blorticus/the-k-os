@@ -24,9 +24,6 @@ void halt_os( void ) {
     for ( ;; ) ;
 }
 
-extern memptr sys_stack;
-extern void task_switch_container();
-
 u32 buf[1024];
 
 void kmain( void ) {
@@ -37,9 +34,8 @@ void kmain( void ) {
 
     mbi = retrieve_multiboot_relocate_info();
 
-    initialize_gdt();
-
-//    add_cpu_tss_to_gdt( 1 );
+    create_system_canonical_gdt();
+    install_gdt();
 
     dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
 

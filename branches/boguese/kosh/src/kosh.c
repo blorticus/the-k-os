@@ -13,6 +13,7 @@
 #include <platform/ia-32/gdt.h>
 #include <string.h>
 #include <process/task.h>
+#include <util/debugging.h>
 
 extern void phys_core_set_window( KTERM_WINDOW w );
 
@@ -530,6 +531,8 @@ void kosh_main( void ) {
 
             case KMALLOC:
                 s1 = (char*)kmalloc( 100 );
+
+set_debug_kterm_window( top_win );
 
                 if (!s1) {
                     kterm_window_printf( top_win, "s1 kmalloc() returned NULL\n" );
