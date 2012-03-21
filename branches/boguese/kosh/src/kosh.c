@@ -262,6 +262,33 @@ void test_task_3_clear_task_ended_line() {
     test_task_clear_task_ended_line( bottom_sub_3 );
 }
 
+void isr_129_handler( struct regs *r ) {
+    asm( "cli\n\t"
+         "pushl $0\n\t"
+         "pushl $128\n\t"
+         "pusha\n\t"
+         "pushw %ds\n\t"
+         "pushw %es\n\t"
+         "pushw %fs\n\t"
+         "pushw %gs\n\t"
+         "movw $0x10, %ax\n\t"
+         "movw %ax, %ds\n\t"
+         "movw %ax, %es\n\t"
+         "movw %ax, %fs\n\t"
+         "movw %ax, %gs\n\t" );
+
+    kterm_window_printf( bottom_win, "isr_129_handler\n" );
+
+    asm( "popw %gs\n\t"
+         "popw %fs\n\t"
+         "popw %es\n\t"
+         "popw %ds\n\t"
+         "popa\n\t"
+         "add $8, %esp\n\t"
+         "iret\n\t" );
+}
+
+
 void kosh_main( void ) {
     kosh_instruction* next_instruction;
     struct multiboot_relocated_info* mri;
@@ -283,6 +310,7 @@ void kosh_main( void ) {
 //    u8* cgdt;
 //    extern u8* gdt_code_entry;
 //    extern u8* gdt_data_entry;
+//    isr_set_handler( 128, isr_128_handler );
 
     // kterm MUST BE initialized
     kterm_create_window( top_win,     0,   20, 80 );
@@ -532,8 +560,6 @@ void kosh_main( void ) {
             case KMALLOC:
                 s1 = (char*)kmalloc( 100 );
 
-set_debug_kterm_window( top_win );
-
                 if (!s1) {
                     kterm_window_printf( top_win, "s1 kmalloc() returned NULL\n" );
                 }
@@ -590,6 +616,7 @@ set_debug_kterm_window( top_win );
                 break;
 
             case TEST:
+                asm( "int $129" );
 //                cgdt = (u8*)&gdt_code_entry;
 //                kterm_window_printf( top_win, "gdt_code_entry:\n1: 0x%x 2: 0x%x 3: 0x%x 4: 0x%x\n5: 0X%x 6: 0x%x 7: 0x%x 8: 0x%x\n\n", (u8)cgdt[0], (u8)cgdt[1], (u8)cgdt[2], (u8)cgdt[3], (u8)cgdt[4], (u8)cgdt[5], (u8)cgdt[6], (u8)cgdt[7] ); 
 //                cgdt = (u8*)&gdt_data_entry;

@@ -1,7 +1,7 @@
 #TOOLBIN := /usr/bin
 #CC := $(TOOLBIN)/gcc
 CC_FLAGS := -Wall -g 
-INCLUDES :=  -I.. -I../../lcheck -I../.. -I../../include
+INCLUDES :=  -I.. -I../../lcheck -I../.. -I../../kernel/include -I../../include
 LIBS := -L../../lcheck -llcheck -L.. -lkoshlib
 #MAKE := /usr/bin/make
 

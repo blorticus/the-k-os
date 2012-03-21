@@ -27,26 +27,24 @@ void halt_os( void ) {
 u32 buf[1024];
 
 void kmain( void ) {
-    struct multiboot_relocated_info* mbi;
     u32* dir;
 
     multiboot_relocate();
 
-    mbi = retrieve_multiboot_relocate_info();
+//    mbi = retrieve_multiboot_relocate_info();
 
-    create_system_canonical_gdt();
-    install_gdt();
+    install_standard_gdt();
 
-    dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
+//    dir = configure_kernel_page_directory_32bit_4kpages_non_pae();
+//
+//    if (!dir) {
+//        kterm_panic_msg( "Physical Paging Failed" );
+//        halt_os();
+//    }
+//
+//    enable_paging_mode( dir );
 
-    if (!dir) {
-        kterm_panic_msg( "Physical Paging Failed" );
-        halt_os();
-    }
-
-    enable_paging_mode( dir );
-
-    set_cpu_tss_esp0( 1, (u32)buf, 0x10 );
+//    set_cpu_tss_esp0( 1, (u32)buf, 0x10 );
 
     if (pci_build_table() != PCI_TBL_OK) {
         kterm_panic_msg( "PCI Bus Scan Failed" );

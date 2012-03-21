@@ -51,9 +51,11 @@ isr_handler_routine isr_routines[256] = {
     0, 0, 0, 0, 0, 0
 };
 
-static inline void isr_set_handler( u8 isr_number, isr_handler_routine handler ) {
+inline void isr_set_handler( u8 isr_number, isr_handler_routine handler ) {
     isr_routines[isr_number] = handler;
 }
+
+extern void isr_129_handler( struct regs* r );
 
 
 /* This is a very repetitive function... it's not hard, it's
@@ -99,9 +101,8 @@ void isrs_install()
     idt_set_entry( 29, (u32)isr29, 0x08, 0x8E );
     idt_set_entry( 30, (u32)isr30, 0x08, 0x8E );
     idt_set_entry( 31, (u32)isr31, 0x08, 0x8E );
-    idt_set_entry( 128, (u32)isr128, 0x08, 0x8E );
-
-//    isr_set_handler( 128, test_scheduler );
+//    idt_set_entry( 128, (u32)isr128, 0x08, 0x8E );
+    idt_set_entry( 129, (u32)isr_129_handler, 0x08, 0x8E );
 }
 
 
@@ -171,9 +172,3 @@ void soft_int_handler(struct regs *r)
     }
 }
 
-void system_soft_interrupt( struct regs* r ) {
-}
-
-
-void print_isr_trap( void ) {
-}
