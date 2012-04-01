@@ -37,6 +37,7 @@ endif
 KMAIN_LD := link/kmain.ld
 
 OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/tss.o $(OBJDIR)/platformasm.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o $(OBJDIR)/debugging.o
+#$(OBJDIR)/interrupts.o
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
@@ -99,7 +100,7 @@ $(OBJDIR)/multiboot.o: src/multiboot.c
 
 
 # TARGET: build Global Descriptor Table routines
-$(OBJDIR)/gdt.o: src/kernel/platform/$(PLATFORM)/gdt.c include/kernel/platform/$(PLATFORM)/gdt.h
+$(OBJDIR)/gdt.o: src/kernel/platform/$(PLATFORM)/gdt.c include/kernel/platform/$(PLATFORM)/gdt.h $(OBJDIR)/platformasm.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/gdt.o src/kernel/platform/$(PLATFORM)/gdt.c
 #$(OBJDIR)/gdt.o: src/platform/$(PLATFORM)/gdt.c
 #	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/gdt.o src/platform/$(PLATFORM)/gdt.c
@@ -119,6 +120,8 @@ $(OBJDIR)/idt.o: src/kernel/platform/$(PLATFORM)/idt.c include/kernel/platform/$
 #$(OBJDIR)/idt.o: src/platform/$(PLATFORM)/idt.c
 #	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/platform/$(PLATFORM)/idt.c
 
+#$(OBJDIR)/interrupts.o: src/kernel/platform/$(PLATFORM)/interrupts.asm include/kernel/platform/$(PLATFORM)/interrupts.h
+#	$(ASM) -f elf -o $(OBJDIR)/interrupts.o src/kernel/platform/$(PLATFORM)/interrupts.asm
 
 $(OBJDIR)/isr_handlers.o: src/platform/$(PLATFORM)/isr_handlers.asm
 	$(ASM) -f elf -o $(OBJDIR)/isr_handlers.o src/platform/$(PLATFORM)/isr_handlers.asm

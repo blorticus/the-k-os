@@ -9,10 +9,12 @@ SECTION .text
 ;                         begin utilizing the code segment gate
 
 global install_gdt
-extern gdt_table_info
+;extern gdt_table_info
+extern gdt_register_value;
 
 install_gdt:
-    lgdt [gdt_table_info]
+;    lgdt [gdt_table_info]
+    lgdt [gdt_register_value]
 
     mov ax, 0x10        ; 0x10 == the third GDT table entry == the data segment selector
     mov ds, ax          ; so, point all data segment registers there

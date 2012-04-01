@@ -33,6 +33,8 @@ void kmain( void ) {
 
 //    mbi = retrieve_multiboot_relocate_info();
 
+//    create_system_canonical_gdt();
+//    install_gdt();
     install_standard_gdt();
 
 //    dir = configure_kernel_page_directory_32bit_4kpages_non_pae();

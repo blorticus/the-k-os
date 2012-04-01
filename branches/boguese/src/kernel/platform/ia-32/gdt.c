@@ -1,5 +1,6 @@
 #include <platform/ia-32/gdt.h>
 #include <platform/ia-32/tss.h>
+#include <platform/ia-32/cpus.h>
 #include <sys/types.h>
 
 /**
@@ -134,7 +135,7 @@
  *
  * The structure of a TSS descriptor is:
  *
-  * 0                8               16               24               32
+ * 0                8               16               24               32
  * |----------------|----------------|----------------|----------------|
  * | Limit Low                       | Base Low                        |
  * |----------------|----------------|----------------|----------------|
@@ -152,6 +153,21 @@
  *   1000 [0000] 1000 1001
  * that is:
  *  0x8089
+ *
+ * The pointer to the GDT must be loaded into the system GDT register via the
+ * 'lgdt' instruction.  This instruction expects a pointer to a 48-bit data
+ * structure, which will be copied into the GDT register.  The 48-bit data
+ * structure is of the form:
+ * 0                8               16               24               32
+ * |----------------|----------------|
+ * | Table Size                      |
+ * |----------------|----------------|----------------|----------------|
+ * | Table Base Address                                                |
+ * |----------------|----------------|----------------|----------------|
+ *
+ * "Table Size" is the size of the table in bytes and "Table Base Address" is
+ * the address of the first entry in the table.
+ *
  */
 
 /* Common to CODE, DATA and TSS */
@@ -185,18 +201,10 @@
 #define GDT_FLAG_IS_TSS             0x0009  // 0000 0000 0000 1001
 #define GDT_TASK_IS_BUSY            0x0002  // 0000 0000 0000 0010
 
-#define MAX_GDT_SEGMENTS                    8192
-#define GDT_TSS_SEGMENT_OFFSET_FOR_CPU(cpu) (0x28 + ((cpu - 1) * 8))
-#define GDT_TABLE_SIZE                      GDT_TABLE_BASE_SIZE + MAX_CPUS
+#define MAX_GDT_SEGMENTS            8192
+#define GDT_TABLE_BASE_SIZE         5   // null selector, code for priv lvl 0, data for pl 0, code for pl 3, data for pl 3
 
-
-
-/**
- * DESCRIPTION          : Installs gdt_table as the system GDT
- * RETURNS              : void
- * ERRORS               : -
- */
-extern void install_gdt();
+#define GDT_TABLE_SIZE              (GDT_TABLE_BASE_SIZE + MAX_CPUS)
 
 typedef struct gdt_entry {
     u16 limit;
@@ -206,40 +214,31 @@ typedef struct gdt_entry {
     u8  base_high;
 }__attribute__((packed)) gdt_entry;
 
-struct gdt_table_ptr {
+
+typedef struct gdt_register {
     u16 size;
     u32 table_base_ptr;
-}__attribute__((packed));
-
+}__attribute__((packed)) gdt_register;
 
 gdt_entry gdt_table[GDT_TABLE_SIZE];
-struct gdt_table_ptr gdt_table_info;
-
-// XXX: move this somewhere more general
-void raise_gpf( u8 error_code ) {
-    asm( "push %%eax\n\t"
-         "int  $13"
-         : 
-         : "a" (error_code)
-       );
-}
+gdt_register gdt_register_value;
+tss cpu_tss_table[MAX_CPUS];
 
 
 /**
- * DESCRIPTION          : Add a task segment selector to the GDT for a particular CPU.  Assumes that GDT_TSS_SEGMENT_OFFSET_FOR_CPU()
- *                        macro returns the proper GDT entry offset for cpu numbered 'cpu_num' (where CPUs are numbered starting at 1)
+ * DESCRIPTION          : Add a task segment selector to the GDT for a particular CPU.  cpu's are numbered starting at 1
  * RETURNS              : void
- * ERRORS               : if 'cpu_num' > MAX_CPUS raise #GP
+ * ERRORS               : -
  */
-static inline void add_cpu_tss_to_gdt( struct gdt_entry* table, u8 cpu_num ) {
-    u32 tssp = (u32)(&tss_table[cpu_num - 1]);
+static inline void add_cpu_tss_to_gdt( gdt_entry* gtable, u8 cpu_num  ) {
+    u32 tssp = (u32)(&cpu_tss_table[cpu_num - 1]);
     int i = GDT_TABLE_BASE_SIZE + cpu_num - 1;
 
-    table[i].limit      = (u16)(sizeof( struct tss ));
-    table[i].base_low   = (u16)tssp;
-    table[i].base_mid   = (u8)(tssp >> 16);
-    table[i].flags_and_limit_high = GDT_FLAG_IS_TSS | GDT_FLAG_4K_GRANULAR | GDT_FLAG_PRESENT | GDT_FLAG_DPL_0;
-    table[i].base_high  = (u8)(tssp >> 24);
+    gtable[i].limit      = (u16)(sizeof( struct tss ));
+    gtable[i].base_low   = (u16)tssp;
+    gtable[i].base_mid   = (u8)(tssp >> 16);
+    gtable[i].flags_and_limit_high = GDT_FLAG_IS_TSS | GDT_FLAG_4K_GRANULAR | GDT_FLAG_PRESENT | GDT_FLAG_DPL_0;
+    gtable[i].base_high  = (u8)(tssp >> 24);
 }
 
 
@@ -252,21 +251,17 @@ static inline void add_cpu_tss_to_gdt( struct gdt_entry* table, u8 cpu_num ) {
  * ERRORS               : if 'element' is not a multiple of eight, is beyond the GDT table limit ((MAX_GDT_SEGMENTS - 1) * 8) or sets a
  *                        segment selector beyond the GDT table size ((GDT_TABLE_BASE_SIZE + MAX_CPUS - 1) * 8) raise #GP
  */
-static void set_gdt_segment_descriptor( struct gdt_entry* table, u16 element_offset, u32 addr, u16 limit, u16 flags ) {
-    int i;
 
-    if (element_offset > (GDT_TABLE_SIZE - 1) * 8 || element_offset % 8 != 0) {
-        raise_gpf( 0 );
-        return;
-    }
+static void set_gdt_segment_descriptor( gdt_entry* gtable, u16 element_offset, u32 addr, u16 limit, u16 flags ) {
+    int i;
 
     i = element_offset >> 3;  // element_offset / 8
 
-    table[i].limit       = limit;
-    table[i].base_low    = (u16)addr;
-    table[i].base_mid    = (u8)(addr >> 16);
-    table[i].flags_and_limit_high = flags;      // flags have limit mid built-in
-    table[i].base_high   = (u8)(addr >> 24);
+    gtable[i].limit       = limit;
+    gtable[i].base_low    = (u16)addr;
+    gtable[i].base_mid    = (u8)(addr >> 16);
+    gtable[i].flags_and_limit_high = flags;      // flags have limit mid built-in
+    gtable[i].base_high   = (u8)(addr >> 24);
 }
 
 
@@ -277,31 +272,32 @@ static void set_gdt_segment_descriptor( struct gdt_entry* table, u16 element_off
  * RETURNS              : void
  * ERRORS               : -
  */
-void create_system_canonical_gdt() {
+static void create_system_canonical_gdt( gdt_entry* gtable, u16 gdt_table_size, gdt_register* gr ) {
     int i;
 
-    gdt_table_info.size = sizeof(gdt_table) - 1;
-    gdt_table_info.table_base_ptr = (u32)gdt_table;
+    gr->size = gdt_table_size;
+    gr->table_base_ptr = (u32)gtable;
 
-    set_gdt_segment_descriptor( gdt_table, GDT_NULL_SELECTOR_OFFSET,       0, 0,       0x00 );
-    set_gdt_segment_descriptor( gdt_table, GDT_DPL_0_CODE_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_0 | GDT_FLAG_IS_CODE_SEGMENT | 
-                                                                                       GDT_FLAG_IS_READABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_32BIT_SIZE );
-    set_gdt_segment_descriptor( gdt_table, GDT_DPL_0_DATA_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_0 | GDT_FLAG_IS_DATA_SEGMENT | 
-                                                                                       GDT_FLAG_IS_WRITABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_4_GiB_UPPER_BOUND );
+    set_gdt_segment_descriptor( gtable, GDT_NULL_SELECTOR_OFFSET,       0, 0,       0x00 );
+    set_gdt_segment_descriptor( gtable, GDT_DPL_0_CODE_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_0 | GDT_FLAG_IS_CODE_SEGMENT | 
+                                                                                    GDT_FLAG_IS_READABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_32BIT_SIZE );
+    set_gdt_segment_descriptor( gtable, GDT_DPL_0_DATA_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_0 | GDT_FLAG_IS_DATA_SEGMENT | 
+                                                                                    GDT_FLAG_IS_WRITABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_4_GiB_UPPER_BOUND );
 
-    set_gdt_segment_descriptor( gdt_table, GDT_DPL_3_CODE_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_3 | GDT_FLAG_IS_CODE_SEGMENT | 
-                                                                                       GDT_FLAG_IS_READABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_32BIT_SIZE );
-    set_gdt_segment_descriptor( gdt_table, GDT_DPL_3_DATA_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_3 | GDT_FLAG_IS_DATA_SEGMENT | 
-                                                                                       GDT_FLAG_IS_WRITABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_4_GiB_UPPER_BOUND );
+    set_gdt_segment_descriptor( gtable, GDT_DPL_3_CODE_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_3 | GDT_FLAG_IS_CODE_SEGMENT | 
+                                                                                    GDT_FLAG_IS_READABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_32BIT_SIZE );
+    set_gdt_segment_descriptor( gtable, GDT_DPL_3_DATA_SEGMENT_OFFSET,  0, 0xffff,  GDT_FLAG_PRESENT | GDT_FLAG_DPL_3 | GDT_FLAG_IS_DATA_SEGMENT | 
+                                                                                    GDT_FLAG_IS_WRITABLE | GDT_FLAG_4K_GRANULAR | GDT_FLAG_4_GiB_UPPER_BOUND );
 
 
     for (i = 1; i <= MAX_CPUS; i++)
-        add_cpu_tss_to_gdt( gdt_table, i );
+        add_cpu_tss_to_gdt( gtable, i );
 }
 
+
+extern void install_gdt();  // defined in platform/ia-32/platform.asm
 
 void install_standard_gdt() {
-    create_system_canonical_gdt();
+    create_system_canonical_gdt( gdt_table, sizeof(gdt_table), &gdt_register_value );
     install_gdt();
 }
-
