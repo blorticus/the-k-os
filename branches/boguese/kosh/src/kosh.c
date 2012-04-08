@@ -348,7 +348,7 @@ void kosh_main( void ) {
                     u16 regval16;
                     u8  regval8;
 
-                    switch (next_instruction->reg) {
+                    switch (next_instruction->subcommand) {
                         case EAX: M_GR_EAX(regval32); kterm_window_printf( top_win, " eax = 0x%x\n", regval32 ); break;
                         case EBX: M_GR_EBX(regval32); kterm_window_printf( top_win, " ebx = 0x%x\n", regval32 ); break;
                         case ECX: M_GR_ECX(regval32); kterm_window_printf( top_win, " ecx = 0x%x\n", regval32 ); break;
@@ -397,17 +397,18 @@ void kosh_main( void ) {
                 break;
 
             case HELP:
-                kterm_window_puts( top_win, " echo <text>            - repeat <text>\n" );
-                kterm_window_puts( top_win, " peek <reg|mem>         - see value at register <reg> or memory location 0x<mem>\n" );
-                kterm_window_puts( top_win, " poke <reg|mem>         - change value at register <reg> or memory location 0x<mem>\n" );
-                kterm_window_puts( top_win, " regs                   - dump all register values\n" );
-                kterm_window_puts( top_win, " bios                   - prints out relocated bios values\n" );
+                kterm_window_puts( top_win, " echo <text>             - repeat <text>\n" );
+                kterm_window_puts( top_win, " peek <reg|mem>          - see value at register <reg> or memory location 0x<mem>\n" );
+                kterm_window_puts( top_win, " poke <reg|mem>          - change value at register <reg> or memory location 0x<mem>\n" );
+                kterm_window_puts( top_win, " regs                    - dump all register values\n" );
+                kterm_window_puts( top_win, " bios                    - prints out relocated bios values\n" );
 //                kterm_window_puts( top_win, " int                    - activates interrupt diagnostics\n" );
                 kterm_window_puts( top_win, " task [start|end|kill] <num> - Start or end task 1,2 or 3 or kill a pid\n" );
-                kterm_window_puts( top_win, " cpuid                  - Show CPUID support and characteristics\n" );
-                kterm_window_puts( top_win, " kernel                 - Information about the kernel\n" );
-                kterm_window_puts( top_win, " kmalloc                - Test kmalloc/kfree implementation\n" );
-                kterm_window_puts( top_win, " pci scan [class <n>]   - Scan the PCI bus (optionally only for class <n> devices)\n" );
+                kterm_window_puts( top_win, " cpuid                   - Show CPUID support and characteristics\n" );
+                kterm_window_puts( top_win, " kernel                  - Information about the kernel\n" );
+                kterm_window_puts( top_win, " kmalloc                 - Test kmalloc/kfree implementation\n" );
+                kterm_window_puts( top_win, " pci scan [class <n>]    - Scan the PCI bus (optionally only for class <n> devices)\n" );
+                kterm_window_puts( top_win, " raise [<exception>|<n>] - Raise exception or interrupt.  Exceptions: div_0\n" );
                 break;
 
             case BIOS:
@@ -611,6 +612,14 @@ void kosh_main( void ) {
                         kterm_window_readline( top_win, buf, 9 );
                         linecnt = 0;
                     }
+                }
+
+                break;
+
+            case RAISE:
+                if (next_instruction->subcommand == DIVIDE_BY_ZERO) {
+                    i = 0;
+                    i = 10 / i;
                 }
 
                 break;

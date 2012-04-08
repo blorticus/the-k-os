@@ -36,8 +36,9 @@ endif
 # --
 KMAIN_LD := link/kmain.ld
 
-OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/tss.o $(OBJDIR)/platformasm.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o $(OBJDIR)/debugging.o
-#$(OBJDIR)/interrupts.o
+OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/gdt.o $(OBJDIR)/tss.o $(OBJDIR)/platformasm.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o $(OBJDIR)/debugging.o $(OBJDIR)/isr_bridge.o $(OBJDIR)/interrupts.o
+
+#$(OBJDIR)/idt.o $(OBJDIR)/isrs.o 
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
@@ -115,13 +116,15 @@ $(OBJDIR)/tss.o: src/platform/$(PLATFORM)/tss.c
 
 
 # TARGET: build Interrupt Descriptor Table routines
-$(OBJDIR)/idt.o: src/kernel/platform/$(PLATFORM)/idt.c include/kernel/platform/$(PLATFORM)/interrupts.h
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/kernel/platform/$(PLATFORM)/idt.c
+$(OBJDIR)/interrupts.o: src/kernel/platform/$(PLATFORM)/interrupts.c include/kernel/platform/$(PLATFORM)/interrupts.h $(OBJDIR)/platformasm.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/interrupts.o src/kernel/platform/$(PLATFORM)/interrupts.c
+#$(OBJDIR)/idt.o: src/kernel/platform/$(PLATFORM)/idt.c include/kernel/platform/$(PLATFORM)/interrupts.h
+#	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/kernel/platform/$(PLATFORM)/idt.c
 #$(OBJDIR)/idt.o: src/platform/$(PLATFORM)/idt.c
 #	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/idt.o src/platform/$(PLATFORM)/idt.c
 
-#$(OBJDIR)/interrupts.o: src/kernel/platform/$(PLATFORM)/interrupts.asm include/kernel/platform/$(PLATFORM)/interrupts.h
-#	$(ASM) -f elf -o $(OBJDIR)/interrupts.o src/kernel/platform/$(PLATFORM)/interrupts.asm
+$(OBJDIR)/isr_bridge.o: src/kernel/platform/$(PLATFORM)/isr_bridge.asm include/kernel/platform/$(PLATFORM)/interrupts.h
+	$(ASM) -f elf -o $(OBJDIR)/isr_bridge.o src/kernel/platform/$(PLATFORM)/isr_bridge.asm
 
 $(OBJDIR)/isr_handlers.o: src/platform/$(PLATFORM)/isr_handlers.asm
 	$(ASM) -f elf -o $(OBJDIR)/isr_handlers.o src/platform/$(PLATFORM)/isr_handlers.asm
@@ -130,8 +133,8 @@ $(OBJDIR)/irq_handlers.o: src/platform/$(PLATFORM)/irq_handlers.asm
 	$(ASM) -f elf -o $(OBJDIR)/irq_handlers.o src/platform/$(PLATFORM)/irq_handlers.asm
 
 
-$(OBJDIR)/isrs.o: src/platform/$(PLATFORM)/isrs.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/isrs.o src/platform/$(PLATFORM)/isrs.c
+#$(OBJDIR)/isrs.o: src/platform/$(PLATFORM)/isrs.c
+#	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/isrs.o src/platform/$(PLATFORM)/isrs.c
 
 $(OBJDIR)/irq.o: src/platform/$(PLATFORM)/irq.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/irq.o src/platform/$(PLATFORM)/irq.c

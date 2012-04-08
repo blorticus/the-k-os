@@ -206,13 +206,13 @@
 
 #define GDT_TABLE_SIZE              (GDT_TABLE_BASE_SIZE + MAX_CPUS)
 
-typedef struct gdt_entry {
+typedef struct gdt_descriptor {
     u16 limit;
     u16 base_low;
     u8  base_mid;
     u16 flags_and_limit_high;
     u8  base_high;
-}__attribute__((packed)) gdt_entry;
+}__attribute__((packed)) gdt_descriptor;
 
 
 typedef struct gdt_register {
@@ -220,7 +220,7 @@ typedef struct gdt_register {
     u32 table_base_ptr;
 }__attribute__((packed)) gdt_register;
 
-gdt_entry gdt_table[GDT_TABLE_SIZE];
+gdt_descriptor gdt[GDT_TABLE_SIZE];
 gdt_register gdt_register_value;
 tss cpu_tss_table[MAX_CPUS];
 
@@ -230,7 +230,7 @@ tss cpu_tss_table[MAX_CPUS];
  * RETURNS              : void
  * ERRORS               : -
  */
-static inline void add_cpu_tss_to_gdt( gdt_entry* gtable, u8 cpu_num  ) {
+static inline void add_cpu_tss_to_gdt( gdt_descriptor* gtable, u8 cpu_num  ) {
     u32 tssp = (u32)(&cpu_tss_table[cpu_num - 1]);
     int i = GDT_TABLE_BASE_SIZE + cpu_num - 1;
 
@@ -252,7 +252,7 @@ static inline void add_cpu_tss_to_gdt( gdt_entry* gtable, u8 cpu_num  ) {
  *                        segment selector beyond the GDT table size ((GDT_TABLE_BASE_SIZE + MAX_CPUS - 1) * 8) raise #GP
  */
 
-static void set_gdt_segment_descriptor( gdt_entry* gtable, u16 element_offset, u32 addr, u16 limit, u16 flags ) {
+static void set_gdt_segment_descriptor( gdt_descriptor* gtable, u16 element_offset, u32 addr, u16 limit, u16 flags ) {
     int i;
 
     i = element_offset >> 3;  // element_offset / 8
@@ -268,11 +268,11 @@ static void set_gdt_segment_descriptor( gdt_entry* gtable, u16 element_offset, u
 /**
  * DESCRIPTION          : Create GDT with a null descriptor, a code + data descriptor for DPL 0, a code + data descriptor for DPL 3,
  *                        then one TSS per CPU up to MAX_CPUS, with GDT descriptor offsets in that order.  All of this sets values
- *                        in gdt_table
+ *                        in gdt
  * RETURNS              : void
  * ERRORS               : -
  */
-static void create_system_canonical_gdt( gdt_entry* gtable, u16 gdt_table_size, gdt_register* gr ) {
+static void create_system_canonical_gdt( gdt_descriptor* gtable, u16 gdt_table_size, gdt_register* gr ) {
     int i;
 
     gr->size = gdt_table_size;
@@ -298,6 +298,6 @@ static void create_system_canonical_gdt( gdt_entry* gtable, u16 gdt_table_size, 
 extern void install_gdt();  // defined in platform/ia-32/platform.asm
 
 void install_standard_gdt() {
-    create_system_canonical_gdt( gdt_table, sizeof(gdt_table), &gdt_register_value );
+    create_system_canonical_gdt( gdt, sizeof(gdt), &gdt_register_value );
     install_gdt();
 }

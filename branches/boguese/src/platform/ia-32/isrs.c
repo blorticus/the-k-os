@@ -3,7 +3,7 @@
 #include <video/kterm.h>
 
 /* these are all defined in isr_handler.asm */
-void isr0 ( void );
+//void isr0 ( void );
 void isr1 ( void );
 void isr2 ( void );
 void isr3 ( void );
@@ -38,6 +38,8 @@ void isr31( void );
 
 void isr128( void );
 
+void interrupt_0( void );
+
 //void test_scheduler( struct regs* r );
 
 typedef void(*isr_handler_routine)(struct regs *r);
@@ -69,40 +71,41 @@ extern void isr_129_handler( struct regs* r );
 *  hex. */
 void isrs_install()
 {
-    idt_set_entry( 0,  (u32)isr0,  0x08, 0x8E );
-    idt_set_entry( 1,  (u32)isr1,  0x08, 0x8E );
-    idt_set_entry( 2,  (u32)isr2,  0x08, 0x8E );
-    idt_set_entry( 3,  (u32)isr3,  0x08, 0x8E );
-    idt_set_entry( 4,  (u32)isr4,  0x08, 0x8E );
-    idt_set_entry( 5,  (u32)isr5,  0x08, 0x8E );
-    idt_set_entry( 6,  (u32)isr6,  0x08, 0x8E );
-    idt_set_entry( 7,  (u32)isr7,  0x08, 0x8E );
-    idt_set_entry( 8,  (u32)isr8,  0x08, 0x8E );
-    idt_set_entry( 9,  (u32)isr9,  0x08, 0x8E );
-    idt_set_entry( 10, (u32)isr10, 0x08, 0x8E );
-    idt_set_entry( 11, (u32)isr11, 0x08, 0x8E );
-    idt_set_entry( 12, (u32)isr12, 0x08, 0x8E );
-    idt_set_entry( 13, (u32)isr13, 0x08, 0x8E );
-    idt_set_entry( 14, (u32)isr14, 0x08, 0x8E );
-    idt_set_entry( 15, (u32)isr15, 0x08, 0x8E );
-    idt_set_entry( 16, (u32)isr16, 0x08, 0x8E );
-    idt_set_entry( 17, (u32)isr17, 0x08, 0x8E );
-    idt_set_entry( 18, (u32)isr18, 0x08, 0x8E );
-    idt_set_entry( 19, (u32)isr19, 0x08, 0x8E );
-    idt_set_entry( 20, (u32)isr20, 0x08, 0x8E );
-    idt_set_entry( 21, (u32)isr21, 0x08, 0x8E );
-    idt_set_entry( 22, (u32)isr22, 0x08, 0x8E );
-    idt_set_entry( 23, (u32)isr23, 0x08, 0x8E );
-    idt_set_entry( 24, (u32)isr24, 0x08, 0x8E );
-    idt_set_entry( 25, (u32)isr25, 0x08, 0x8E );
-    idt_set_entry( 26, (u32)isr26, 0x08, 0x8E );
-    idt_set_entry( 27, (u32)isr27, 0x08, 0x8E );
-    idt_set_entry( 28, (u32)isr28, 0x08, 0x8E );
-    idt_set_entry( 29, (u32)isr29, 0x08, 0x8E );
-    idt_set_entry( 30, (u32)isr30, 0x08, 0x8E );
-    idt_set_entry( 31, (u32)isr31, 0x08, 0x8E );
+//    set_idt_gate_descriptor( 0,  (u32)isr0,  0x08, 0x8E );
+    set_idt_gate_descriptor( 0,  (u32)interrupt_0,  0x08, 0x8E );
+    set_idt_gate_descriptor( 1,  (u32)isr1,  0x08, 0x8E );
+    set_idt_gate_descriptor( 2,  (u32)isr2,  0x08, 0x8E );
+    set_idt_gate_descriptor( 3,  (u32)isr3,  0x08, 0x8E );
+    set_idt_gate_descriptor( 4,  (u32)isr4,  0x08, 0x8E );
+    set_idt_gate_descriptor( 5,  (u32)isr5,  0x08, 0x8E );
+    set_idt_gate_descriptor( 6,  (u32)isr6,  0x08, 0x8E );
+    set_idt_gate_descriptor( 7,  (u32)isr7,  0x08, 0x8E );
+    set_idt_gate_descriptor( 8,  (u32)isr8,  0x08, 0x8E );
+    set_idt_gate_descriptor( 9,  (u32)isr9,  0x08, 0x8E );
+    set_idt_gate_descriptor( 10, (u32)isr10, 0x08, 0x8E );
+    set_idt_gate_descriptor( 11, (u32)isr11, 0x08, 0x8E );
+    set_idt_gate_descriptor( 12, (u32)isr12, 0x08, 0x8E );
+    set_idt_gate_descriptor( 13, (u32)isr13, 0x08, 0x8E );
+    set_idt_gate_descriptor( 14, (u32)isr14, 0x08, 0x8E );
+    set_idt_gate_descriptor( 15, (u32)isr15, 0x08, 0x8E );
+    set_idt_gate_descriptor( 16, (u32)isr16, 0x08, 0x8E );
+    set_idt_gate_descriptor( 17, (u32)isr17, 0x08, 0x8E );
+    set_idt_gate_descriptor( 18, (u32)isr18, 0x08, 0x8E );
+    set_idt_gate_descriptor( 19, (u32)isr19, 0x08, 0x8E );
+    set_idt_gate_descriptor( 20, (u32)isr20, 0x08, 0x8E );
+    set_idt_gate_descriptor( 21, (u32)isr21, 0x08, 0x8E );
+    set_idt_gate_descriptor( 22, (u32)isr22, 0x08, 0x8E );
+    set_idt_gate_descriptor( 23, (u32)isr23, 0x08, 0x8E );
+    set_idt_gate_descriptor( 24, (u32)isr24, 0x08, 0x8E );
+    set_idt_gate_descriptor( 25, (u32)isr25, 0x08, 0x8E );
+    set_idt_gate_descriptor( 26, (u32)isr26, 0x08, 0x8E );
+    set_idt_gate_descriptor( 27, (u32)isr27, 0x08, 0x8E );
+    set_idt_gate_descriptor( 28, (u32)isr28, 0x08, 0x8E );
+    set_idt_gate_descriptor( 29, (u32)isr29, 0x08, 0x8E );
+    set_idt_gate_descriptor( 30, (u32)isr30, 0x08, 0x8E );
+    set_idt_gate_descriptor( 31, (u32)isr31, 0x08, 0x8E );
 //    idt_set_entry( 128, (u32)isr128, 0x08, 0x8E );
-    idt_set_entry( 129, (u32)isr_129_handler, 0x08, 0x8E );
+    set_idt_gate_descriptor( 129, (u32)isr_129_handler, 0x08, 0x8E );
 }
 
 

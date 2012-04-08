@@ -57,8 +57,8 @@ int main( void ) {
                  "input_to_instruction() sets MEMADDR flag when input is 'peek eax'" );
     fail_unless( s, (i->flags & KOSH_INSTRUCTION_FLAG_REG_SET),
                  "input_to_instruction() fails to set REG flag when input is 'peek eax'" );
-    fail_unless( s, i->reg == EAX,
-                 "input_to_instruction() fails to set reg to EAX when input is 'peek eax'" );
+    fail_unless( s, i->subcommand == EAX,
+                 "input_to_instruction() fails to set subcommand to EAX when input is 'peek eax'" );
 
     i = input_to_instruction( "exit " );
 
@@ -82,8 +82,8 @@ int main( void ) {
                  "input_to_instruction() sets MEMADDR flag when input is ' peek EFLAGS  '" );
     fail_unless( s, (i->flags & KOSH_INSTRUCTION_FLAG_REG_SET),
                  "input_to_instruction() fails to set REG flag when input is ' peek EFLAGS  '" );
-    fail_unless( s, i->reg == EFLAGS,
-                 "input_to_instruction() fails to set reg to EFLAGS when input is ' peek EFLAGS  '" );
+    fail_unless( s, i->subcommand == EFLAGS,
+                 "input_to_instruction() fails to set subcommand to EFLAGS when input is ' peek EFLAGS  '" );
 
     i = input_to_instruction( "exit2" );
 
@@ -129,6 +129,24 @@ int main( void ) {
                  "input_to_instruction() sets MEMADDR and/or REG flags when input is  ' echo   foo bar 'baz\"'" );
     fail_unless( s, __strcmp( i->remaining_command_line, "foo bar 'baz\"" ) == 0,
                  "input_to_instruction() remaining_command_line is not empty on input ' echo  foo bar 'baz\"'" );
+
+    i = input_to_instruction( "raise" );
+    fail_unless( s, i->command == _ERROR_,
+                 "input_to_instruction() doesn't set command to _ERROR_ when input is 'raise'" );
+
+    i = input_to_instruction( "raise " );
+    fail_unless( s, i->command == _ERROR_,
+                 "input_to_instruction() doesn't set command to _ERROR_ when input is 'raise '" );
+
+    i = input_to_instruction( "raise foo" );
+    fail_unless( s, i->command == _ERROR_,
+                 "input_to_instruction() doesn't set command to _ERROR_ when input is 'raise foo'" );
+
+    i = input_to_instruction( "raise div_0" );
+    fail_unless( s, i->command == RAISE,
+                 "input_to_instruction() doesn't set command to RAISE when input is 'raise div_0'" );
+    fail_unless( s, i->subcommand == DIVIDE_BY_ZERO,
+                 "input_to_instruction() doesn't set subcommand to DIVIDE_BY_ZERO when input is 'raise div_0'" );
 
     return conclude_suite( s );
 }

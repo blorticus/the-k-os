@@ -53,7 +53,8 @@ void kmain( void ) {
         halt_os();
     }
 
-    idt_install();
+//    idt_install();
+    install_idt();
     isrs_install();
     irq_install();
     keyboard_irq_install();

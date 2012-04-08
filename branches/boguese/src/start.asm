@@ -39,12 +39,6 @@ kentry:
     jmp $
 
 
-global idt_load
-extern idtp
-idt_load:
-    lidt [idtp]
-    ret
-
 SECTION .bss
     resb 8192
 sys_stack:

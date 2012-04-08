@@ -2,7 +2,7 @@
 
 SECTION .text
 
-global isr0
+;global isr0
 global isr1
 global isr2
 global isr3
@@ -38,11 +38,11 @@ global isr31
 global isr128
 
 ;  0: Divide By Zero Exception
-isr0:
-    cli
-    push byte 0
-    push byte 0
-    jmp isr_common_stub
+;isr0:
+;    cli
+;    push byte 0
+;    push byte 0
+;    jmp isr_common_stub
 
 ;  1: Debug Exception
 isr1:

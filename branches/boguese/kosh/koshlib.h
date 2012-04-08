@@ -25,6 +25,7 @@ typedef enum {
     TASK_KILL,      // testing multi-tasking, kill by task id
     TEST,           // for temporary testing of features
     PAGING,         // enable or disable screen paging
+    RAISE,          // raise an exception or interrupt
 } kosh_base_command;
 
 typedef enum {
@@ -39,10 +40,13 @@ typedef enum {
     EFLAGS
 } register_name;
 
+typedef enum {
+    DIVIDE_BY_ZERO
+} exception;
 
 typedef struct {
     kosh_base_command       command;
-    register_name           reg;
+    int                     subcommand;  // enum type register_name or exception
     memaddr                 memory_location;
     char*                   remaining_command_line;
     const char*             error;

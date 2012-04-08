@@ -57,7 +57,7 @@ char* next_word( char* str, char* buffer, u32 limit ) {
     return last_searched;
 }
 
-/* look to see if regname matches a register name in any mix of case.  If so, return the 'register_name' value; otherwise, if it does
+/* look to see if regname matches a register name in any mix of case.  If so, return the 'subcommand' value; otherwise, if it does
  * not match a register name, return -1. */
 int match_register( const char* regname ) {
     // this would probably better be done with a hash table or something similar
@@ -209,7 +209,7 @@ int extract_reg_or_mem( char* word, kosh_instruction* instruction ) {
             return 0;
         }
         else {
-            instruction->reg = r;
+            instruction->subcommand = r;
             instruction->flags |= KOSH_INSTRUCTION_FLAG_REG_SET & ~KOSH_INSTRUCTION_FLAG_MEMADDR_SET;
             //instruction->flags &= ~KOSH_INSTRUCTION_FLAG_MEMADDR_SET;
             return 1;
@@ -465,6 +465,27 @@ kosh_instruction* input_to_instruction( char* input ) {
         else {
             instruction->command = TEST;
         }
+    }
+    else if (strcmp( token_buffer, "raise" ) == 0) {
+        next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+
+        if (strcmp( token_buffer, "div_0" ) == 0) {
+            next_word( NULL, token_buffer, TOKEN_BUFFER_SIZE - 1 );
+
+            if (token_buffer[0] == NULL) {  // 'raise div_0' followed by nothing
+                instruction->command = RAISE;
+                instruction->subcommand = DIVIDE_BY_ZERO;
+            }
+            else {  // 'raise div_0' followed by additional tokens
+                instruction->command = _ERROR_;
+                instruction->error   = "Invalid exception type";
+            }
+        }
+        else {  // 'raise' followed by nothing or an invalid token
+            instruction->command = _ERROR_;
+            instruction->error   = "Incomplete Command";
+        }
+
     }
     else {
         instruction->command = _ERROR_;

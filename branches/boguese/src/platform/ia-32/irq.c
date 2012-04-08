@@ -59,7 +59,7 @@ irq_handler_routine irq_uninstall_handler(int irq)
    generic handler routine mechanism because the underlying assembly is somewhat
    different.  XXX: find a more general approach to this! */
 void map_timer_for_multitasking() {
-    idt_set_entry( IRQ_0_REMAP_ISR + 0,  (unsigned)task_switch_container, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 0,  (unsigned)task_switch_container, 0x08, 0x8E );
 }
 
 /* We first remap the interrupt controllers, and then we install
@@ -69,22 +69,22 @@ void irq_install()
 {
     PIC_remap_irq_interrupts( IRQ_0_REMAP_ISR, IRQ_0_REMAP_ISR + 15 );
 
-    idt_set_entry( IRQ_0_REMAP_ISR + 0,  (unsigned)irq0,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 1,  (unsigned)irq1,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 2,  (unsigned)irq2,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 3,  (unsigned)irq3,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 4,  (unsigned)irq4,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 5,  (unsigned)irq5,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 6,  (unsigned)irq6,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 7,  (unsigned)irq7,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 8,  (unsigned)irq8,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 9,  (unsigned)irq9,  0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 10, (unsigned)irq10, 0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 11, (unsigned)irq11, 0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 12, (unsigned)irq12, 0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 13, (unsigned)irq13, 0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 14, (unsigned)irq14, 0x08, 0x8E );
-    idt_set_entry( IRQ_0_REMAP_ISR + 15, (unsigned)irq15, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 0,  (unsigned)irq0,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 1,  (unsigned)irq1,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 2,  (unsigned)irq2,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 3,  (unsigned)irq3,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 4,  (unsigned)irq4,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 5,  (unsigned)irq5,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 6,  (unsigned)irq6,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 7,  (unsigned)irq7,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 8,  (unsigned)irq8,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 9,  (unsigned)irq9,  0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 10, (unsigned)irq10, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 11, (unsigned)irq11, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 12, (unsigned)irq12, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 13, (unsigned)irq13, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 14, (unsigned)irq14, 0x08, 0x8E );
+    set_idt_gate_descriptor( IRQ_0_REMAP_ISR + 15, (unsigned)irq15, 0x08, 0x8E );
 }
 
 //KTERM_WINDOW win;

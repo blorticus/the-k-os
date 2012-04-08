@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <platform/ia-32/interrupts.h>
+#include <platform/ia-32/gdt.h>
 
 /**
  *
@@ -69,7 +70,7 @@
  * gates further.  Interrupt gates and trap gates work exactly the same way, except
  * on a call to an interrupt gate, the EFLAGS IF flag is cleared, which means that
  * no other interrupt can fire until IF is reset.  A call through a trap gate does
- * not change IF.  This OS uses exception gates for all exception handling.
+ * not change IF.  This OS uses interrupt gates for all exception handling.
  *
  * When an interrupt fires, the processor configures the stack in a particular way.
  * The arrangement of the stack depends on the gate selector privilege level (DPL)
@@ -148,6 +149,16 @@
  **/
 
 
+#define IDT_FLAG_PRESENT            0x8000  // 1000 0000 0000 0000
+#define IDT_FLAG_DPL_0              0x0000  // 0000 0000 0000 0000
+#define IDT_FLAG_DPL_1              0x2000  // 0010 0000 0000 0000
+#define IDT_FLAG_DPL_2              0x4000  // 0100 0000 0000 0000
+#define IDT_FLAG_DPL_3              0x6000  // 0110 0000 0000 0000
+#define IDT_FLAG_32BIT_SIZE         0x0800  // 0000 1000 0000 0000
+#define IDT_FLAG_16BIT_SIZE         0x0000  // 0000 0000 0000 0000
+#define IDT_IS_TRAP_GATE            0x0500  // 0000 0101 0000 0000
+#define IDT_IS_INTERRUPT_GATE       0x0600  // 0000 0110 0000 0000
+#define IDT_IS_TASK_GATE            0x0700  // 0000 0111 0000 0000
 
 
 /**
@@ -169,32 +180,32 @@
  *                  An interrupt gate disables interrupts before execution of the handler and trap gates do not.
  *
  */ 
-struct idt_descriptors {
+typedef struct idt_descriptor {
     u16 target_seg_offset_low;
     u16 gdt_code_selector;
     u8  zeroes;
     u8  type_and_flags;
     u16 target_seg_offset_high;
-} __attribute__((packed));  
+} __attribute__((packed)) idt_descriptor;
 
 
 /**
  *
  * DESCRIPTION:     The load IDT asm instruction (lidt) is provided a pointer to a data structure that, itself, points to the actual
  *                  table.  This is that pointing structure
- * ELEMENTS:        limit       = the size of the table in bytes (XXX: verify)
+ * ELEMENTS:        limit       = the size of the table in bytes
  *                  base        = the physical memory address of the start of the table
  * NOTES:           MUST be packed, which prevents the compiler from aligning the struct on processor word boundaries
  *
  **/ 
-struct idt_ptr {
+typedef struct idt_register {
     u16 limit;
     u32 base;
-} __attribute__((packed));
+} __attribute__((packed)) idt_register;
  
 
-struct idt_descriptors idt[256];
-struct idt_ptr         idtp;
+idt_descriptor  idt[256];
+idt_register    idt_register_value;
 
 /* This exists in 'start.asm', and is used to load our IDT */
 extern void idt_load();
@@ -207,9 +218,9 @@ void clear_all_isrs( void ) {
     u16 do_nothing_high = (u16)((u32)(isr_do_nothing) >> 16);
 
     for (i = 0; i < 256; i++) {
-        idt[i].gdt_code_selector      = 0x08;
+        idt[i].gdt_code_selector      = GDT_DPL_0_CODE_SEGMENT_OFFSET;
         idt[i].zeroes                 = 0;
-        idt[i].type_and_flags         = 0x8e;
+        idt[i].type_and_flags         = IDT_FLAG_PRESENT | IDT_FLAG_DPL_0 | IDT_FLAG_32BIT_SIZE | IDT_IS_INTERRUPT_GATE;
         idt[i].target_seg_offset_low  = do_nothing_low;
         idt[i].target_seg_offset_high = do_nothing_high;
     }
@@ -217,27 +228,28 @@ void clear_all_isrs( void ) {
 
 
 /* Create an entry in the IDT */
-//void idt_set_gate(unsigned char num, unsigned long base, unsigned short sel, unsigned char flags)
-void idt_set_entry( u8 num, u32 base, u16 sel, u8 flags)
+void set_idt_gate_descriptor( u8 isr_num, u32 addr, u16 gdt_selector, u8 flags)
 {
-    idt[num].target_seg_offset_low  = (u16)base;
-    idt[num].target_seg_offset_high = (u16)(base >> 16);
+    idt[isr_num].target_seg_offset_low  = (u16)addr;
+    idt[isr_num].target_seg_offset_high = (u16)(addr >> 16);
 
-    idt[num].gdt_code_selector  = sel;
-    idt[num].zeroes             = 0x00;
-    idt[num].type_and_flags     = flags;
+    idt[isr_num].gdt_code_selector  = gdt_selector;
+    idt[isr_num].zeroes             = 0x00;
+    idt[isr_num].type_and_flags     = flags;
+}
+
+static inline void load_idt( idt_register* reg ) {
+    __asm__( "lidt (%0)" : : "p"(reg) );
 }
 
 /* Installs the IDT */
-void idt_install()
+void install_idt()
 {
-    idtp.limit = (sizeof (idt)) - 1;
-    idtp.base  = (u32)&idt;
+    idt_register_value.limit = (sizeof (idt)) - 1;
+    idt_register_value.base  = (u32)&idt;
 
     /* Clear out the entire IDT, initializing it to zeros */
     clear_all_isrs();
 
-    /* from idt.asm, tell processor where IDT is located via idt_ptr */
-    // XXX: this should be possible to do inline, but I've not yet figured out how
-    idt_load();
+    load_idt( &idt_register_value );
 }
