@@ -297,6 +297,7 @@ void kosh_main( void ) {
     int pos_count;              // for cpuid function
 
     char *s1, *cs1, *ct1;
+    char **remaining;
     const char *c1 = "This string (0*!#$) has\n100 characters in\n  --- it! ';{}][,. including the trailing NULL. ... \t9\n";
     pci_device pd;
     pci_device* pdp = &pd;
@@ -305,6 +306,7 @@ void kosh_main( void ) {
 
     long pci_class;
     long tid, pid;
+    unsigned int int_num;
     int linecnt;
     char buf[10];
 //    u8* cgdt;
@@ -620,6 +622,18 @@ void kosh_main( void ) {
                 if (next_instruction->subcommand == DIVIDE_BY_ZERO) {
                     i = 0;
                     i = 10 / i;
+                }
+                else {   // remaining_command_line might be unsigned long
+                    int_num = (unsigned int)strtol( next_instruction->remaining_command_line, remaining, 10 );
+
+                    if (*remaining[0] != NULL || int_num > 255) {
+                        kterm_window_printf( top_win, "ERROR: Invalid Exception Type or Number\n" );
+                    }
+
+                    // 'int' instruction only permits immediate parameter.  It is probably possible to
+                    // to generate the opcode sequence directly and call the instruction directly
+                    if (int_num == 127) { asm( "int $127" ); }
+                    if (int_num == 128) { asm( "int $128" ); }
                 }
 
                 break;

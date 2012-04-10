@@ -41,7 +41,8 @@ typedef enum {
 } register_name;
 
 typedef enum {
-    DIVIDE_BY_ZERO
+    INT_INPUT,          // if there is extra non-recognized words
+    DIVIDE_BY_ZERO,     // if word is 'div_0'
 } exception;
 
 typedef struct {

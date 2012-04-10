@@ -213,18 +213,18 @@ idt_register    idt_register_value;
 //extern void idt_load();
 extern void isr_do_nothing( void );
 
-static void clear_all_isrs( void ) {
+static void clear_all_isrs( idt_descriptor* itable ) {
     int i;
 
     u16 do_nothing_low  = (u16)(u32)(isr_do_nothing);
     u16 do_nothing_high = (u16)((u32)(isr_do_nothing) >> 16);
 
     for (i = 0; i < 256; i++) {
-        idt[i].gdt_code_selector      = GDT_DPL_0_CODE_SEGMENT_OFFSET;
-        idt[i].zeroes                 = 0;
-        idt[i].type_and_flags         = (u8)(IDT_FLAG_PRESENT | IDT_FLAG_DPL_0 | IDT_FLAG_32BIT_SIZE | IDT_IS_INTERRUPT_GATE);
-        idt[i].target_seg_offset_low  = do_nothing_low;
-        idt[i].target_seg_offset_high = do_nothing_high;
+        itable[i].gdt_code_selector      = GDT_DPL_0_CODE_SEGMENT_OFFSET;
+        itable[i].zeroes                 = 0;
+        itable[i].type_and_flags         = (u8)(IDT_FLAG_PRESENT | IDT_FLAG_DPL_0 | IDT_FLAG_32BIT_SIZE | IDT_IS_INTERRUPT_GATE);
+        itable[i].target_seg_offset_low  = do_nothing_low;
+        itable[i].target_seg_offset_high = do_nothing_high;
     }
 }
 
@@ -232,12 +232,17 @@ static void clear_all_isrs( void ) {
 /* Create an entry in the IDT */
 void set_idt_gate_descriptor( u8 isr_num, u32 addr, u16 gdt_selector, u8 flags)
 {
-    idt[isr_num].target_seg_offset_low  = (u16)addr;
-    idt[isr_num].target_seg_offset_high = (u16)(addr >> 16);
+    return _set_idt_gate_descriptor( &idt[isr_num], addr, gdt_selector, flags );
+}
 
-    idt[isr_num].gdt_code_selector  = gdt_selector;
-    idt[isr_num].zeroes             = 0x00;
-    idt[isr_num].type_and_flags     = flags;
+
+void _set_idt_gate_descriptor( idt_descriptor* d, u32 addr, u16 gdt_selector, u8 flags) {
+    d->target_seg_offset_low  = (u16)addr;
+    d->target_seg_offset_high = (u16)(addr >> 16);
+
+    d->gdt_code_selector  = gdt_selector;
+    d->zeroes             = 0x00;
+    d->type_and_flags     = flags;
 }
 
 static inline void load_idt( idt_register* reg ) {
@@ -245,13 +250,13 @@ static inline void load_idt( idt_register* reg ) {
 }
 
 /* Installs the IDT */
-void install_idt()
+void install_standard_idt()
 {
     idt_register_value.limit = (sizeof (idt)) - 1;
     idt_register_value.base  = (u32)&idt;
 
     /* Clear out the entire IDT, initializing it to zeros */
-    clear_all_isrs();
+    clear_all_isrs( idt );
 
     load_idt( &idt_register_value );
 }
@@ -345,6 +350,8 @@ void isrs_install()
     set_idt_gate_descriptor( 29, (u32)interrupt_29, GDT_DPL_0_CODE_SEGMENT_OFFSET, STD_EXCEPTION_FLAGS );
     set_idt_gate_descriptor( 30, (u32)interrupt_30, GDT_DPL_0_CODE_SEGMENT_OFFSET, STD_EXCEPTION_FLAGS );
     set_idt_gate_descriptor( 31, (u32)interrupt_31, GDT_DPL_0_CODE_SEGMENT_OFFSET, STD_EXCEPTION_FLAGS );
+
+    set_idt_gate_descriptor( 128, (u32)interrupt_128, GDT_DPL_0_CODE_SEGMENT_OFFSET, STD_EXCEPTION_FLAGS );
 }
 
 

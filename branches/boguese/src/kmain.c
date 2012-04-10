@@ -54,7 +54,7 @@ void kmain( void ) {
     }
 
 //    idt_install();
-    install_idt();
+    install_standard_idt();
     isrs_install();
     irq_install();
     keyboard_irq_install();

@@ -139,14 +139,27 @@ int main( void ) {
                  "input_to_instruction() doesn't set command to _ERROR_ when input is 'raise '" );
 
     i = input_to_instruction( "raise foo" );
-    fail_unless( s, i->command == _ERROR_,
-                 "input_to_instruction() doesn't set command to _ERROR_ when input is 'raise foo'" );
+    fail_unless( s, i->command == RAISE,
+                 "input_to_instruction() doesn't set command to RAISE when input is 'raise foo'" );
+    fail_unless( s, i->subcommand == INT_INPUT,
+                 "input_to_instruction() doesn't set subcommand to INT_INPUT when input is 'raise foo'" );
+    fail_unless( s, __strcmp( i->remaining_command_line, "foo" ) == 0,
+                 "input_to_instruction() doesn't set remaining_command_line to 'foo' when input is 'raise foo'" );
 
     i = input_to_instruction( "raise div_0" );
     fail_unless( s, i->command == RAISE,
                  "input_to_instruction() doesn't set command to RAISE when input is 'raise div_0'" );
     fail_unless( s, i->subcommand == DIVIDE_BY_ZERO,
                  "input_to_instruction() doesn't set subcommand to DIVIDE_BY_ZERO when input is 'raise div_0'" );
+
+    i = input_to_instruction( "raise 5" );
+    fail_unless( s, i->command == RAISE,
+                 "input_to_instruction() doesn't set command to RAISE when input is 'raise 5'" );
+    fail_unless( s, i->subcommand == INT_INPUT,
+                 "input_to_instruction() doesn't set subcommand to INT_INPUT when input is 'raise 5'" );
+    fail_unless( s, __strcmp( i->remaining_command_line, "5" ) == 0,
+                 "input_to_instruction() doesn't set remaining_command_line to 'foo' when input is 'raise 5'" );
+
 
     return conclude_suite( s );
 }

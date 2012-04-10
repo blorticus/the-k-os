@@ -478,14 +478,18 @@ kosh_instruction* input_to_instruction( char* input ) {
             }
             else {  // 'raise div_0' followed by additional tokens
                 instruction->command = _ERROR_;
-                instruction->error   = "Invalid exception type";
+                instruction->error   = "Invalid Exception Type";
             }
         }
-        else {  // 'raise' followed by nothing or an invalid token
+        else if (token_buffer[0] == NULL) {
             instruction->command = _ERROR_;
-            instruction->error   = "Incomplete Command";
+            instruction->error   = "Invalid Exception Type";
         }
-
+        else {  // 'raise' followed by something else
+            instruction->command                = RAISE;
+            instruction->subcommand             = INT_INPUT;
+            instruction->remaining_command_line = token_buffer;
+        }
     }
     else {
         instruction->command = _ERROR_;

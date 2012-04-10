@@ -160,3 +160,8 @@ interrupt_31:   TRIVIAL_ERROR_ISR( 31 )  ; EXCEPTION: (Reserved)
 extern isr_test
 global interrupt_128
 interrupt_128:  STANDARD_ISR( isr_test )
+
+global isr_do_nothing
+isr_do_nothing:
+    iret
+

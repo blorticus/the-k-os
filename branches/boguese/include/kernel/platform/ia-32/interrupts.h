@@ -41,7 +41,7 @@ void idt_set_entry( u8 num, u32 base, u16 sel, u8 flags );
  * RE-ENTRANT?:     NO
  *
  */ 
-void idt_install( void );
+void install_standard_idt( void );
 
 
 
