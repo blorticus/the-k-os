@@ -19,6 +19,7 @@ vga_color_text.o: $(objdir)/vga_color_text.o
 install:
 	bin/mntdsk
 	sudo cp ../Build/KOSUefi/DEBUG_GCC44/X64/KOSUefi.efi /mnt/EFI/BOOT/BOOTx64.EFI
+	sudo touch /mnt/EFI/kos/kernel.bin
 	bin/umntdsk
 
 clean:
