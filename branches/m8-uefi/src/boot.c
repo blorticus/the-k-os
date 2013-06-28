@@ -75,6 +75,35 @@ UefiMain(
     if (gop->SetMode( gop, 3 ) != EFI_SUCCESS)
         PreBootHalt( gST->StdErr, L"SetMode() failed" );
 
+    switch (ImageHandle->FilePath->Type) {
+        case 0x01:
+            gST->ConOut( gST->ConOut, L"Hardware Device Path\r\n" );
+            break;
+
+        case 0x02:
+            gST->ConOut( gST->ConOut, L"ACPI Device Path\r\n" );
+            break;
+
+        case 0x03:
+            gST->ConOut( gST->ConOut, L"Messaging Device Path\r\n" );
+            break;
+
+        case 0x04:
+            gST->ConOut( gST->ConOut, L"Media Device Path\r\n" );
+            break;
+
+        case 0x05:
+            gST->ConOut( gST->ConOut, L"BIOS Boot Specification Path\r\n" );
+            break;
+
+        default:
+            gST->ConOut( gST->ConOut, L"<UNKNOWN>\r\n" );
+            break;
+
+    }
+
+    AwaitKeyboardInput( gST->ConIn );
+
     status = gBS->GetMemoryMap( &memmap_size,
                                 (EFI_MEMORY_DESCRIPTOR*)memmap,
                                 &map_key,
