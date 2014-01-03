@@ -21,10 +21,20 @@ ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 #CC_FLAGS = -fno-builtin -nostdinc -Wall
 CC_FLAGS = -nostdinc -Wall -fno-stack-protector
+LD_FLAGS = 
 MAKEFLAGS = -e
 DEFS =
 OBJDIR = i386-obj
 PLATFORM = ia-32
+
+ifdef WITH_DEBUG
+    CC_FLAGS := $(CC_FLAGS) -g
+endif
+
+ifdef D32_ON_64
+    CC_FLAGS := $(CC_FLAGS) -m32
+    LD_FLAGS := $(LD_FLAGS) -melf_i386
+endif
 
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
@@ -40,7 +50,7 @@ OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o 
 
 # TARGET: build kernel image
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
-	$(LD) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
+	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
 
 # TARGET: build a virtual image floppy when using GRUB

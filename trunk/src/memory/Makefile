@@ -1,9 +1,19 @@
 ASM := /usr/bin/nasm
 INCLUDES := -I../../include -I../../include/stdlib
 #CC_FLAGS := -fno-builtin -nostdinc -Wall
-CC_FLAGS := -nostdinc -Wall -fno-stack-protector
+CC_FLAGS := -g -nostdinc -Wall -fno-stack-protector
 DEFS =
 OBJDIR = ../../i386-obj
+
+ifdef WITH_DEBUG
+    CC_FLAGS := $(CC_FLAGS) -g
+endif
+
+ifdef D32_ON_64
+    CC_FLAGS := $(CC_FLAGS) -m32
+endif
+
+
 
 ifdef TESTING
     DEFS := $(DEFS) -DTEST

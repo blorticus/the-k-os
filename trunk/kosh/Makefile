@@ -3,12 +3,22 @@ TOOLBIN := /usr/bin
 #LD := $(TOOLBIN)/ld
 #AR := $(TOOLBIN)/ar
 #CC_FLAGS := -fno-builtin -nostdinc -Wall -g
-CC_FLAGS := -nostdinc -Wall -g -fno-stack-protector
+CC_FLAGS := -g -nostdinc -Wall -g -fno-stack-protector
 INCLUDES := -I../include -I.. -I../include/stdlib
 TEST_INCLUDES := -I../include -I..
 TEST_LIBS := -lcheck -L. -lkoshlib
 TEST_CC_FLAGS := -Wall -g -DTESTING
 OBJDIR = i386-obj
+
+ifdef WITH_DEBUG
+    CC_FLAGS := $(CC_FLAGS) -g
+endif
+
+ifdef D32_ON_64
+    CC_FLAGS := $(CC_FLAGS) -m32
+endif
+
+
 
 check_all: koshlib.o
 	make -C tests
