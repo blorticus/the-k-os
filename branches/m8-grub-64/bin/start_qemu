@@ -1,0 +1,4 @@
+#!/bin/bash
+
+qemu -s -S -fda vm/ext2.img -m 128 &
+gdb i386-obj/kernel.bin
