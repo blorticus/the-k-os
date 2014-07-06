@@ -7,23 +7,24 @@
 
 ; On entry, interrupts are disabled
 
-SECTION .text
+;ORG 0x100000
 
+SECTION .text
 global start
 
 start:
-segments_set:
-    ; setup a small system stack (8kB)
     mov rsp, sys_stack
-    jmp kentry
+    mov r8, r9
+    mov rcx, 10240
 
-kentry:
-    extern kernel_start
-    call kernel_start
+L1:
+    mov [r8], dword 0x000000ff
+    add r8, 4
+    loop L1
 
     jmp $
 
 
 SECTION .bss
-    resb 8192
+resb 8192
 sys_stack:

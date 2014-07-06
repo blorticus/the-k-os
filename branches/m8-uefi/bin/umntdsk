@@ -1,10 +1,10 @@
 #!/bin/bash
 
 echo "umount /mnt"
-sudo umount /mnt 2>/dev/null
+sudo umount mnt
 
-echo "qemu-img convert -O vmdk /usr/src/edk2/k-os/disk1.img /usr/src/edk2/k-os/disk1.vmdk"
-qemu-img convert -O vmdk /usr/src/edk2/k-os/disk1.img /usr/src/edk2/k-os/disk1.vmdk
+echo "qemu-img convert -O vmdk vm/disk1.img vm/disk1.vmdk"
+qemu-img convert -O vmdk vm/disk1.img vm/disk1.vmdk
 
 echo "sudo losetup -d /dev/loop0"
-sudo losetup -d /dev/loop0 2>/dev/null
+sudo losetup -d /dev/loop0

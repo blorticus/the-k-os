@@ -16,7 +16,7 @@
   DSC_SPECIFICATION              = 0x00010006
   OUTPUT_DIRECTORY               = Build/KOSUefi
   SUPPORTED_ARCHITECTURES        = X64
-  BUILD_TARGETS                  = DEBUG|RELEASE
+  BUILD_TARGETS                  = DEBUG
   SKUID_IDENTIFIER               = DEFAULT
 
 [PcdsFeatureFlag]
@@ -74,7 +74,7 @@
 [Components]
 
 #### Application
-  k-os/KOSUefi.inf
+  KOSUefi/KOSUefi.inf
 
 #### After extracting the Python distribution, un-comment the following line to build Python.
 #  AppPkg/Applications/Python/PythonCore.inf

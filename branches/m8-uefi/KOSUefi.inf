@@ -28,7 +28,7 @@
 #
 
 [Sources]
-  src/kmain.c
+  src/boot.c
 
 [Packages]
   MdePkg/MdePkg.dec
