@@ -5,19 +5,32 @@
 #include <stdio.h>
 #include <wchar.h>
 
-//#define MEMMAP_SIZE 1024*1024
-//UINT8 memmap[MEMMAP_SIZE * sizeof(EFI_MEMORY_DESCRIPTOR)];
-
-//void writeStringAt( const char* s, EFI_PHYSICAL_ADDRESS lfb_base_addr, UINT16 row, UINT16 col );
 void drawTriangle( EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color );
 void PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string );
 UINT16* statusToString( EFI_STATUS status_code );
 
-#define DESIRED_HREZ            1024
-#define DESIRED_VREZ            768
-#define DESIRED_PIXEL_FORMAT    PixelBlueGreenRedReserved8BitPerColor
 
-CHAR16* KERNEL_FILE_NAME = L"\\BOOT\\EFI\\kos\\kernel.bin";
+/* Name of the kernel binary to load */
+CHAR16* KERNEL_FILE_NAME = L"\\BOOT\\kos\\kernel.elf";
+
+/* Location of kernel text section address base, also where
+   text segment for kernel image will be loaded */
+UINT8* kernel_location = (UINT8*)0x100000;
+
+
+/* Maximum allowed horizontal resolution */
+#define MAX_HREZ    1024
+
+
+#define UEFI_LOADER_DEBUG   1
+
+/* Define in order to produce output debugging messages using the ConOut UEFI handle */
+#ifdef UEFI_LOADER_DEBUG
+    #define DEBUG_PRINT(conout,msg) (conout->OutputString( conout, msg ))
+#else
+    #define DEBUG_PRINT(conout,msg) ;
+#endif
+
 
 EFI_STATUS
 EFIAPI
@@ -26,11 +39,17 @@ UefiMain(
     IN EFI_SYSTEM_TABLE *SystemTable
 )
 {
+    /* Basic UEFI data structures for gathering all other information */
     EFI_SYSTEM_TABLE   *gST;
     EFI_BOOT_SERVICES  *gBS;
+
+    /* For GetMemoryMap() */
     UINTN memmap_size = 4096*256;
     UINTN map_key, descriptor_size;
+    UINT8*  memmap;
     UINT32 descriptor_version;
+
+    /* For GraphicsOutputProtocol */
     UINTN mode_num;
     EFI_STATUS status;
     EFI_HANDLE* handle_buffer;
@@ -38,104 +57,107 @@ UefiMain(
     EFI_GRAPHICS_OUTPUT_PROTOCOL* gop;
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* gop_mode_info;
     UINTN size_of_info;
+    UINTN hrez = 0, vrez = 0;
+    EFI_GRAPHICS_PIXEL_FORMAT pixel_format;
+    UINT32 chosen_mode_number;
+
     CHAR16* wbuf = 0;
-    UINT8*  memmap;
 
-//    UINT32* lba;
-
+    /* For file operations */
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* fs;
     EFI_FILE_PROTOCOL* root;
     EFI_FILE* file_handle;
     UINTN i;
-//    EFI_GUID file_info_guid = EFI_FILE_INFO_ID;
     UINTN kernel_file_size;
 
-    UINT8* kernel_location = (UINT8*)0x100000;
 
+    /* Load SystemTable and BootServices */
     if (!(gST = SystemTable))
         return EFI_LOAD_ERROR;
 
     if (!(gBS = SystemTable->BootServices))
         return EFI_LOAD_ERROR;
 
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 1\r\n" );
+    DEBUG_PRINT( gST->ConOut, L"SystemTable and BootServices initialized\r\n" );
 
-//    if (!(gST->ConIn) || gST->ConIn->Reset( gST->ConIn, 0 ) != EFI_SUCCESS)
-//        PreBootHalt( gST->ConOut, L"Input Connection Device Unavailable" );
 
+    /* Load GraphicsOutputProtocol Handle */
     status = gBS->LocateHandleBuffer( ByProtocol,
                                       &gEfiGraphicsOutputProtocolGuid,
                                       NULL,
                                       &handle_count,
                                       &handle_buffer );
 
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 2\r\n" );
-
     if (status != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"LocateHandleBuffer() failed", statusToString( status ) );
 
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 3\r\n" );
+    DEBUG_PRINT( gST->ConOut, L"Located HandleBuffer set for GraphicsOutputProtocol\r\n" );
 
     status = gBS->HandleProtocol( handle_buffer[0],
                                   &gEfiGraphicsOutputProtocolGuid,
                                   (VOID **)&gop );
 
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 4\r\n" );
-
     if (status != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"HandleProtocol() failed", statusToString( status ) );
 
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 5\r\n" );
+    DEBUG_PRINT( gST->ConOut, L"Retrieved GraphicsOutputProtocol handle\r\n" );
 
+
+    /* Allocate memory for writable buffer, which will be used for some output */
     EFI_PHYSICAL_ADDRESS aa = 0;
-    status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &aa );
+    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &aa )) != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"AllocatePages() failed", statusToString( status ) );
     wbuf = (CHAR16*)aa;
 
-    switch (status) {
-        case EFI_SUCCESS:
-            gST->ConOut->OutputString( gST->ConOut, L"EFI_SUCCESS\r\n" );
-            break;
 
-        case EFI_OUT_OF_RESOURCES:
-            gST->ConOut->OutputString( gST->ConOut, L"EFI_OUT_OF_RESOURCES\r\n" );
-            break;
-
-        case EFI_INVALID_PARAMETER:
-            gST->ConOut->OutputString( gST->ConOut, L"EFI_INVALID_PARAMETER\r\n" );
-            break;
-
-        case EFI_NOT_FOUND:
-            gST->ConOut->OutputString( gST->ConOut, L"EFI_NOT_FOUND\r\n" );
-            break;
-    }
-
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 6\r\n" );
-
+    /* Scan for available video modes rom GraphicsOutputProtocol in order to find
+       best resolution, but prefer fixed 32-bit pixel intensity modes over bit masking */
     for (mode_num = 0;
          (status = gop->QueryMode( gop, mode_num, &size_of_info, &gop_mode_info )) == EFI_SUCCESS;
          mode_num++) {
 
-//        swprintf( wbuf, 256, L"hr = %d, vr = %d, pf = %d\r\n",
-//                              gop_mode_info->HorizontalResolution,
-//                              gop_mode_info->VerticalResolution,
-//                              gop_mode_info->PixelFormat );
-//
-//        gST->ConOut->OutputString( gST->ConOut, wbuf );
+#ifdef UEFI_LOADER_DEBUG
+        swprintf( wbuf, 256, L"hr = %d, vr = %d, pf = %d\r\n",
+                             gop_mode_info->HorizontalResolution,
+                             gop_mode_info->VerticalResolution,
+                             gop_mode_info->PixelFormat );
 
-        if (gop_mode_info->HorizontalResolution == DESIRED_HREZ &&
-              gop_mode_info->VerticalResolution == DESIRED_VREZ &&
-              gop_mode_info->PixelFormat        == DESIRED_PIXEL_FORMAT)
-            break;
+        DEBUG_PRINT( gST->ConOut, wbuf );
+#endif
+
+        if (gop_mode_info->HorizontalResolution <= MAX_HREZ && hrez < gop_mode_info->HorizontalResolution && vrez < gop_mode_info->VerticalResolution && pixel_format != PixelBltOnly) {
+            hrez = gop_mode_info->HorizontalResolution;
+            vrez = gop_mode_info->VerticalResolution;
+            pixel_format = gop_mode_info->PixelFormat;
+            chosen_mode_number = mode_num;
+        }
+        else if (gop_mode_info->HorizontalResolution <= MAX_HREZ && hrez == gop_mode_info->HorizontalResolution && vrez == gop_mode_info->VerticalResolution && pixel_format < gop_mode_info->PixelFormat) {
+            pixel_format = gop_mode_info->PixelFormat;
+            chosen_mode_number = mode_num;
+        }
     }
 
-    gST->ConOut->OutputString( gST->ConOut, L"FLAG 7\r\n" );
-
-    if (status != EFI_SUCCESS)
+    if (!hrez)
         PreBootHalt( gST->ConOut, L"Failed to find desired mode", statusToString( status ) );
 
-    if ((status = gop->SetMode( gop, mode_num )) != EFI_SUCCESS)
+#ifdef UEFI_LOADER_DEBUG
+    swprintf( wbuf, 256, L"selected mode is %d x %d and pixel_format is %d\r\n", hrez, vrez, pixel_format );
+    DEBUG_PRINT( gST->ConOut, wbuf );
+#endif
+
+
+    /* Select the desired mode.  This will blank the screen (this is described in the UEFI spec),
+       so any debugging information already printed will be lost */
+    if ((status = gop->SetMode( gop, chosen_mode_number )) != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"SetMode() failed", statusToString( status ) );
 
+#ifdef UEFI_LOADER_DEBUG
+    swprintf( wbuf, 256, L"Setting Display Mode to %d x %d and pixel_format %d using mode number %d\r\n", hrez, vrez, pixel_format, chosen_mode_number );
+    DEBUG_PRINT( gST->ConOut, wbuf );
+#endif
+
+
+    /* Load kernel file to pre-defined memory location matching text code base address */
     status = gBS->LocateHandleBuffer(
         ByProtocol,
         &gEfiSimpleFileSystemProtocolGuid,
@@ -146,6 +168,8 @@ UefiMain(
     if (status != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"LocateHandleBuffer() for SimpleFileSystemProtocol failed", statusToString( status ) );
 
+    DEBUG_PRINT( gST->ConOut, L"Located HandleBuffer set for SimpleFileSystemProtocol\r\n" );
+
     for (i = 0; i < handle_count; i++)
         if ((status = gBS->HandleProtocol( handle_buffer[i], &gEfiSimpleFileSystemProtocolGuid, (VOID **)&fs )) == EFI_SUCCESS)
             if ((status = fs->OpenVolume( fs, &root )) == EFI_SUCCESS)
@@ -155,7 +179,7 @@ UefiMain(
     if (status != EFI_SUCCESS || i >= handle_count)
         PreBootHalt( gST->ConOut, L"Failed to find kernel file\r\n", statusToString( status ) );
 
-    gST->ConOut->OutputString( gST->ConOut, L"Found file\r\n" );
+    DEBUG_PRINT( gST->ConOut, L"Successfully Opened Directory and File Handles for Kernel File\r\n" );
 
     if ((status = file_handle->SetPosition( file_handle, 0x100000 )) != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"Failed to set kernel file position\r\n", statusToString( status ) );
@@ -166,31 +190,43 @@ UefiMain(
         PreBootHalt( gST->ConOut, L"Failed to copy file to kernel start location\r\n", statusToString( status ) );
     }
 
+    DEBUG_PRINT( gST->ConOut, L"Read ELF Binary Segments to Text Memory Base\r\n" );
+
     if ((status = file_handle->Close( file_handle )) != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"Failed to Close() kernel file", statusToString( status ) );
 
-    swprintf( wbuf, 1024, L"kernel_size = %u; fbp = %08x\r\n", kernel_file_size, gop->Mode->FrameBufferBase );
-    gST->ConOut->OutputString( gST->ConOut, wbuf );
+    DEBUG_PRINT( gST->ConOut, L"Closed Kernel File Handle\r\n" );
 
-    gST->ConOut->OutputString( gST->ConOut, L"Hex: " );
-    for (i = 0; i < kernel_file_size && i < 12; i++) {
-        swprintf( wbuf, 1024, L"%02x ", *(kernel_location + i) );
-        gST->ConOut->OutputString( gST->ConOut, wbuf );
-    }
-    gST->ConOut->OutputString( gST->ConOut, L"\r\n" );
+//    swprintf( wbuf, 1024, L"kernel_size = %u; fbp = %08x\r\n", kernel_file_size, gop->Mode->FrameBufferBase );
+//    gST->ConOut->OutputString( gST->ConOut, wbuf );
+//
+//    gST->ConOut->OutputString( gST->ConOut, L"Hex: " );
+//    for (i = 0; i < kernel_file_size && i < 12; i++) {
+//        swprintf( wbuf, 1024, L"%02x ", *(kernel_location + i) );
+//        gST->ConOut->OutputString( gST->ConOut, wbuf );
+//    }
+//    gST->ConOut->OutputString( gST->ConOut, L"\r\n" );
+//
+////    asm volatile( "movq $0x80000000, %r8" );
+////    asm volatile( "movq $10240, %rcx" );
+////    asm volatile( "L1:" );
+////    asm volatile( "    movl $0x00ff69b4, (%r8)" );
+////    asm volatile( "    add $4, %r8" );
+////    asm volatile( "loop L1" );
+//
+//    gST->ConOut->OutputString( gST->ConOut, L"Done.\r\n" );
 
-//    asm volatile( "movq $0x80000000, %r8" );
-//    asm volatile( "movq $10240, %rcx" );
-//    asm volatile( "L1:" );
-//    asm volatile( "    movl $0x00ff69b4, (%r8)" );
-//    asm volatile( "    add $4, %r8" );
-//    asm volatile( "loop L1" );
 
-    gST->ConOut->OutputString( gST->ConOut, L"Done.\r\n" );
+    /* Build memory map, which is required to ExitBootServices */
+    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 256, &aa )) != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
 
-    status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 256, &aa );
     memmap = (UINT8*)aa;
 
+    DEBUG_PRINT( gST->ConOut, L"Allocated memory for memmap retrieval; About to GetMemoryMap() and ExitBootServices()\r\n" );
+
+    /* Cannot emit debugging message before calling ExitBootServices, because once MemoryMap
+       is retrieved, no further changes are allowed before calling ExitBootServices */
     status = gBS->GetMemoryMap( &memmap_size,
                                 (EFI_MEMORY_DESCRIPTOR*)memmap,
                                 &map_key,
@@ -200,6 +236,7 @@ UefiMain(
     if (status != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"GetMemoryMap() failed", statusToString( status ) );
 
+    /* Exit UEFI boot services so that we can jump to kernel code */
     if ((status = gBS->ExitBootServices( ImageHandle, map_key )) != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"ExitBootServices() failed", statusToString( status ) );
 
@@ -208,14 +245,14 @@ UefiMain(
     asm volatile( "push $0x100000\n\t"
                   "ret" );
 
-    drawTriangle( gop->Mode->FrameBufferBase, DESIRED_HREZ / 2, DESIRED_VREZ / 2 - 25, 100, 0x00ff69b4 );
+    drawTriangle( gop->Mode->FrameBufferBase, hrez / 2, vrez / 2 - 25, 100, 0x00ff69b4 );
 
-//    asm volatile( "movl $0, %eax\n\t"
-//                  "movl $0, %ebx\n\t"
-//                  "idiv %eax" );
+////    asm volatile( "movl $0, %eax\n\t"
+////                  "movl $0, %ebx\n\t"
+////                  "idiv %eax" );
 
     for ( ;; ) ;
-//    return EFI_SUCCESS;
+////    return EFI_SUCCESS;
 }
 
 
@@ -233,8 +270,20 @@ UINT16* statusToString( EFI_STATUS status_code ) {
             return L"EFI_DEVICE_ERROR";
             break;
 
+        case EFI_INVALID_PARAMETER:
+            return L"EFI_INVALID_PARAMETER";
+            break;
+
         case EFI_NO_MEDIA:
             return L"EFI_NO_MEDIA";
+            break;
+
+        case EFI_NOT_FOUND:
+            return L"EFI_NOT_FOUND";
+            break;
+
+        case EFI_OUT_OF_RESOURCES:
+            return L"EFI_OUT_OF_RESOURCES";
             break;
 
         case EFI_UNSUPPORTED:
@@ -254,29 +303,29 @@ UINT16* statusToString( EFI_STATUS status_code ) {
 
 
 void drawTriangle( EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color ) {
-    UINT32* at = (UINT32*)lfb_base_addr;
-    UINTN row, col;
-
-    at += (DESIRED_HREZ * (center_y - width / 2) + center_x - width / 2);
-
-    for (row = 0; row < width / 2; row++) {
-        for (col = 0; col < width - row * 2; col++)
-            *at++ = color;
-        at += (DESIRED_HREZ - col);
-        for (col = 0; col < width - row * 2; col++)
-            *at++ = color;
-        at += (DESIRED_HREZ - col + 1);
-    }
+//    UINT32* at = (UINT32*)lfb_base_addr;
+//    UINTN row, col;
+//
+//    at += (DESIRED_HREZ * (center_y - width / 2) + center_x - width / 2);
+//
+//    for (row = 0; row < width / 2; row++) {
+//        for (col = 0; col < width - row * 2; col++)
+//            *at++ = color;
+//        at += (DESIRED_HREZ - col);
+//        for (col = 0; col < width - row * 2; col++)
+//            *at++ = color;
+//        at += (DESIRED_HREZ - col + 1);
+//    }
 }
 
 
 void PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string ) {
     conerr->OutputString( conerr, msg );
     if (status_string) {
+        conerr->OutputString( conerr, L"; status = " );
         conerr->OutputString( conerr, status_string );
         conerr->OutputString( conerr, L"\r\n" );
     }
 
     for (;;) ;
 }
-
