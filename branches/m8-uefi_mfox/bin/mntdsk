@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "sudo losetup -d /dev/loop0 2>/dev/null"
+sudo losetup -d /dev/loop0 2>/dev/null
+
+echo "sudo losetup /dev/loop0 /usr/src/edk2/k-os/disk1.img"
+sudo losetup /dev/loop0 vm/disk1.img
+
+echo "sudo mount /dev/loop0 /mnt"
+sudo mount /dev/loop0 mnt
+
+echo "sudo cp /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64/KOSUefi.efi mnt/BOOT/EFI/BOOTX64.EFI"
+sudo cp /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64/KOSUefi.efi mnt/BOOT/EFI/BOOTX64.EFI
