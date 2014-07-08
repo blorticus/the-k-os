@@ -11,16 +11,19 @@
 
 SECTION .text
 global start
+extern kmain
 
 start:
     mov rsp, sys_stack
-    mov r8, r9
-    mov rcx, 10240
+;    mov r8, r9
+;    mov rcx, 10240
+;
+;L1:
+;    mov [r8], dword 0x000000ff
+;    add r8, 4
+;    loop L1
 
-L1:
-    mov [r8], dword 0x000000ff
-    add r8, 4
-    loop L1
+    call kmain
 
     jmp $
 
