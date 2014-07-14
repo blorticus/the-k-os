@@ -1,24 +1,20 @@
-ENTRY(start)
-start_of_kernel = 0x00100000;
+OUTPUT_FORMAT(elf64-x86-64)
+
 SECTIONS
 {
-  .text start_of_kernel : AT(start_of_kernel) {
-    code = .;
+  .text.start (0x100000) : {
+    obj/start.o( .text )
+  }
+
+  .text : ALIGN(0x1000) {
     *(.text)
-    *(.rodata)
-    . = ALIGN(4096);
   }
-  .data : AT(start_of_kernel + (data - code))
-  {
-    data = .;
+
+  .data : ALIGN(0x1000) {
     *(.data)
-    . = ALIGN(4096);
   }
-  .bss : AT(start_of_kernel + (bss - code))
-  {
-    bss = .;
+
+  .bss : ALIGN(0x1000) {
     *(.bss)
-    . = ALIGN(4096);
   }
-  end_of_kernel = .;
 }
