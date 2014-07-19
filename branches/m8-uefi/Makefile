@@ -2,13 +2,16 @@ srcdir			= ./src
 objdir			= ./obj
 includedir		= ./include
 CFLAGS			= -g -O2 -I$(includedir)
-CC_FLAGS        = -Wall -Wextra -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -nostdinc -fno-stack-protector
+CC_FLAGS        = -Wall -Wextra -Werror -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -nostdinc -fno-stack-protector
 INCLUDES        = -Iinclude
+EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
+EDK_SRC_DIR     = src
 
-bootloader: KOSUefi.efi
+bootloader: $(EDK_OBJ_DIR)/KOSUefi.efi
 
-KOSUefi.efi: KOSUefi.dsc KOSUefi.inf
+$(EDK_OBJ_DIR)/KOSUefi.efi: KOSUefi.dsc KOSUefi.inf $(EDK_SRC_DIR)/boot.c
 	cd /home/vwells/src/edk2
+	. edksetup.sh
 	build -p KOSUefi/KOSUefi.dsc -a X64 -m KOSUefi/KOSUefi.inf
 
 obj/start.o: src/start.asm
@@ -17,8 +20,14 @@ obj/start.o: src/start.asm
 obj/kmain.o: src/kmain.c
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/kmain.o src/kmain.c
 
-obj/kernel.elf: obj/start.o obj/kmain.o
-	ld -T link/kmain.ld -o obj/kernel.elf obj/kmain.o obj/start.o
+obj/lfb.o: src/video/lfb.c include/video/lfb.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/lfb.o src/video/lfb.c
+
+obj/kernel.elf: obj/start.o obj/kmain.o obj/lfb.o obj/text_terminal.o
+	ld -T link/kmain.ld -o obj/kernel.elf obj/kmain.o obj/start.o obj/lfb.o obj/text_terminal.o
+
+obj/text_terminal.o: src/video/text_terminal.c include/video/text_terminal.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/text_terminal.o src/video/text_terminal.c
 
 mntdsk:
 	-sudo losetup -d /dev/loop0

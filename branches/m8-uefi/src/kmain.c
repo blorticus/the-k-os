@@ -1,4 +1,6 @@
 #include <sys/types.h>
+#include <video/lfb.h>
+#include <video/text_terminal.h>
 
 typedef enum {
     PixelRedGreenBlueReserved8BitPerColor,
@@ -148,58 +150,31 @@ u8 font_8x16[128][16] = {
 };
 
 
-typedef enum {
-    BLACK       = 0x00000000,
-    BLUE        = 0x000000ff,
-    GREEN       = 0x0000ff00,
-    RED         = 0x00ff0000,
-} color;
-
-
-void lfb_fill( u32* lfb_base, u32 pixel_count, color color ) {
-    for ( ; pixel_count > 0; pixel_count--)
-        *lfb_base++ = (u32)color;
+void fb_putchar( frame_buffer* fb, char c, u32 at_text_pos_x, u32 at_text_pos_y ) {
+    lfb_draw_boolean_bitmap( fb, at_text_pos_x * 8, at_text_pos_y * 16, font_8x16[(u8)c], 8, 16, 0x00000000, 0x00aaaaaa );
 }
 
 
-void c_putchar( char c, u32* upper_left_pixel, u32 hrez, color bg_color, color fg_color ) {
-    int i, j;
-    u8 l;
-    u32* p = upper_left_pixel;
+void fb_puts( frame_buffer* fb, const char* s, u32 start_at_text_pos_x, u32 start_at_text_pos_y ) {
+    u32 i;
 
-    for (i = 0; i < 16; i++) {
-        l = font_8x16[(u8)c][i];
-
-        for (j = 0; j < 8; j++) {
-            if (l & 0x80)
-                *p++ = (u32)fg_color;
-            else
-                *p++ = (u32)bg_color;
-
-            l <<= 1;
-        }
-
-        p += hrez - 8;
-    }
+    for (i = 0; s[i]; i++)
+        fb_putchar( fb, s[i], start_at_text_pos_x + i, start_at_text_pos_y );
 }
 
 
 void kmain( void ) {
     BootInfo* boot_info;
-    u32* lfb_base;
-    int i;
+    frame_buffer fb;
+    term_entry te;
 
     asm volatile( "movq %%r9, %0" : "=r"(boot_info) : : );
 
-    lfb_base = (u32*)(boot_info->linear_frame_buffer_start);
+    lfb_init( &fb, (u32*)(boot_info->linear_frame_buffer_start), boot_info->lfb_hrez, boot_info->lfb_vrez, PCS_32BitReservedRedGreenBlue );
 
-    for (i = 0; i < 1024; i += 9)
-        c_putchar( 'x', lfb_base + i, 1024, BLUE, RED );
+    term_init( &te, &fb, 8, 16, (u8*)font_8x16 );
 
-//    lfb_fill( lfb_base, boot_info->lfb_hrez * boot_info->lfb_vrez, BLUE );
-
-//    for (i = 0; i < 10240; i++)
-//        *lfb_base++ = 0x00ffff00;
+    term_puts_at( &te, "0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789", 0, 0 );
 
     for ( ; ; ) ;
 }
