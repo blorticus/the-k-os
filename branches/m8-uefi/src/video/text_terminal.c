@@ -30,6 +30,7 @@ u16 term_text_rows( term_entry* te ) {
 
 term_error term_putchar_at( term_entry* te, char c, u16 at_x, u16 at_y ) {
     u8* fd = te->font_def;
+    u32 x;
 
     if (c < 0)
         return TE_InvalidCharacter;
@@ -57,7 +58,6 @@ term_error term_putchar_at( term_entry* te, char c, u16 at_x, u16 at_y ) {
 
             if ((te->next_char_x_pos = at_x + 1) >= te->text_cols) {
                 if (++te->next_char_y_pos == te->text_rows) {
-                    // XXX: scroll
                     te->next_char_y_pos = te->text_rows - 1;
                 }
 

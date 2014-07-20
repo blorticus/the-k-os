@@ -36,6 +36,12 @@ lfb_error lfb_draw_boolean_bitmap( frame_buffer* fb, u32 at_x, u32 at_y, u8* bit
 }
 
 
+lfb_error lfb_shift_up( frame_buffer* fb, u32 first_pixel, u32 last_pixel, u32 shift ) {
+    
+}
+
+
+
 lfb_error lfb_fill_background( frame_buffer* fb, u32 bg_color ) {
     u32 lfb_len;
     u32* addr;

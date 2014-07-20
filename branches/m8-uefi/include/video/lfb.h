@@ -69,4 +69,18 @@ lfb_error lfb_draw_boolean_bitmap( frame_buffer* fb, u32 at_x, u32 at_y, u8* bit
 lfb_error lfb_fill_background( frame_buffer* fb, u32 bg_color );
 
 
+/**
+ * DESCRIPTION:
+ *      Move pixel block back by shift offset
+ * ARGS:
+ *      - fb            : frame_buffer reference
+ *      - first_pixel   : First pixel to move
+ *      - last_pixel    : Last pixel to move
+ *      - shift         : Move all pixels between first_pixel through last_pixel backwards by shift spots
+ * RETURNS:
+ *      lfb_error indicating success (0) or failure
+ **/
+lfb_error lfb_shift_up( frame_buffer* fb, u32 first_pixel, u32 last_pixel, u32 shift );
+
+
 #endif
