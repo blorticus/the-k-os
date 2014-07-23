@@ -1,9 +1,8 @@
 srcdir			= ./src
 objdir			= ./obj
-includedir		= ./include
-CFLAGS			= -g -O2 -I$(includedir)
+includedir		= include
 CC_FLAGS        = -Wall -Wextra -Werror -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -nostdinc -fno-stack-protector
-INCLUDES        = -Iinclude
+INCLUDES        = -I$(includedir) -I$(includedir)/stdlib
 EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
 EDK_SRC_DIR     = src
 
@@ -23,11 +22,14 @@ obj/kmain.o: src/kmain.c
 obj/lfb.o: src/video/lfb.c include/video/lfb.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/lfb.o src/video/lfb.c
 
-obj/kernel.elf: obj/start.o obj/kmain.o obj/lfb.o obj/text_terminal.o
-	ld -T link/kmain.ld -o obj/kernel.elf obj/kmain.o obj/start.o obj/lfb.o obj/text_terminal.o
+obj/kernel.elf: obj/start.o obj/kmain.o obj/lfb.o obj/text_terminal.o obj/string.o
+	ld -T link/kmain.ld -o obj/kernel.elf obj/kmain.o obj/start.o obj/lfb.o obj/text_terminal.o obj/string.o
 
 obj/text_terminal.o: src/video/text_terminal.c include/video/text_terminal.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/text_terminal.o src/video/text_terminal.c
+
+obj/string.o: src/stdlib/string.c include/stdlib/string.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/string.o src/stdlib/string.c
 
 mntdsk:
 	-sudo losetup -d /dev/loop0

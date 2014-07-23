@@ -18,7 +18,8 @@ typedef struct {
 
 
 typedef enum {
-    LFBE_NoError                     = 0
+    LFBE_NoError                    = 0,
+    LFBE_PixelOffsetError           = 1
 } lfb_error;
 
 
@@ -71,16 +72,32 @@ lfb_error lfb_fill_background( frame_buffer* fb, u32 bg_color );
 
 /**
  * DESCRIPTION:
+ *      Set contiguous pixels to same color
+ * ARGS:
+ *      - fb            : frame_buffer reference
+ *      - first_pixel   : first pixel (offset from fb base) to color
+ *      - pixel_count   : number of pixels to color
+ *      - fill_color    : color to use for filling rectangle
+ * RETURNS:
+ *      lfb_error indicating success (0) or failure
+ **/
+lfb_error lfb_color_pixels( frame_buffer* fb, u32 first_pixel, u32 pixel_count, u32 fill_color );
+
+
+/**
+ * DESCRIPTION:
  *      Move pixel block back by shift offset
  * ARGS:
  *      - fb            : frame_buffer reference
  *      - first_pixel   : First pixel to move
  *      - last_pixel    : Last pixel to move
- *      - shift         : Move all pixels between first_pixel through last_pixel backwards by shift spots
+ *      - shift_start   : Move all pixels between first_pixel through last_pixel backwards to location starting at shift_start pixel
  * RETURNS:
  *      lfb_error indicating success (0) or failure
+ * NOTES:
+ *      Results are undefined (and potentially dangerous) unless shift_start < first_pixel < last_pixel < fb->width
  **/
-lfb_error lfb_shift_up( frame_buffer* fb, u32 first_pixel, u32 last_pixel, u32 shift );
+lfb_error lfb_shift_up( frame_buffer* fb, u32 first_pixel, u32 last_pixel, u32 shift_start );
 
 
 #endif

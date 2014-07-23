@@ -103,12 +103,27 @@ term_error term_puts_at( term_entry* te, const char* s, u16 at_x, u16 at_y );
  *      terminating at '\0' (which isn't printed)
  * ARGS:
  *      - s             : the character sequence, rendered from the initialized font
- *      - at_x          : render the character at x position in text terminal space
- *      - at_y          : render the character at y position in text terminal space
  * RETURNS:
  *      0 if no error, TE_InvalidCharacter if any char is negative
  **/
 term_error term_puts( term_entry* te, const char* s );
+
+
+/**
+ * DESCRIPTION:
+ *      Scroll the text terminal back by rows but leaves x and y pointers unchanged
+ * ARGS:
+ *      - rows          : number of text rows to scroll back
+ **/
+term_error term_scroll( term_entry* te, u16 rows );
+
+
+/**
+ * DESCRIPTION:
+ *      Clear the screen (setting the entire screen to bg_color) and set current write position to 0,0
+ * ARGS:
+ **/
+term_error term_cls( term_entry* te );
 
 
 #endif

@@ -163,10 +163,13 @@ void fb_puts( frame_buffer* fb, const char* s, u32 start_at_text_pos_x, u32 star
 }
 
 
+char* s = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 09123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0912345 ";
+
 void kmain( void ) {
     BootInfo* boot_info;
     frame_buffer fb;
     term_entry te;
+    int i;
 
     asm volatile( "movq %%r9, %0" : "=r"(boot_info) : : );
 
@@ -174,7 +177,14 @@ void kmain( void ) {
 
     term_init( &te, &fb, 8, 16, (u8*)font_8x16 );
 
-    term_puts_at( &te, "0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789", 0, 0 );
+    term_cls( &te );
+
+    for (i = 0; i < 48; i++) {
+        s[0] = 48 + i;
+        term_puts( &te, s );
+    }
+
+    term_puts( &te, "This is the last line" );
 
     for ( ; ; ) ;
 }
