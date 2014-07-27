@@ -3,6 +3,7 @@
 
 #include <video/lfb.h>
 #include <sys/types.h>
+#include <stdio.h>
 
 
 typedef struct {
@@ -114,6 +115,8 @@ term_error term_puts( term_entry* te, const char* s );
  *      Scroll the text terminal back by rows but leaves x and y pointers unchanged
  * ARGS:
  *      - rows          : number of text rows to scroll back
+ * RETURNS:
+ *      0 if no error, TE_InvalidCharacter if any char is negative
  **/
 term_error term_scroll( term_entry* te, u16 rows );
 
@@ -122,8 +125,22 @@ term_error term_scroll( term_entry* te, u16 rows );
  * DESCRIPTION:
  *      Clear the screen (setting the entire screen to bg_color) and set current write position to 0,0
  * ARGS:
+ * RETURNS:
+ *      0 if no error, TE_InvalidCharacter if any char is negative
  **/
 term_error term_cls( term_entry* te );
+
+
+/**
+ * DESCRIPTION:
+ *      Text terminal printf
+ * ARGS:
+ *      - t             : text_terminal pointer
+ *      - fmt           : printf format string
+ *      - ...           : printf varargs
+ **/
+extern void term_putchar_pf( int c, char* te );
+#define term_printf(t,fmt, ...) cprintf((void*)term_putchar_pf, (char*)t, fmt, ## __VA_ARGS__)
 
 
 #endif

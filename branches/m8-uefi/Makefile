@@ -1,10 +1,20 @@
-srcdir			= ./src
-objdir			= ./obj
+srcdir			= src
+objdir			= obj
 includedir		= include
 CC_FLAGS        = -Wall -Wextra -Werror -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -nostdinc -fno-stack-protector
 INCLUDES        = -I$(includedir) -I$(includedir)/stdlib
 EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
 EDK_SRC_DIR     = src
+
+KERNEL_OBJS     = $(objdir)/start.o $(objdir)/kmain.o $(objdir)/lfb.o $(objdir)/text_terminal.o $(objdir)/string.o \
+                  $(objdir)/stdio.o $(objdir)/asm.o
+
+
+ifdef TESTING
+    DEFS := $(DEFS) -DTESTING
+    CC_FLAGS := $(CC_FLAGS) -g
+endif
+
 
 bootloader: $(EDK_OBJ_DIR)/KOSUefi.efi
 
@@ -13,23 +23,34 @@ $(EDK_OBJ_DIR)/KOSUefi.efi: KOSUefi.dsc KOSUefi.inf $(EDK_SRC_DIR)/boot.c
 	. edksetup.sh
 	build -p KOSUefi/KOSUefi.dsc -a X64 -m KOSUefi/KOSUefi.inf
 
-obj/start.o: src/start.asm
-	nasm -f elf64 -o obj/start.o src/start.asm
+$(objdir)/kernel.elf: $(KERNEL_OBJS)
+	ld -T link/kmain.ld -o $(objdir)/kernel.elf $(KERNEL_OBJS)
 
-obj/kmain.o: src/kmain.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/kmain.o src/kmain.c
+$(objdir)/start.o: src/start.asm
+	nasm -f elf64 -o $(objdir)/start.o src/start.asm
 
-obj/lfb.o: src/video/lfb.c include/video/lfb.h
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/lfb.o src/video/lfb.c
+$(objdir)/kmain.o: src/kmain.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kmain.o src/kmain.c
 
-obj/kernel.elf: obj/start.o obj/kmain.o obj/lfb.o obj/text_terminal.o obj/string.o
-	ld -T link/kmain.ld -o obj/kernel.elf obj/kmain.o obj/start.o obj/lfb.o obj/text_terminal.o obj/string.o
+$(objdir)/lfb.o: src/video/lfb.c include/video/lfb.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/lfb.o src/video/lfb.c
 
-obj/text_terminal.o: src/video/text_terminal.c include/video/text_terminal.h
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/text_terminal.o src/video/text_terminal.c
+$(objdir)/text_terminal.o: src/video/text_terminal.c include/video/text_terminal.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/text_terminal.o src/video/text_terminal.c
 
-obj/string.o: src/stdlib/string.c include/stdlib/string.h
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o obj/string.o src/stdlib/string.c
+$(objdir)/string.o: src/stdlib/string.c include/stdlib/string.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/string.o src/stdlib/string.c
+
+$(objdir)/keyboard.o: src/input/keyboard.c include/input/keyboard.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/keyboard.o src/input/keyboard.c
+
+$(objdir)/stdio.o: src/stdlib/stdio.c include/stdlib/stdio.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/stdio.o src/stdlib/stdio.c
+
+$(objdir)/asm.o: src/platform/x86_64/asm.c include/platform/x86_64/asm.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/asm.o src/platform/x86_64/asm.c
+
+
 
 mntdsk:
 	-sudo losetup -d /dev/loop0
@@ -44,13 +65,13 @@ umntdsk:
 install-bootloader: bootloader mntdsk
 	sudo cp /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64/KOSUefi.efi mnt/BOOT/EFI/BOOTX64.EFI
 
-install-kernel: obj/kernel.elf mntdsk
-	sudo cp obj/kernel.elf mnt/BOOT/kos/kernel.elf
+install-kernel: $(objdir)/kernel.elf mntdsk
+	sudo cp $(objdir)/kernel.elf mnt/BOOT/kos/kernel.elf
 
-install: obj/kernel.elf bootloader mntdsk install-bootloader install-kernel umntdsk
+install: $(objdir)/kernel.elf bootloader mntdsk install-bootloader install-kernel umntdsk
 
 clean:
-	-rm -f obj/*
+	-rm -f $(objdir)/*
 
 distclean: clean
 

@@ -39,24 +39,51 @@ term_error term_putchar_at( term_entry* te, char c, u16 at_x, u16 at_y ) {
 
     switch (c) {
         case '\n':
-            // XXX
+            if ((te->next_char_y_pos = at_y + 1) >= te->text_rows) {
+                term_scroll( te, 1 );
+                te->next_char_y_pos = te->text_rows - 1;
+                te->next_char_x_pos = 0;
+            }
+
+            te->next_char_x_pos = 0;
+
             break;
+
 
         case '\b':
-            // XXX
+            if (at_x == 0) {
+                if (at_y != 0) {
+                    te->next_char_y_pos -= 1;
+                    te->next_char_x_pos = te->text_cols - 1;
+                }
+            }
+            else {
+                te->next_char_x_pos -= 1;
+            }
+
             break;
 
+
         case '\r':
-            // XXX
+            te->next_char_y_pos = at_y;
+            te->next_char_x_pos = 0;
+
             break;
+
+
+        case '\t':
+            term_puts_at( te, "    ", at_x, at_y );
+
+            break;
+
 
         default:
             lfb_draw_boolean_bitmap( te->fb, (u32)(at_x * te->font_char_pixel_width), (u32)(at_y * te->font_char_pixel_height),
                                      (u8*)(fd + ((u8)c * te->font_char_pixel_height)), te->font_char_pixel_width, te->font_char_pixel_height,
                                      te->bg_color, te->fg_color );
 
-            if ((te->next_char_x_pos = at_x + 1) >= te->text_cols) {  // if character places past last column, advance row
-                if (++te->next_char_y_pos == te->text_rows) {   // if character position passes last row, scroll and place at start of last row again
+            if ((te->next_char_x_pos = at_x + 1) >= te->text_cols) { // if character places past last column, advance row
+                if ((te->next_char_y_pos = at_y + 1) >= te->text_rows) { // if character position passes last row, scroll and place at start of last row again
                     term_scroll( te, 1 );
                     te->next_char_y_pos = te->text_rows - 1;
                     te->next_char_x_pos = 0;
@@ -122,4 +149,9 @@ term_error term_scroll( term_entry* te, u16 rows ) {
     memdwset( (void*)src, te->bg_color, (size_t)(rows * te->fb->hpixels * te->font_char_pixel_height) );
 
     return TE_NoError;
+}
+
+
+void term_putchar_pf( int c, char* te ) {
+    term_putchar( (term_entry*)te, (char)c );
 }

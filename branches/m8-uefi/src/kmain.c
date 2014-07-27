@@ -163,7 +163,8 @@ void fb_puts( frame_buffer* fb, const char* s, u32 start_at_text_pos_x, u32 star
 }
 
 
-char* s = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 09123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0912345 ";
+//char* s = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 09123456789 abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 0912345 ";
+char* s = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ 09123456789\n";
 
 void kmain( void ) {
     BootInfo* boot_info;
@@ -179,9 +180,9 @@ void kmain( void ) {
 
     term_cls( &te );
 
-    for (i = 0; i < 48; i++) {
+    for (i = 0; i < 10; i++) {
         s[0] = 48 + i;
-        term_puts( &te, s );
+        term_printf( &te, "woot: %s", s );
     }
 
     term_puts( &te, "This is the last line" );
