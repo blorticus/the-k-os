@@ -7,7 +7,7 @@ EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
 EDK_SRC_DIR     = src
 
 KERNEL_OBJS     = $(objdir)/start.o $(objdir)/kmain.o $(objdir)/lfb.o $(objdir)/text_terminal.o $(objdir)/string.o \
-                  $(objdir)/stdio.o $(objdir)/asm.o
+                  $(objdir)/stdio.o $(objdir)/asm.o $(objdir)/kosh.o
 
 
 ifdef TESTING
@@ -50,6 +50,11 @@ $(objdir)/stdio.o: src/stdlib/stdio.c include/stdlib/stdio.h
 $(objdir)/asm.o: src/platform/x86_64/asm.c include/platform/x86_64/asm.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/asm.o src/platform/x86_64/asm.c
 
+$(objdir)/kosh.o: src/apps/kosh/kosh.c
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kosh.o src/apps/kosh/kosh.c
+
+$(objdir)/kmalloc.o: src/memory/kmalloc.c include/memory/kmalloc.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kmalloc.o src/memory/kmalloc.c
 
 
 mntdsk:

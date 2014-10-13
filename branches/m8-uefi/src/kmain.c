@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <video/lfb.h>
 #include <video/text_terminal.h>
+#include <apps/kosh.h>
 
 typedef enum {
     PixelRedGreenBlueReserved8BitPerColor,
@@ -170,7 +171,7 @@ void kmain( void ) {
     BootInfo* boot_info;
     frame_buffer fb;
     term_entry te;
-    int i;
+    kosh_shell ks;
 
     asm volatile( "movq %%r9, %0" : "=r"(boot_info) : : );
 
@@ -180,12 +181,7 @@ void kmain( void ) {
 
     term_cls( &te );
 
-    for (i = 0; i < 10; i++) {
-        s[0] = 48 + i;
-        term_printf( &te, "woot: %s", s );
-    }
-
-    term_puts( &te, "This is the last line" );
+    kosh_start_shell( &ks, &te );    
 
     for ( ; ; ) ;
 }
