@@ -2,6 +2,7 @@
 #include <video/lfb.h>
 #include <video/text_terminal.h>
 #include <apps/kosh.h>
+#include <video/fonts/term-8x16.h>
 
 typedef enum {
     PixelRedGreenBlueReserved8BitPerColor,
