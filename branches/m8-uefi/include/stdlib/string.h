@@ -11,6 +11,8 @@ void*  memdwset( void *s, u32 i, size_t n );
 size_t strnlen ( const char *s, size_t maxlen );
 char*  strncpy ( char *dest, const char *src, size_t n );
 
+int strncmp( const char *s1, const char *s2, size_t n );
+int wcsncmp( const wchar_t* wcs1, const wchar_t* wcs2, size_t num );
 
 
 #endif

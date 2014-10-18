@@ -108,3 +108,20 @@ char *strncpy( char *dest, const char *src, size_t n ) {
 
     return dest;
 }
+
+
+int strncmp( const char *s1, const char *s2, size_t n ) {
+    while (n-- && *s1++ == *s2++)
+        ;
+
+    return *--s1 - *--s2;
+}
+
+
+int wcsncmp( const wchar_t* wcs1, const wchar_t* wcs2, size_t num ) {
+    while (num-- && *wcs1++ == *wcs2++)
+        ;
+
+    return (*--wcs1 == *--wcs2 ? 0 : (*wcs1 > *wcs2 ? 1 : -1));
+}
+

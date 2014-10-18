@@ -4,11 +4,9 @@
 
 /**
  * BRIEF:           Basic type definitions varied by architecture type
- * BACKGROUND:      The OS can be booted with a multiboot compliant loader (e.g., GRUB), so this header file
- *                  and corresponding routines are for dealing with multiboot information (multiboot leaves
- *                  a data structure in memory with useful/necessary information)
- * SEE:             http://www.gnu.org/software/grub/manual/multiboot/multiboot.html
- * RE-ENTRANT?:     PER-METHOD
+ * BACKGROUND:      Provide mapping types for x86-64 architecture, the only support architecture
+ * SEE:             
+ * RE-ENTRANT?:     N/A
  ***/
 
 #define NULL '\0'
@@ -28,5 +26,10 @@ typedef u64                 memaddr;
 typedef void*               memptr;
 
 typedef u64                 size_t;
+
+/* 32-bit characters */
+typedef u32                 char32_t;
+
+typedef char32_t            wchar_t;
 
 #endif
