@@ -25,20 +25,6 @@
  * RE-ENTRANT:      YES
  ***************/
 
-typedef struct kosh_cmd_node {
-    char32_t*               command_string;
-    kosh_cmd_ref            cmd;
-    kosh_cmd_node*          next;
-} kosh_cmd_node;
-
-
-typedef struct kosh_cmd_list {
-    kosh_cmd_node*          head;
-    kosh_cmd_node*          tail;   // tail facilitates insertion
-
-    char32_t[KOSH_CMD_MAX_TOKENS][KOSH_CMD_MAX_TOKEN_LENGTH] parsed_tokens;  // used when parsing out commands
-} kosh_cmd_list;
-
 
 typedef enum {
     KOSH_OK                 = 0,
@@ -49,7 +35,23 @@ typedef enum {
     KOSH_COMMAND_TOO_LONG   = 5
 } kosh_error;
 
+
 typedef kosh_error (*kosh_cmd_ref)( char32_t**, int );
+
+typedef struct kosh_cmd_node {
+    char32_t*               command_string;
+    kosh_cmd_ref            cmd;
+    struct kosh_cmd_node*   next;
+} kosh_cmd_node;
+
+
+typedef struct kosh_cmd_list {
+    kosh_cmd_node*          head;
+    kosh_cmd_node*          tail;   // tail facilitates insertion
+
+    char32_t parsed_tokens[KOSH_CMD_MAX_TOKENS][KOSH_CMD_MAX_TOKEN_LENGTH];  // used when parsing out commands
+    char32_t* token_p[KOSH_CMD_MAX_TOKENS];     // on kosh_cmd_ref call, this is argv
+} kosh_cmd_list;
 
 
 /***
@@ -62,7 +64,7 @@ kosh_error kosh_init_cmd_structure( kosh_cmd_list* l );
  * Register a command, providing the command token string and the command pointer ref.  If
  * 'command' contains a space, it will never match any token, but will succeed in registration.
  ***/
-kosh_error kosh_register_cmd( kosh_cmd_list* l, const char32_t* command, kosh_cmd_ref* cmd_ref );
+kosh_error kosh_register_cmd( kosh_cmd_list* l, const char32_t* command, kosh_cmd_ref cmd_ref );
 
 
 /***
@@ -71,6 +73,8 @@ kosh_error kosh_register_cmd( kosh_cmd_list* l, const char32_t* command, kosh_cm
  * If the command token does not match any kosh_cmd_list items, return KOSH_NO_SUCH_COMMAND.  If command_line
  * is NULL or empty, return KOSH_EMPTY_COMMAND.  If there are more than KOSH_CMD_MAX_TOKENS tokens in the
  * command_line, or if any token exceeds the KOSH_CMD_MAX_TOKEN_LENGTH, then KOSH_COMMAND_TOO_LONG is returned.
+ * When the command is executed, the provided argv is guaranteed to only be correct until the next invocation
+ * of kosh_execute_cmd(), so if the values are needed before the next invocation, they must be copied off
  ***/
 kosh_error kosh_execute_cmd( kosh_cmd_list* l, const char32_t* command_line );
 

@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <malloc.h>
+#include <wchar.h>
+
 
 lcheck_suite* create_suite( const char* name ) {
     lcheck_suite* s = (lcheck_suite*)malloc( sizeof( lcheck_suite ) );
@@ -94,3 +97,12 @@ void* __memset( void *b, int c, unsigned int len ) {
     return memset( b, c, len );
 }
 
+
+void* __malloc( size_t size ) {
+    return malloc( size );
+}
+
+
+int __wcscmp( const int* s1, const int* s2 ) {
+    return wcscmp( (const wchar_t*)s1, (const wchar_t*)s2 );
+}

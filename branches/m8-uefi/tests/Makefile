@@ -14,11 +14,14 @@ cprintf.t: test_cprintf.c liblcheck.a stdio.o
 kmalloc_impl.t: test_kmalloc_impl.c liblcheck.a kmalloc.o string.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o kmalloc_impl.t test_kmalloc_impl.c ../$(objdir)/kmalloc.o ../$(objdir)/string.o $(LIBS)
 
-strncmp.t: liblcheck.a stdio.o
+strncmp.t: test_strncmp.c liblcheck.a stdio.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o strncmp.t test_strncmp.c ../$(objdir)/stdio.o $(LIBS)
 
-wcsncmp.t: liblcheck.a stdio.o
+wcsncmp.t: test_wcsncmp.c liblcheck.a stdio.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o wcsncmp.t test_wcsncmp.c ../$(objdir)/stdio.o $(LIBS)
+
+apps_kosh_cmd.t: test_apps_kosh_cmd.c liblcheck.a kosh_cmd.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o apps_kosh_cmd.t test_apps_kosh_cmd.c ../$(objdir)/kosh_cmd.o $(LIBS)
 
 stdio.o:
 	$(MAKE) -C .. $(objdir)/stdio.o TESTING=1
@@ -28,6 +31,9 @@ string.o:
 
 kmalloc.o:
 	$(MAKE) -C .. $(objdir)/kmalloc.o TESTING=1
+
+kosh_cmd.o:
+	$(MAKE) -C .. $(objdir)/kosh_cmd.o TESTING=1
 
 
 .PHONY: clean

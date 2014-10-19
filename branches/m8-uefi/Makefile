@@ -56,6 +56,9 @@ $(objdir)/kosh.o: src/apps/kosh/kosh.c
 $(objdir)/kmalloc.o: src/memory/kmalloc.c include/memory/kmalloc.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kmalloc.o src/memory/kmalloc.c
 
+$(objdir)/kosh_cmd.o: src/apps/kosh/kosh_cmd.c include/apps/kosh/kosh_cmd.h
+	$(CC) $(DEFS) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kosh_cmd.o src/apps/kosh/kosh_cmd.c
+
 
 mntdsk:
 	-sudo losetup -d /dev/loop0
