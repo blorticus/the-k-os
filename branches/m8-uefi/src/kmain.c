@@ -1,8 +1,11 @@
 #include <sys/types.h>
 #include <video/lfb.h>
 #include <video/text_terminal.h>
-#include <apps/kosh.h>
+#include <apps/kosh/kosh.h>
 #include <video/fonts/term-8x16.h>
+#include <memory/kmalloc.h>
+#include <apps/kosh/kosh_cmd.h>
+
 
 typedef enum {
     PixelRedGreenBlueReserved8BitPerColor,
@@ -20,6 +23,17 @@ typedef struct {
 } BootInfo;
 
 
+kmalloc_descriptor kmalloc_descriptors[2];
+
+
+void build_kmalloc_descriptors( void ) {
+    kmalloc_descriptors[0].block_size = sizeof( kosh_cmd_node );
+    kmalloc_descriptors[0].block_count = 10;
+    kmalloc_descriptors[1].block_size = 1024;
+    kmalloc_descriptors[2].block_count = 64;
+}
+
+
 void kmain( void ) {
     BootInfo* boot_info;
     frame_buffer fb;
@@ -28,8 +42,13 @@ void kmain( void ) {
 
     asm volatile( "movq %%r9, %0" : "=r"(boot_info) : : );
 
+    build_kmalloc_descriptors();
+
+    kmalloc_init( (void*)0x200000, (kmalloc_descriptor*)kmalloc_descriptors, 2 );
+
     lfb_init( &fb, (u32*)(boot_info->linear_frame_buffer_start), boot_info->lfb_hrez, boot_info->lfb_vrez, PCS_32BitReservedRedGreenBlue );
 
+    lfb_fill_background( &fb, 0xa0a0a0a0 );
     term_init( &te, &fb, 8, 16, (u8*)FONT_MAP_8x16 );
 
     term_cls( &te );

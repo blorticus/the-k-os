@@ -40,11 +40,13 @@ kosh_error kosh_register_cmd( kosh_cmd_list* l, const char32_t* command, kosh_cm
 }
 
 
-kosh_error kosh_execute_cmd( kosh_cmd_list* l, const char32_t* command_line ) {
+kosh_error kosh_execute_cmd( kosh_cmd_list* l, const char32_t* command_line, char32_t* error ) {
     unsigned int token_num = 0;
     unsigned int token_len = 0;
     char32_t* t;
     kosh_cmd_node* node;
+
+    error = (char32_t*)0;
 
     if (command_line == NULL || command_line[0] == NULL)
         return KOSH_EMPTY_COMMAND;
@@ -88,7 +90,7 @@ kosh_error kosh_execute_cmd( kosh_cmd_list* l, const char32_t* command_line ) {
     // find the matching command
     for (node = l->head; node; node = node->next)
         if (wcsncmp( node->command_string, (const char32_t*)(l->parsed_tokens[0]), KOSH_CMD_MAX_TOKEN_LENGTH ) == 0)
-            return node->cmd( (char32_t**)(l->token_p), token_num + 1 );
+            return node->cmd( (char32_t**)(l->token_p), token_num + 1, error );
 
     return KOSH_NO_SUCH_COMMAND;
 }

@@ -2,10 +2,12 @@
 #define __APPS_KOSH__
 
 #include <video/text_terminal.h>
+#include <apps/kosh/kosh_cmd.h>
 
 
 typedef struct {
     term_entry* term;
+    kosh_cmd_list cmd_list;
 } kosh_shell;
 
 

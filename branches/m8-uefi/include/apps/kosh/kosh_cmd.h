@@ -36,7 +36,7 @@ typedef enum {
 } kosh_error;
 
 
-typedef kosh_error (*kosh_cmd_ref)( char32_t**, int );
+typedef kosh_error (*kosh_cmd_ref)( char32_t**, int, char32_t* );
 
 typedef struct kosh_cmd_node {
     char32_t*               command_string;
@@ -74,9 +74,11 @@ kosh_error kosh_register_cmd( kosh_cmd_list* l, const char32_t* command, kosh_cm
  * is NULL or empty, return KOSH_EMPTY_COMMAND.  If there are more than KOSH_CMD_MAX_TOKENS tokens in the
  * command_line, or if any token exceeds the KOSH_CMD_MAX_TOKEN_LENGTH, then KOSH_COMMAND_TOO_LONG is returned.
  * When the command is executed, the provided argv is guaranteed to only be correct until the next invocation
- * of kosh_execute_cmd(), so if the values are needed before the next invocation, they must be copied off
+ * of kosh_execute_cmd(), so if the values are needed before the next invocation, they must be copied off.
+ * If the kosh_cmd_ref returns anything but KOSH_OK, it may set the third parameter, which is an error string.
+ * If it is unset, it should be left as NULL.  Any such error will be propagated to 'error' here.
  ***/
-kosh_error kosh_execute_cmd( kosh_cmd_list* l, const char32_t* command_line );
+kosh_error kosh_execute_cmd( kosh_cmd_list* l, const char32_t* command_line, char32_t* error );
 
 
 
