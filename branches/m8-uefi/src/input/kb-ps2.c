@@ -1,4 +1,4 @@
-#include <input/keyboard.h>
+#include <input/kb-ps2.h>
 #include <platform/x86_64/interrupts.h>
 #include <platform/x86_64/asm.h>
 #include <sys/types.h>

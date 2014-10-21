@@ -1,5 +1,5 @@
-#ifndef __INPUT_KEYBOARD_H__
-#define __INPUT_KEYBOARD_H__
+#ifndef __INPUT_KB_PS2_H__
+#define __INPUT_KB_PS2_H__
 
 #include <sys/types.h>
 
