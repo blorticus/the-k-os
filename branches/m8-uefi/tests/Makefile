@@ -23,6 +23,9 @@ wcsncmp.t: test_wcsncmp.c liblcheck.a stdio.o
 apps_kosh_cmd.t: test_apps_kosh_cmd.c liblcheck.a kosh_cmd.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o apps_kosh_cmd.t test_apps_kosh_cmd.c ../$(objdir)/kosh_cmd.o $(LIBS)
 
+kb_ps2_hw_sc_queue.t: test_kb_ps2_hw_sc_queue.c liblcheck.a kb-ps2.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o kb_ps2_hw_sc_queue.t test_kb_ps2_hw_sc_queue.c ../$(objdir)/kb-ps2.o $(LIBS)
+
 stdio.o:
 	$(MAKE) -C .. $(objdir)/stdio.o TESTING=1
 
@@ -34,6 +37,9 @@ kmalloc.o:
 
 kosh_cmd.o:
 	$(MAKE) -C .. $(objdir)/kosh_cmd.o TESTING=1
+
+kb-ps2.o:
+	$(MAKE) -C .. $(objdir)/kb-ps2.o TESTING=1
 
 
 .PHONY: clean

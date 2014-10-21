@@ -41,8 +41,8 @@ $(objdir)/text_terminal.o: src/video/text_terminal.c include/video/text_terminal
 $(objdir)/string.o: src/stdlib/string.c include/stdlib/string.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/string.o src/stdlib/string.c
 
-$(objdir)/keyboard.o: src/input/keyboard.c include/input/keyboard.h
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/keyboard.o src/input/keyboard.c
+$(objdir)/kb-ps2.o: src/input/kb-ps2.c include/input/kb-ps2.h
+	$(CC) $(DEFS) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kb-ps2.o src/input/kb-ps2.c
 
 $(objdir)/stdio.o: src/stdlib/stdio.c include/stdlib/stdio.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/stdio.o src/stdlib/stdio.c

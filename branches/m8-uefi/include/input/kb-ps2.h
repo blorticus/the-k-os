@@ -22,8 +22,10 @@
  *                  the buffer from which scancodes are read, so careful coordination between those
  *                  two functions is necessary.
  * ELEMENTS:        scancodes = the hardware scancode stream
- *                  size      = number of scancodes that can be stored in the buffer
- *                  adjust    = XXX: need to read code to figure this out
+ *                  size      = size (the number of scancodes that can be in the queue; must be a power
+ *                              of 2 to make the modulo calculation as fast as possible)
+ *                  bitmask   = size - 1, used as the actual modulo
+ *                  elements  = number of scancodes currently in the queue
  *                  top       = index in 'slots' where last character was written (next write will
  *                              be at top + 1 or 0 if top == size - 1)
  *                  bottom    = index in 'slots' where last character was read (next read will be
@@ -32,9 +34,11 @@
  */ 
 typedef struct {
     u8*             scancodes;
-    u16             size;       /* number of scancode slots */
-    u16             top;        /* index of last character written to queue */
-    u16             bottom;     /* index of last character read from queue */
+    u8              size;       /* total depth of queue; must be a power of 2 */
+    u16             bitmask;    /* contiguous bits used for modulo of size */
+    u16             elements;   /* number of scancodes currently in queue */
+    u16             top;        /* the element in 'scancodes' the next to be written */
+    u16             bottom;     /* the element in 'scancodes' the next to be read */;
 } ScHwQueue;
 
 
@@ -66,16 +70,16 @@ ScHwQueue* hw_sc_queue_get_registered();
 
 /**
  *
- * DESCRIPTION:     Initialize an ScHwQueue.  Attach scancode_buffer (which must be sizeof(u8) *
- *                  scancode_buffer_size elements long) to queue.  scancode_buffer should not be
+ * DESCRIPTION:     Initialize an ScHwQueue.  Attach scancode_buffer (which must be
+ *                  2**scancode_buffer_size_bits long) to queue.  scancode_buffer should not be
  *                  read or altered outside of the hw_sc_* methods after calling this method.
  * RETURNS:         void
  * SIDE-EFFECTS:    none
- * NOTES:           none
+ * NOTES:           scancode_buffer_size_bits must be <= 16, but there is no verification.
  * RE-ENTRANT?:     For different ScHwQueue pointers, YES; otherwise, NO.
  *
  **/
-void hw_sc_queue_init( ScHwQueue* q, u8* scancode_buffer, u16 scancode_buffer_size );
+void hw_sc_queue_init( ScHwQueue* q, u8* scancode_buffer, u8 scancode_buffer_size_bits );
 
 
 /**
@@ -83,8 +87,9 @@ void hw_sc_queue_init( ScHwQueue* q, u8* scancode_buffer, u16 scancode_buffer_si
  * DESCRIPTION:     Insert scancode into scancode hardware queue
  * RETURN:          void
  * SIDE-EFFECTS:    Advance the buffer pointer of written scancodes
- * NOTES:           None
- * RE-ENTRANT?:     NO
+ * NOTES:           This method must be synchronized by wrapping it around disabled
+ *                  interrupts or the queue may end up incoherent
+ * RE-ENTRANT?:     NO, but it must be wrapped in disabled interrupts
  *
  */ 
 void hw_sc_queue_put( ScHwQueue* q, u8 scancode );
@@ -95,8 +100,9 @@ void hw_sc_queue_put( ScHwQueue* q, u8 scancode );
  * DESCRIPTION:     Read and return the next scancode in the hardware scancode queue.
  * RETURN:          The next hardware scancode or 0x00 when the queue is empty.
  * SIDE-EFFECTS:    Advance the buffer pointer of read scancodes.
- * NOTES:           None
- * RE-ENTRANT?:     NO
+ * NOTES:           This method must be synchronzed by wrapping it around disabled
+ *                  interrupts or the queue may end up incoherent
+ * RE-ENTRANT?:     NO, but it must be wrapped in disabled interrupts
  *
  */ 
 u8 hw_sc_queue_get( ScHwQueue* q );
