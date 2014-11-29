@@ -3,83 +3,51 @@
 #include <platform/x86_64/asm.h>
 #include <sys/types.h>
 
+enum KEYBOARD_ENCODER {
+    KB_READ_INPUT_BUFFER  = 0x60,
+    KB_KE_SEND_COMMAND    = 0x64
+};
 
-/* count of scancodes to enqueue from keyboard in circular buffer,  CANNOT BE LARGER THAN 2**16 - 1 */
-#define SCANCODE_QUEUE_SIZE     256
-#define SCANCODE_QUEUE_BITMASK  8
+enum KEYBOARD_CONTROLLER {
+    KB_STATUS_REGISTER    = 0x61,
+    KB_KC_SEND_COMMAND    = 0x64
+};
 
-/* it may seem odd to use these two variables to (sc_q and SC_HW_REGISTERED_QUEUE) for essentially
-   the same thing, but in future implementation, it is possible that sc_q will be created elsewhere
-   or via kmalloc(), so this allow some additional flexibility */
+enum KB_STATUS_REGISTERS {
+    KB_SR_OUTPUT_BUFFER_READY             = 0x01,
+    KB_SR_INPUT_BUFFER_READY              = 0x02,
+    KB_SR_SYSTEM_FLAG                     = 0x04,
+    KB_SR_INPUT_REGISTER_LAST_VALUE_TYPE  = 0x08,
+    KB_SR_KEYBOARD_LOCK_STATUS            = 0x10,
+    KB_SR_AUX_OUTPUT_BUFFER_FULL          = 0x20,
+    KB_SR_TIMEOUT_FLAG                    = 0x40,
+    KB_SR_PARITY_FLAG                     = 0x80
+};
 
-static ScHwQueue sc_q;
-static u8 scancodes[SCANCODE_QUEUE_SIZE];
+static keyboard_scancode_receiver RECEIVER_CALLBACK;
+static u8 sc_pass_buffer[6];
 
-static ScHwQueue* SC_HW_REGISTERED_QUEUE;
-
-
-void hw_sc_queue_init( ScHwQueue* q, u8* scancode_buffer, u8 scancode_buffer_size_bits ) {
-    q->scancodes   = scancode_buffer;
-    q->bitmask     = 0xffff >> (16 - scancode_buffer_size_bits);;
-    q->size        = q->bitmask + 1;
-    q->elements    = 0;
-    q->bottom      = 0;
-    q->top         = 0;
+void kb_ps2_init( keyboard_scancode_receiver callback ) {
+    RECEIVER_CALLBACK = callback;
 }
 
 
-void hw_sc_queue_put( ScHwQueue* q, u8 scancode ) {
-    q->scancodes[q->top] = scancode;
-    q->top = (q->top + 1) & q->bitmask;
-    if (q->elements < q->size)
-        q->elements++;
-    else
-        // if queue becomes full, adjust bottom to ensure it is pointing at the real start of the queue
-        q->bottom = q->top;
-}
-
-
-u8 hw_sc_queue_get( ScHwQueue* q ) {
-    u8 sc;
-
-    if (q->elements == 0)
-        return 0x00;
-
-    sc = q->scancodes[q->bottom];
-
-    q->bottom = (q->bottom + 1) & q->bitmask;
-    q->elements--;
-
-    return sc;
-}
-
-
-void hw_sc_queue_register( ScHwQueue* q ) {
-    SC_HW_REGISTERED_QUEUE = q;
-}
-
-
-ScHwQueue* hw_sc_queue_get_registered() {
-    return SC_HW_REGISTERED_QUEUE;
-}
-
-
-/**
- * Method to be provided to an ISR.  Read single scancode from ioport 0x60 and write it
- * to the hardware scancode queue.
- **/
-#ifndef TESTING
+/* the installable ISR */
 static void keyboard_handler() {
-    hw_sc_queue_put( SC_HW_REGISTERED_QUEUE, ioport_readb( 0x60 ) );
+    u8 i, sr;
+
+    while (1) {
+        for (sr = ioport_readb( KB_STATUS_REGISTER ), i = 0; i < 6 && (sr & KB_SR_OUTPUT_BUFFER_READY); i++, sr = ioport_readb( KB_STATUS_REGISTER ))
+            SC_PASS_BUFFER[i] = sr;
+
+        RECEIVER_CALLBACK( (u8*)sc_pass_buffer, i );
+
+        if (!(sr & KB_SR_OUTPUT_BUFFER_READY))
+            return;
+    }
 }
-#endif
 
 
 void keyboard_irq_install() {
-    hw_sc_queue_init( &sc_q, (u8*)scancodes, SCANCODE_QUEUE_BITMASK );
-    hw_sc_queue_register( &sc_q );
-
-#ifndef TESTING
     irq_install_handler( 1, keyboard_handler );
-#endif
 }

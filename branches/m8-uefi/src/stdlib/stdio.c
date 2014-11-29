@@ -85,7 +85,6 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
     switch (int_arg_pos++) {                                    \
         case 0: rval = (char)reg_vals[0]; break;                \
         case 1: rval = (char)reg_vals[1]; break;                \
-        case 2: rval = (char)reg_vals[2]; break;                \
         default: rval = *(char*)(stack_pos); stack_pos++;       \
     }
 
@@ -94,7 +93,6 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
     switch (int_arg_pos++) {                                    \
         case 0: rval = (s32)reg_vals[0]; break;                 \
         case 1: rval = (s32)reg_vals[1]; break;                 \
-        case 2: rval = (s32)reg_vals[2]; break;                 \
         default: rval = *(s32*)(stack_pos); stack_pos++;        \
     }
 
@@ -102,7 +100,6 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
     switch (int_arg_pos++) {                                    \
         case 0: rval = (s64)reg_vals[0]; break;                 \
         case 1: rval = (s64)reg_vals[1]; break;                 \
-        case 2: rval = (s64)reg_vals[2]; break;                 \
         default: rval = *(s64*)(stack_pos); stack_pos++;        \
     }
 
@@ -111,15 +108,20 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
     switch (int_arg_pos++) {                                    \
         case 0: rval = (u32)reg_vals[0]; break;                 \
         case 1: rval = (u32)reg_vals[1]; break;                 \
-        case 2: rval = (u32)reg_vals[2]; break;                 \
         default: rval = *(u32*)(stack_pos); stack_pos++;        \
+    }
+
+#define M_next_wchar(int_arg_pos,rval,stack_pos,reg_vals)       \
+    switch (int_arg_pos++) {                                    \
+        case 0: rval = (wchar_t)reg_vals[0]; break;             \
+        case 1: rval = (wchar_t)reg_vals[1]; break;             \
+        default: rval = *(wchar_t*)(stack_pos); stack_pos++;    \
     }
 
 #define M_next_u64(int_arg_pos,rval,stack_pos,reg_vals)         \
     switch (int_arg_pos++) {                                    \
         case 0: rval = (u64)reg_vals[0]; break;                 \
         case 1: rval = (u64)reg_vals[1]; break;                 \
-        case 2: rval = (u64)reg_vals[2]; break;                 \
         default: rval = *(u64*)(stack_pos); stack_pos++;        \
     }
 
@@ -128,21 +130,28 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
     switch (int_arg_pos++) {                                    \
         case 0: rval = (char*)reg_vals[0]; break;               \
         case 1: rval = (char*)reg_vals[1]; break;               \
-        case 2: rval = (char*)reg_vals[2]; break;               \
         default: rval = *(stack_pos); stack_pos++;              \
+    } 
+
+
+#define M_next_wstr(int_arg_pos,rval,stack_pos,reg_vals)        \
+    switch (int_arg_pos++) {                                    \
+        case 0: rval = (wchar_t*)reg_vals[0]; break;            \
+        case 1: rval = (wchar_t*)reg_vals[1]; break;            \
+        default: rval = (wchar_t*)(*(stack_pos)); stack_pos++;  \
     } 
 
 
 #define M_next_float(fp_arg_pos,rval,reg_vals)                  \
     switch (fp_arg_pos++) {                                     \
-        case 0: rval = (float)reg_vals[3]; break;               \
-        case 1: rval = (float)reg_vals[4]; break;               \
-        case 2: rval = (float)reg_vals[5]; break;               \
-        case 3: rval = (float)reg_vals[6]; break;               \
-        case 4: rval = (float)reg_vals[7]; break;               \
-        case 5: rval = (float)reg_vals[8]; break;               \
-        case 6: rval = (float)reg_vals[9]; break;               \
-        case 7: rval = (float)reg_vals[10]; break;              \
+        case 0: rval = (float)reg_vals[2]; break;               \
+        case 1: rval = (float)reg_vals[3]; break;               \
+        case 2: rval = (float)reg_vals[4]; break;               \
+        case 3: rval = (float)reg_vals[5]; break;               \
+        case 4: rval = (float)reg_vals[6]; break;               \
+        case 5: rval = (float)reg_vals[7]; break;               \
+        case 6: rval = (float)reg_vals[8]; break;               \
+        case 7: rval = (float)reg_vals[9]; break;               \
         default: rval = *(float*)(stack_pos); stack_pos++;      \
     } 
 
@@ -157,7 +166,7 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
 
 
 char buf[20];
-int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, ... ) {
+int cprintf( void (*putchar_f)(int, ...), void (*putwchar_f)(wchar_t, ...), char* putchar_args, const char *fmt, ... ) {
     unsigned int printed_chars = 0;
     char* p = (char*)fmt;
 
@@ -166,31 +175,37 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
     u32 uint  = 0;
     s32 sint  = 0;
     char c;
+    wchar_t nwchar;
     unsigned int count;
     int padding;
     const char* s;
+    const wchar_t* ws;
 
     int int_arg_pos = 0;    // count of int arguments already processed in varargs
-//    int fp_arg_pos  = 0;    // count of floating point arguments already processed in varags
+//    int fp_arg_pos  = 0;    // count of floating-point arguments already processed in varargs
 
-    u64 reg_vals[11];
+    u64 reg_vals[10];
     char** stack_offset;
 
     asm volatile( "movq %%rbp, %0" : "=r"(stack_offset) );
     stack_offset += 2;
 
-    asm volatile( "movq %%rcx, %0"  : "=r"(reg_vals[0]) );
-    asm volatile( "movq %%r8,  %0"  : "=r"(reg_vals[1]) );
-    asm volatile( "movq %%r9,  %0"  : "=r"(reg_vals[2]) );
+    // GCC uses the SysV AMD64 ABI calling convention.  Integer and pointer arguments are placed
+    //  in RDI, RSI, RDX, RCX, R8, and R9, then on the stack.  Floating-point arguments are placed
+    //  in xmm0-7, then on the stack.
+    // The non varargs to cprintf consume RDI, RSI, RDX and RCX
+    //
+    asm volatile( "movq %%r8,  %0"  : "=r"(reg_vals[0]) );
+    asm volatile( "movq %%r9,  %0"  : "=r"(reg_vals[1]) );
 
-    asm volatile( "movq %%xmm0, %0" : "=r"(reg_vals[3]) );
-    asm volatile( "movq %%xmm1, %0" : "=r"(reg_vals[4]) );
-    asm volatile( "movq %%xmm2, %0" : "=r"(reg_vals[5]) );
-    asm volatile( "movq %%xmm3, %0" : "=r"(reg_vals[6]) );
-    asm volatile( "movq %%xmm4, %0" : "=r"(reg_vals[7]) );
-    asm volatile( "movq %%xmm5, %0" : "=r"(reg_vals[8]) );
-    asm volatile( "movq %%xmm6, %0" : "=r"(reg_vals[9]) );
-    asm volatile( "movq %%xmm7, %0" : "=r"(reg_vals[10]) );
+    asm volatile( "movq %%xmm0, %0" : "=r"(reg_vals[2]) );
+    asm volatile( "movq %%xmm1, %0" : "=r"(reg_vals[3]) );
+    asm volatile( "movq %%xmm2, %0" : "=r"(reg_vals[4]) );
+    asm volatile( "movq %%xmm3, %0" : "=r"(reg_vals[5]) );
+    asm volatile( "movq %%xmm4, %0" : "=r"(reg_vals[6]) );
+    asm volatile( "movq %%xmm5, %0" : "=r"(reg_vals[7]) );
+    asm volatile( "movq %%xmm6, %0" : "=r"(reg_vals[8]) );
+    asm volatile( "movq %%xmm7, %0" : "=r"(reg_vals[9]) );
 
     while (*p) {
         padding = 0;
@@ -229,6 +244,26 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
                         ++p;
                         M_next_s64(int_arg_pos,slong,stack_offset,reg_vals);
                         M_produce_string(atoi,16,slong);
+                    }
+                    else if (*(p + 1) == 's') {
+                        ++p;
+                        M_next_wstr(int_arg_pos,ws,stack_offset,reg_vals);
+
+                        while (padding-- > 0) {
+                            putwchar_f( L' ', putchar_args );
+                            printed_chars++;
+                        }
+
+                        for ( ; *ws; ws++) {
+                            putwchar_f( *ws, putchar_args );
+                            printed_chars++;
+                        }
+
+                        padding = 0;
+                    }
+                    else if (*(p + 1) == 'c') {
+                        M_next_wchar(int_arg_pos,nwchar,stack_offset,reg_vals);
+                        putwchar_f( nwchar, putchar_args );
                     }
                     else {
                         M_next_s64(int_arg_pos,slong,stack_offset,reg_vals);

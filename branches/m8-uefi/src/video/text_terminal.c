@@ -18,6 +18,17 @@ term_error term_init( term_entry* te, frame_buffer* fb, u8 font_char_pixel_width
 }
 
 
+term_error term_set_pos( term_entry* te, u16 x, u16 y ) {
+    if (x >= te->text_cols || y >= te->text_rows)
+        return TE_InvalidLocation;
+
+    te->next_char_x_pos = x;
+    te->next_char_y_pos = y;
+
+    return TE_NoError;
+}
+
+
 u16 term_text_columns( term_entry* te ) {
     return te->text_cols;
 }
@@ -104,6 +115,14 @@ term_error term_putchar( term_entry* te, char c ) {
 }
 
 
+term_error term_putwchar( term_entry* te, wchar_t w ) {
+    if (w > 255 || te->font_def[w] == 0)
+        return term_putchar_at( te, '?', te->next_char_x_pos, te->next_char_y_pos );
+    else 
+        return term_putchar_at( te, (char)w, te->next_char_x_pos, te->next_char_y_pos );
+}
+
+
 term_error term_puts_at( term_entry* te, const char* s, u16 at_x, u16 at_y ) {
     char* t = (char*)s;
 
@@ -154,4 +173,9 @@ term_error term_scroll( term_entry* te, u16 rows ) {
 
 void term_putchar_pf( int c, char* te ) {
     term_putchar( (term_entry*)te, (char)c );
+}
+
+
+void term_putwchar_pf( wchar_t c, char* te ) {
+    term_putwchar( (term_entry*)te, c );
 }

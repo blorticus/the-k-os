@@ -1,6 +1,8 @@
 #ifndef __STDIO_H__
 #define __STDIO_H__
 
+#include <sys/types.h>
+
 /**
  * BRIEF:           A (weak) attempt at implementing C stdlib's stdio
  * BACKGROUND:      C standard I/O routines
@@ -34,7 +36,7 @@ int getchar( void );
  * RE-ENTRANT?:     NO
  *
  */ 
-int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, ... );
+int cprintf( void (*putchar_f)(int, ...), void (*putwchar_f)(wchar_t, ...), char* putchar_args, const char *fmt, ... );
 
 
 #endif

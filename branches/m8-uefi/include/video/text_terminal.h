@@ -57,6 +57,18 @@ u16 term_text_rows( term_entry* te );
 
 /**
  * DESCRIPTION:
+ *      Set next character pointer to x and y      
+ * ARGS:
+ *      - x             : set pointer to this x
+ *      - y             : set pointer to this y
+ * RETURNS:
+ *      0 if no error, TE_InvalidLocation if x or y is outside the terminal text bounds.
+ **/
+term_error term_set_pos( term_entry* te, u16 x, u16 y );
+
+
+/**
+ * DESCRIPTION:
  *      Put a character at a specific location in the text terminal space
  * ARGS:
  *      - c             : the character, rendered from the initialized font
@@ -82,6 +94,20 @@ term_error term_putchar_at( term_entry* te, char c, u16 at_x, u16 at_y );
  *      0 if no error, TE_InvalidCharacter if 'c' is negative
  **/
 term_error term_putchar( term_entry* te, char c );
+
+
+/**
+ * DESCRIPTION:
+ *      Put a character at the next location (starts at 0,0, advances horizontally).  Tab represented by
+ *      four spaces, \n by advancing to start of next row, \r by advancing to first column of current row,
+ *      \b by moving to previous column (and possibly, previous row) but not before 0,0, '\0' is not
+ *      printed, other non-printables also not printed
+ * ARGS:
+ *      - w             : the character, rendered from the initialized font
+ * RETURNS:
+ *      0 if no error (only possibility at this point)
+ **/
+term_error term_putwchar( term_entry* te, wchar_t w );
 
 
 /**
@@ -140,7 +166,8 @@ term_error term_cls( term_entry* te );
  *      - ...           : printf varargs
  **/
 extern void term_putchar_pf( int c, char* te );
-#define term_printf(t,fmt, ...) cprintf((void*)term_putchar_pf, (char*)t, fmt, ## __VA_ARGS__)
+extern void term_putwchar_pf( wchar_t c, char* te );
+#define term_printf(t,fmt, ...) cprintf((void*)term_putchar_pf, (void*)term_putwchar_pf, (char*)t, fmt, ## __VA_ARGS__)
 
 
 #endif
