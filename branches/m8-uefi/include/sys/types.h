@@ -28,7 +28,7 @@ typedef void*               memptr;
 typedef u64                 size_t;
 
 /* 32-bit characters */
-typedef u32                 char32_t;
+typedef s32                 char32_t;
 
 typedef char32_t            wchar_t;
 

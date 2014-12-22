@@ -288,6 +288,9 @@ UefiMain(
     swprintf( wbuf, 1024, L"size = %d\r\n", sizeof( unsigned int ) );
     gST->ConOut->OutputString( gST->ConOut, wbuf );
 
+    swprintf( wbuf, 1024, L"lfb = 0x%08x; hrez = %u; vrez = %u\r\n", (UINT32*)(gop->Mode->FrameBufferBase), hrez, vrez );
+    gST->ConOut->OutputString( gST->ConOut, wbuf );
+
     /* Build memory map, which is required to ExitBootServices */
     if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &rbuf )) != EFI_SUCCESS)
         return PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );

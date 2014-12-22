@@ -116,7 +116,7 @@ term_error term_putchar( term_entry* te, char c ) {
 
 
 term_error term_putwchar( term_entry* te, wchar_t w ) {
-    if (w > 255 || te->font_def[w] == 0)
+    if (w > 255 || w < 0)
         return term_putchar_at( te, '?', te->next_char_x_pos, te->next_char_y_pos );
     else 
         return term_putchar_at( te, (char)w, te->next_char_x_pos, te->next_char_y_pos );

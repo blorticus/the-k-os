@@ -1,13 +1,14 @@
 srcdir			= src
 objdir			= obj
 includedir		= include
-CC_FLAGS        = -Wall -Wextra -Werror -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -nostdinc -fno-stack-protector
+CC_FLAGS        = -Wall -Wextra -Werror -nostdlib -fno-builtin -nostartfiles -nodefaultlibs -nostdinc -fno-stack-protector 
 INCLUDES        = -I$(includedir) -I$(includedir)/stdlib
 EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
 EDK_SRC_DIR     = src
 
-KERNEL_OBJS     = $(objdir)/start.o $(objdir)/kmain.o $(objdir)/lfb.o $(objdir)/text_terminal.o $(objdir)/string.o \
-                  $(objdir)/stdio.o $(objdir)/asm.o $(objdir)/kosh.o $(objdir)/kosh_cmd.o $(objdir)/kmalloc.o
+KERNEL_OBJS     = $(objdir)/start.o  $(objdir)/kmain.o $(objdir)/lfb.o  $(objdir)/text_terminal.o $(objdir)/string.o  \
+                  $(objdir)/stdio.o  $(objdir)/asm.o   $(objdir)/kosh.o $(objdir)/kosh_cmd.o      $(objdir)/kmalloc.o \
+                  $(objdir)/kerror.o $(objdir)/isr.o   $(objdir)/idt.o  $(objdir)/isr_routines.o  $(objdir)/gdt.o
 
 
 ifdef TESTING
@@ -61,6 +62,18 @@ $(objdir)/kmalloc.o: src/memory/kmalloc.c include/memory/kmalloc.h
 
 $(objdir)/kerror.o: src/kerror.c include/kerror.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/kerror.o src/kerror.c
+
+$(objdir)/isr.o: src/platform/x86_64/isr.s 
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/isr.o src/platform/x86_64/isr.s
+
+$(objdir)/isr_routines.o: src/platform/x86_64/isr_routines.c include/platform/x86_64/isr_routines.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/isr_routines.o src/platform/x86_64/isr_routines.c
+
+$(objdir)/idt.o: src/platform/x86_64/idt.c include/platform/x86_64/idt.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/idt.o src/platform/x86_64/idt.c
+
+$(objdir)/gdt.o: src/platform/x86_64/gdt.c include/platform/x86_64/gdt.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/gdt.o src/platform/x86_64/gdt.c
 
 mntdsk:
 	-sudo losetup -d /dev/loop0

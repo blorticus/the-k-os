@@ -5,6 +5,6 @@
 #include <video/text_terminal.h>
 
 void kerror_init( term_entry* error_terminal );
-void kerror( wchar_t* str );
+void kerror( const wchar_t* str );
 
 #endif
