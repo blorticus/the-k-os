@@ -37,15 +37,6 @@ void build_kmalloc_descriptors( void ) {
 }
 
 
-extern void isr050( void );
-
-//struct tidt {
-//    u16 limit;
-//    u64 base_addr;
-//};
-
-//extern u64 gdt_entries[5];
-
 struct __attribute__((packed)) idt_entry {
     u16 target_offset_low;
     u16 target_selector;
@@ -61,10 +52,12 @@ void kmain( void ) {
     BootInfo* boot_info;
     frame_buffer fb;
     term_entry te;
+    u16 ss, cs, ds;
 //    struct tidt t;
-//    gdt_ptr gptr;
-//    gdt_entry *ge;
+    gdt_ptr gptr;
+    gdt_entry *ge;
     int i;
+//    u64 uu;
 
 //    kosh_shell ks;
 
@@ -80,23 +73,56 @@ void kmain( void ) {
 
     term_cls( &te );
 
-    init_gdt();
-    install_gdt();
+    asm volatile( "cli" );
 
-    init_idt( &te );
+    asm volatile( "sgdt %0" : "=m"(gptr) : );
+    term_printf( &te, "EXISTING: limit = %x, base_addr = %x\n\n", gptr.limit, gptr.base_addr );
 
-    for (i = 0; i < 255; i++)
-        idt_set_entry( i, (u64)isr_routine_does_not_exist, 0x08, 1, 0, 0 );
+    ge = (gdt_entry*)(gptr.base_addr);
 
+    for (i = 0; i < gptr.limit; i += sizeof( gdt_entry ), ge++)
+        term_printf( &te, " - %x: limit = %x|%x, base = %x|%x|%x, flags = %x|%x\n",
+                          i, (ge->limit_high_and_flags_high & 0x0f), ge->limit_low,
+                          ge->base_addr_high, ge->base_addr_mid, ge->base_addr_low,
+                          (ge->limit_high_and_flags_high >> 4), ge->flags_low );
+
+    gdt_init();
+    gdt_install();
+
+    idt_init( &te );
+    idt_set_all_stock( 0x28 );
     idt_install();
 
-    term_printf( &te, "sel = %x, addr = %x|%x|%x, func = %x, flags = %x\n",
-                  IDT_ENTRIES[0].target_selector, IDT_ENTRIES[0].target_offset_low, IDT_ENTRIES[0].target_offset_mid, IDT_ENTRIES[0].target_offset_upper, &isr_routine_does_not_exist, IDT_ENTRIES[0].flags );
+    asm volatile( "sgdt %0" : "=m"(gptr) : );
+    term_printf( &te, "\nNEW: limit = %x, base_addr = %x\n\n", gptr.limit, gptr.base_addr );
+
+    ge = (gdt_entry*)(gptr.base_addr);
+
+    for (i = 0; i < gptr.limit; i += sizeof( gdt_entry ), ge++)
+        term_printf( &te, " - %x: limit = %x|%x, base = %x|%x|%x, flags = %x|%x\n",
+                          i, (ge->limit_high_and_flags_high & 0x0f), ge->limit_low,
+                          ge->base_addr_high, ge->base_addr_mid, ge->base_addr_low,
+                          (ge->limit_high_and_flags_high >> 4), ge->flags_low );
+
+
+    asm volatile( "mov %%ss, %0" : "=r"(ss) : );
+    asm volatile( "mov %%cs, %0" : "=r"(cs) : );
+    asm volatile( "mov %%ds, %0" : "=r"(ds) : );
+
+    asm volatile( "sti" );
+
+    term_printf( &te, "\nss = %x, cs = %x, ds = %x\n", ss, cs, ds );
+    term_printf( &te, "\nYes.\n" );
+
+//    term_printf( &te, "sel = %x, addr = %x|%x|%x, func = %x, flags = %x\n",
+//                  IDT_ENTRIES[0].target_selector, IDT_ENTRIES[0].target_offset_low, IDT_ENTRIES[0].target_offset_mid, IDT_ENTRIES[0].target_offset_upper, &isr_routine_does_not_exist, IDT_ENTRIES[0].flags );
+//
 
 //    kerror( L"w00t!" );
 
-    asm volatile( "int $50" );
-//    
+//    asm volatile( "int $50" );
+//    asm volatile( "int $51" );
+
 //    kosh_start_shell( &ks, &te );    
 
     for ( ; ; ) ;

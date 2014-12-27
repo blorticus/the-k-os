@@ -6,9 +6,10 @@ INCLUDES        = -I$(includedir) -I$(includedir)/stdlib
 EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
 EDK_SRC_DIR     = src
 
-KERNEL_OBJS     = $(objdir)/start.o  $(objdir)/kmain.o $(objdir)/lfb.o  $(objdir)/text_terminal.o $(objdir)/string.o  \
-                  $(objdir)/stdio.o  $(objdir)/asm.o   $(objdir)/kosh.o $(objdir)/kosh_cmd.o      $(objdir)/kmalloc.o \
-                  $(objdir)/kerror.o $(objdir)/isr.o   $(objdir)/idt.o  $(objdir)/isr_routines.o  $(objdir)/gdt.o
+KERNEL_OBJS     = $(objdir)/start.o   $(objdir)/kmain.o $(objdir)/lfb.o  $(objdir)/text_terminal.o $(objdir)/string.o   \
+                  $(objdir)/stdio.o   $(objdir)/asm.o   $(objdir)/kosh.o $(objdir)/kosh_cmd.o      $(objdir)/kmalloc.o  \
+                  $(objdir)/kerror.o  $(objdir)/isr.o   $(objdir)/idt.o  $(objdir)/isr_routines.o  $(objdir)/gdt.o      \
+                  $(objdir)/gdt_asm.o
 
 
 ifdef TESTING
@@ -16,6 +17,7 @@ ifdef TESTING
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 
+install: $(objdir)/kernel.elf bootloader mntdsk install-bootloader install-kernel umntdsk
 
 bootloader: $(EDK_OBJ_DIR)/KOSUefi.efi
 
@@ -75,6 +77,9 @@ $(objdir)/idt.o: src/platform/x86_64/idt.c include/platform/x86_64/idt.h
 $(objdir)/gdt.o: src/platform/x86_64/gdt.c include/platform/x86_64/gdt.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/gdt.o src/platform/x86_64/gdt.c
 
+$(objdir)/gdt_asm.o: src/platform/x86_64/gdt_asm.s include/platform/x86_64/gdt.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/gdt_asm.o src/platform/x86_64/gdt_asm.s
+
 mntdsk:
 	-sudo losetup -d /dev/loop0
 	sudo losetup /dev/loop0 vm/disk1.img
@@ -90,8 +95,6 @@ install-bootloader: bootloader mntdsk
 
 install-kernel: $(objdir)/kernel.elf mntdsk
 	sudo cp $(objdir)/kernel.elf mnt/BOOT/kos/kernel.elf
-
-install: $(objdir)/kernel.elf bootloader mntdsk install-bootloader install-kernel umntdsk
 
 clean:
 	-rm -f $(objdir)/*

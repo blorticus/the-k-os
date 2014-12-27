@@ -295,1792 +295,1794 @@
 
 isr000:
 	push_isr_regs
-	mov $0, %edi
+	mov $0, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr001:
 	push_isr_regs
-	mov $1, %edi
+	mov $1, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr002:
 	push_isr_regs
-	mov $2, %edi
+	mov $2, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr003:
 	push_isr_regs
-	mov $3, %edi
+	mov $3, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr004:
 	push_isr_regs
-	mov $4, %edi
+	mov $4, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr005:
 	push_isr_regs
-	mov $5, %edi
+	mov $5, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr006:
 	push_isr_regs
-	mov $6, %edi
+	mov $6, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr007:
 	push_isr_regs
-	mov $7, %edi
+	mov $7, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr008:
 	push_isr_regs
-	mov $8, %edi
+	mov $8, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr009:
 	push_isr_regs
-	mov $9, %edi
+	mov $9, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr010:
 	push_isr_regs
-	mov $10, %edi
+	mov $10, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr011:
 	push_isr_regs
-	mov $11, %edi
+	mov $11, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr012:
 	push_isr_regs
-	mov $12, %edi
+	mov $12, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr013:
 	push_isr_regs
-	mov $13, %edi
+	mov $13, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
+haltp:
+    jmp haltp
 	iretq
 
 isr014:
 	push_isr_regs
-	mov $14, %edi
+	mov $14, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr015:
 	push_isr_regs
-	mov $15, %edi
+	mov $15, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr016:
 	push_isr_regs
-	mov $16, %edi
+	mov $16, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr017:
 	push_isr_regs
-	mov $17, %edi
+	mov $17, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr018:
 	push_isr_regs
-	mov $18, %edi
+	mov $18, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr019:
 	push_isr_regs
-	mov $19, %edi
+	mov $19, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr020:
 	push_isr_regs
-	mov $20, %edi
+	mov $20, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr021:
 	push_isr_regs
-	mov $21, %edi
+	mov $21, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr022:
 	push_isr_regs
-	mov $22, %edi
+	mov $22, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr023:
 	push_isr_regs
-	mov $23, %edi
+	mov $23, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr024:
 	push_isr_regs
-	mov $24, %edi
+	mov $24, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr025:
 	push_isr_regs
-	mov $25, %edi
+	mov $25, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr026:
 	push_isr_regs
-	mov $26, %edi
+	mov $26, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr027:
 	push_isr_regs
-	mov $27, %edi
+	mov $27, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr028:
 	push_isr_regs
-	mov $28, %edi
+	mov $28, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr029:
 	push_isr_regs
-	mov $29, %edi
+	mov $29, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr030:
 	push_isr_regs
-	mov $30, %edi
+	mov $30, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr031:
 	push_isr_regs
-	mov $31, %edi
+	mov $31, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr032:
 	push_isr_regs
-	mov $32, %edi
+	mov $32, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr033:
 	push_isr_regs
-	mov $33, %edi
+	mov $33, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr034:
 	push_isr_regs
-	mov $34, %edi
+	mov $34, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr035:
 	push_isr_regs
-	mov $35, %edi
+	mov $35, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr036:
 	push_isr_regs
-	mov $36, %edi
+	mov $36, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr037:
 	push_isr_regs
-	mov $37, %edi
+	mov $37, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr038:
 	push_isr_regs
-	mov $38, %edi
+	mov $38, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr039:
 	push_isr_regs
-	mov $39, %edi
+	mov $39, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr040:
 	push_isr_regs
-	mov $40, %edi
+	mov $40, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr041:
 	push_isr_regs
-	mov $41, %edi
+	mov $41, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr042:
 	push_isr_regs
-	mov $42, %edi
+	mov $42, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr043:
 	push_isr_regs
-	mov $43, %edi
+	mov $43, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr044:
 	push_isr_regs
-	mov $44, %edi
+	mov $44, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr045:
 	push_isr_regs
-	mov $45, %edi
+	mov $45, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr046:
 	push_isr_regs
-	mov $46, %edi
+	mov $46, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr047:
 	push_isr_regs
-	mov $47, %edi
+	mov $47, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr048:
 	push_isr_regs
-	mov $48, %edi
+	mov $48, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr049:
 	push_isr_regs
-	mov $49, %edi
+    mov $49, %rdi
 	call isr_routine_does_not_exist
-	pop_isr_regs
+    pop_isr_regs
 	iretq
 
 isr050:
 	push_isr_regs
-	mov $50, %edi
+    mov $50, %rdi
 	call isr_routine_does_not_exist
-	pop_isr_regs
+    pop_isr_regs
 	iretq
 
 isr051:
 	push_isr_regs
-	mov $51, %edi
+	mov $51, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr052:
 	push_isr_regs
-	mov $52, %edi
+	mov $52, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr053:
 	push_isr_regs
-	mov $53, %edi
+	mov $53, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr054:
 	push_isr_regs
-	mov $54, %edi
+	mov $54, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr055:
 	push_isr_regs
-	mov $55, %edi
+	mov $55, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr056:
 	push_isr_regs
-	mov $56, %edi
+	mov $56, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr057:
 	push_isr_regs
-	mov $57, %edi
+	mov $57, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr058:
 	push_isr_regs
-	mov $58, %edi
+	mov $58, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr059:
 	push_isr_regs
-	mov $59, %edi
+	mov $59, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr060:
 	push_isr_regs
-	mov $60, %edi
+	mov $60, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr061:
 	push_isr_regs
-	mov $61, %edi
+	mov $61, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr062:
 	push_isr_regs
-	mov $62, %edi
+	mov $62, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr063:
 	push_isr_regs
-	mov $63, %edi
+	mov $63, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr064:
 	push_isr_regs
-	mov $64, %edi
+	mov $64, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr065:
 	push_isr_regs
-	mov $65, %edi
+	mov $65, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr066:
 	push_isr_regs
-	mov $66, %edi
+	mov $66, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr067:
 	push_isr_regs
-	mov $67, %edi
+	mov $67, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr068:
 	push_isr_regs
-	mov $68, %edi
+	mov $68, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr069:
 	push_isr_regs
-	mov $69, %edi
+	mov $69, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr070:
 	push_isr_regs
-	mov $70, %edi
+	mov $70, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr071:
 	push_isr_regs
-	mov $71, %edi
+	mov $71, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr072:
 	push_isr_regs
-	mov $72, %edi
+	mov $72, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr073:
 	push_isr_regs
-	mov $73, %edi
+	mov $73, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr074:
 	push_isr_regs
-	mov $74, %edi
+	mov $74, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr075:
 	push_isr_regs
-	mov $75, %edi
+	mov $75, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr076:
 	push_isr_regs
-	mov $76, %edi
+	mov $76, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr077:
 	push_isr_regs
-	mov $77, %edi
+	mov $77, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr078:
 	push_isr_regs
-	mov $78, %edi
+	mov $78, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr079:
 	push_isr_regs
-	mov $79, %edi
+	mov $79, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr080:
 	push_isr_regs
-	mov $80, %edi
+	mov $80, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr081:
 	push_isr_regs
-	mov $81, %edi
+	mov $81, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr082:
 	push_isr_regs
-	mov $82, %edi
+	mov $82, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr083:
 	push_isr_regs
-	mov $83, %edi
+	mov $83, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr084:
 	push_isr_regs
-	mov $84, %edi
+	mov $84, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr085:
 	push_isr_regs
-	mov $85, %edi
+	mov $85, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr086:
 	push_isr_regs
-	mov $86, %edi
+	mov $86, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr087:
 	push_isr_regs
-	mov $87, %edi
+	mov $87, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr088:
 	push_isr_regs
-	mov $88, %edi
+	mov $88, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr089:
 	push_isr_regs
-	mov $89, %edi
+	mov $89, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr090:
 	push_isr_regs
-	mov $90, %edi
+	mov $90, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr091:
 	push_isr_regs
-	mov $91, %edi
+	mov $91, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr092:
 	push_isr_regs
-	mov $92, %edi
+	mov $92, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr093:
 	push_isr_regs
-	mov $93, %edi
+	mov $93, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr094:
 	push_isr_regs
-	mov $94, %edi
+	mov $94, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr095:
 	push_isr_regs
-	mov $95, %edi
+	mov $95, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr096:
 	push_isr_regs
-	mov $96, %edi
+	mov $96, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr097:
 	push_isr_regs
-	mov $97, %edi
+	mov $97, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr098:
 	push_isr_regs
-	mov $98, %edi
+	mov $98, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr099:
 	push_isr_regs
-	mov $99, %edi
+	mov $99, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr100:
 	push_isr_regs
-	mov $100, %edi
+	mov $100, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr101:
 	push_isr_regs
-	mov $101, %edi
+	mov $101, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr102:
 	push_isr_regs
-	mov $102, %edi
+	mov $102, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr103:
 	push_isr_regs
-	mov $103, %edi
+	mov $103, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr104:
 	push_isr_regs
-	mov $104, %edi
+	mov $104, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr105:
 	push_isr_regs
-	mov $105, %edi
+	mov $105, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr106:
 	push_isr_regs
-	mov $106, %edi
+	mov $106, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr107:
 	push_isr_regs
-	mov $107, %edi
+	mov $107, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr108:
 	push_isr_regs
-	mov $108, %edi
+	mov $108, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr109:
 	push_isr_regs
-	mov $109, %edi
+	mov $109, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr110:
 	push_isr_regs
-	mov $110, %edi
+	mov $110, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr111:
 	push_isr_regs
-	mov $111, %edi
+	mov $111, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr112:
 	push_isr_regs
-	mov $112, %edi
+	mov $112, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr113:
 	push_isr_regs
-	mov $113, %edi
+	mov $113, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr114:
 	push_isr_regs
-	mov $114, %edi
+	mov $114, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr115:
 	push_isr_regs
-	mov $115, %edi
+	mov $115, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr116:
 	push_isr_regs
-	mov $116, %edi
+	mov $116, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr117:
 	push_isr_regs
-	mov $117, %edi
+	mov $117, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr118:
 	push_isr_regs
-	mov $118, %edi
+	mov $118, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr119:
 	push_isr_regs
-	mov $119, %edi
+	mov $119, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr120:
 	push_isr_regs
-	mov $120, %edi
+	mov $120, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr121:
 	push_isr_regs
-	mov $121, %edi
+	mov $121, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr122:
 	push_isr_regs
-	mov $122, %edi
+	mov $122, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr123:
 	push_isr_regs
-	mov $123, %edi
+	mov $123, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr124:
 	push_isr_regs
-	mov $124, %edi
+	mov $124, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr125:
 	push_isr_regs
-	mov $125, %edi
+	mov $125, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr126:
 	push_isr_regs
-	mov $126, %edi
+	mov $126, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr127:
 	push_isr_regs
-	mov $127, %edi
+	mov $127, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr128:
 	push_isr_regs
-	mov $128, %edi
+	mov $128, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr129:
 	push_isr_regs
-	mov $129, %edi
+	mov $129, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr130:
 	push_isr_regs
-	mov $130, %edi
+	mov $130, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr131:
 	push_isr_regs
-	mov $131, %edi
+	mov $131, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr132:
 	push_isr_regs
-	mov $132, %edi
+	mov $132, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr133:
 	push_isr_regs
-	mov $133, %edi
+	mov $133, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr134:
 	push_isr_regs
-	mov $134, %edi
+	mov $134, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr135:
 	push_isr_regs
-	mov $135, %edi
+	mov $135, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr136:
 	push_isr_regs
-	mov $136, %edi
+	mov $136, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr137:
 	push_isr_regs
-	mov $137, %edi
+	mov $137, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr138:
 	push_isr_regs
-	mov $138, %edi
+	mov $138, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr139:
 	push_isr_regs
-	mov $139, %edi
+	mov $139, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr140:
 	push_isr_regs
-	mov $140, %edi
+	mov $140, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr141:
 	push_isr_regs
-	mov $141, %edi
+	mov $141, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr142:
 	push_isr_regs
-	mov $142, %edi
+	mov $142, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr143:
 	push_isr_regs
-	mov $143, %edi
+	mov $143, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr144:
 	push_isr_regs
-	mov $144, %edi
+	mov $144, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr145:
 	push_isr_regs
-	mov $145, %edi
+	mov $145, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr146:
 	push_isr_regs
-	mov $146, %edi
+	mov $146, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr147:
 	push_isr_regs
-	mov $147, %edi
+	mov $147, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr148:
 	push_isr_regs
-	mov $148, %edi
+	mov $148, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr149:
 	push_isr_regs
-	mov $149, %edi
+	mov $149, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr150:
 	push_isr_regs
-	mov $150, %edi
+	mov $150, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr151:
 	push_isr_regs
-	mov $151, %edi
+	mov $151, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr152:
 	push_isr_regs
-	mov $152, %edi
+	mov $152, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr153:
 	push_isr_regs
-	mov $153, %edi
+	mov $153, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr154:
 	push_isr_regs
-	mov $154, %edi
+	mov $154, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr155:
 	push_isr_regs
-	mov $155, %edi
+	mov $155, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr156:
 	push_isr_regs
-	mov $156, %edi
+	mov $156, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr157:
 	push_isr_regs
-	mov $157, %edi
+	mov $157, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr158:
 	push_isr_regs
-	mov $158, %edi
+	mov $158, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr159:
 	push_isr_regs
-	mov $159, %edi
+	mov $159, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr160:
 	push_isr_regs
-	mov $160, %edi
+	mov $160, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr161:
 	push_isr_regs
-	mov $161, %edi
+	mov $161, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr162:
 	push_isr_regs
-	mov $162, %edi
+	mov $162, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr163:
 	push_isr_regs
-	mov $163, %edi
+	mov $163, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr164:
 	push_isr_regs
-	mov $164, %edi
+	mov $164, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr165:
 	push_isr_regs
-	mov $165, %edi
+	mov $165, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr166:
 	push_isr_regs
-	mov $166, %edi
+	mov $166, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr167:
 	push_isr_regs
-	mov $167, %edi
+	mov $167, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr168:
 	push_isr_regs
-	mov $168, %edi
+	mov $168, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr169:
 	push_isr_regs
-	mov $169, %edi
+	mov $169, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr170:
 	push_isr_regs
-	mov $170, %edi
+	mov $170, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr171:
 	push_isr_regs
-	mov $171, %edi
+	mov $171, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr172:
 	push_isr_regs
-	mov $172, %edi
+	mov $172, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr173:
 	push_isr_regs
-	mov $173, %edi
+	mov $173, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr174:
 	push_isr_regs
-	mov $174, %edi
+	mov $174, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr175:
 	push_isr_regs
-	mov $175, %edi
+	mov $175, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr176:
 	push_isr_regs
-	mov $176, %edi
+	mov $176, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr177:
 	push_isr_regs
-	mov $177, %edi
+	mov $177, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr178:
 	push_isr_regs
-	mov $178, %edi
+	mov $178, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr179:
 	push_isr_regs
-	mov $179, %edi
+	mov $179, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr180:
 	push_isr_regs
-	mov $180, %edi
+	mov $180, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr181:
 	push_isr_regs
-	mov $181, %edi
+	mov $181, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr182:
 	push_isr_regs
-	mov $182, %edi
+	mov $182, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr183:
 	push_isr_regs
-	mov $183, %edi
+	mov $183, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr184:
 	push_isr_regs
-	mov $184, %edi
+	mov $184, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr185:
 	push_isr_regs
-	mov $185, %edi
+	mov $185, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr186:
 	push_isr_regs
-	mov $186, %edi
+	mov $186, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr187:
 	push_isr_regs
-	mov $187, %edi
+	mov $187, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr188:
 	push_isr_regs
-	mov $188, %edi
+	mov $188, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr189:
 	push_isr_regs
-	mov $189, %edi
+	mov $189, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr190:
 	push_isr_regs
-	mov $190, %edi
+	mov $190, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr191:
 	push_isr_regs
-	mov $191, %edi
+	mov $191, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr192:
 	push_isr_regs
-	mov $192, %edi
+	mov $192, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr193:
 	push_isr_regs
-	mov $193, %edi
+	mov $193, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr194:
 	push_isr_regs
-	mov $194, %edi
+	mov $194, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr195:
 	push_isr_regs
-	mov $195, %edi
+	mov $195, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr196:
 	push_isr_regs
-	mov $196, %edi
+	mov $196, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr197:
 	push_isr_regs
-	mov $197, %edi
+	mov $197, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr198:
 	push_isr_regs
-	mov $198, %edi
+	mov $198, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr199:
 	push_isr_regs
-	mov $199, %edi
+	mov $199, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr200:
 	push_isr_regs
-	mov $200, %edi
+	mov $200, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr201:
 	push_isr_regs
-	mov $201, %edi
+	mov $201, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr202:
 	push_isr_regs
-	mov $202, %edi
+	mov $202, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr203:
 	push_isr_regs
-	mov $203, %edi
+	mov $203, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr204:
 	push_isr_regs
-	mov $204, %edi
+	mov $204, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr205:
 	push_isr_regs
-	mov $205, %edi
+	mov $205, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr206:
 	push_isr_regs
-	mov $206, %edi
+	mov $206, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr207:
 	push_isr_regs
-	mov $207, %edi
+	mov $207, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr208:
 	push_isr_regs
-	mov $208, %edi
+	mov $208, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr209:
 	push_isr_regs
-	mov $209, %edi
+	mov $209, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr210:
 	push_isr_regs
-	mov $210, %edi
+	mov $210, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr211:
 	push_isr_regs
-	mov $211, %edi
+	mov $211, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr212:
 	push_isr_regs
-	mov $212, %edi
+	mov $212, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr213:
 	push_isr_regs
-	mov $213, %edi
+	mov $213, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr214:
 	push_isr_regs
-	mov $214, %edi
+	mov $214, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr215:
 	push_isr_regs
-	mov $215, %edi
+	mov $215, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr216:
 	push_isr_regs
-	mov $216, %edi
+	mov $216, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr217:
 	push_isr_regs
-	mov $217, %edi
+	mov $217, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr218:
 	push_isr_regs
-	mov $218, %edi
+	mov $218, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr219:
 	push_isr_regs
-	mov $219, %edi
+	mov $219, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr220:
 	push_isr_regs
-	mov $220, %edi
+	mov $220, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr221:
 	push_isr_regs
-	mov $221, %edi
+	mov $221, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr222:
 	push_isr_regs
-	mov $222, %edi
+	mov $222, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr223:
 	push_isr_regs
-	mov $223, %edi
+	mov $223, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr224:
 	push_isr_regs
-	mov $224, %edi
+	mov $224, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr225:
 	push_isr_regs
-	mov $225, %edi
+	mov $225, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr226:
 	push_isr_regs
-	mov $226, %edi
+	mov $226, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr227:
 	push_isr_regs
-	mov $227, %edi
+	mov $227, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr228:
 	push_isr_regs
-	mov $228, %edi
+	mov $228, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr229:
 	push_isr_regs
-	mov $229, %edi
+	mov $229, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr230:
 	push_isr_regs
-	mov $230, %edi
+	mov $230, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr231:
 	push_isr_regs
-	mov $231, %edi
+	mov $231, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr232:
 	push_isr_regs
-	mov $232, %edi
+	mov $232, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr233:
 	push_isr_regs
-	mov $233, %edi
+	mov $233, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr234:
 	push_isr_regs
-	mov $234, %edi
+	mov $234, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr235:
 	push_isr_regs
-	mov $235, %edi
+	mov $235, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr236:
 	push_isr_regs
-	mov $236, %edi
+	mov $236, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr237:
 	push_isr_regs
-	mov $237, %edi
+	mov $237, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr238:
 	push_isr_regs
-	mov $238, %edi
+	mov $238, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr239:
 	push_isr_regs
-	mov $239, %edi
+	mov $239, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr240:
 	push_isr_regs
-	mov $240, %edi
+	mov $240, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr241:
 	push_isr_regs
-	mov $241, %edi
+	mov $241, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr242:
 	push_isr_regs
-	mov $242, %edi
+	mov $242, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr243:
 	push_isr_regs
-	mov $243, %edi
+	mov $243, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr244:
 	push_isr_regs
-	mov $244, %edi
+	mov $244, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr245:
 	push_isr_regs
-	mov $245, %edi
+	mov $245, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr246:
 	push_isr_regs
-	mov $246, %edi
+	mov $246, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr247:
 	push_isr_regs
-	mov $247, %edi
+	mov $247, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr248:
 	push_isr_regs
-	mov $248, %edi
+	mov $248, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr249:
 	push_isr_regs
-	mov $249, %edi
+	mov $249, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr250:
 	push_isr_regs
-	mov $250, %edi
+	mov $250, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr251:
 	push_isr_regs
-	mov $251, %edi
+	mov $251, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr252:
 	push_isr_regs
-	mov $252, %edi
+	mov $252, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr253:
 	push_isr_regs
-	mov $253, %edi
+	mov $253, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr254:
 	push_isr_regs
-	mov $254, %edi
+	mov $254, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq
 
 isr255:
 	push_isr_regs
-	mov $255, %edi
+	mov $255, %rdi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq

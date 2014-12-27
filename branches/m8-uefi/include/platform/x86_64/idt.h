@@ -13,7 +13,7 @@
  * RE-ENTRANT?:     NO
  *
  */
-void init_idt( term_entry* te );
+void idt_init( term_entry* te );
 
 
 /**
@@ -44,7 +44,8 @@ void idt_set_entry( u8 num, u64 func_addr, u16 sel, u8 present, u8 dpl, u8 ist )
 void idt_install( void );
 
 
-void isr_routine_does_not_exist( u64 isr_num );
+void isr_routine_does_not_exist( u8 isr_num );
+void idt_set_all_stock( u8 selector );
 
 
 #endif

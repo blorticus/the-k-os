@@ -17,9 +17,9 @@ typedef struct gdt_entry {
 } __attribute__((packed)) gdt_entry;
 
 
-void init_gdt( void );
-
-void install_gdt( void );
+void gdt_init( void );
+void gdt_install( void );
+void gdt_segment_refresh( u8 data_segment, u8 code_segment );
 
 
 #endif
