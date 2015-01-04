@@ -18,7 +18,3 @@ inline u32 ioport_readl( u16 port ) {
     return value;
 }
 
-
-inline void raise_int_128() {
-    asm volatile( "int $128" );
-}

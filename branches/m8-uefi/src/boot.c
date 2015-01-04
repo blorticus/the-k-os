@@ -33,6 +33,37 @@ typedef struct {
 } Elf64_Ehdr;
 
 
+typedef struct {
+    UINT32 signature;
+    UINT32 physical_addr_ptr;
+    UINT8  length;
+    UINT8  spec_rev;
+    UINT8  checksum;
+    UINT8  mp_feature_byte_1;
+    UINT32 mp_feature_bytes_2_5;
+} MpFloatingStructure;
+
+
+typedef struct {
+    UINT32 signature;
+    UINT16 base_table_length;
+    UINT8  spec_rev;
+    UINT8  checksum;
+    UINT32 oem_word_1;
+    UINT32 oem_word_2;
+    UINT32 prod_id_word_1;
+    UINT32 prod_id_word_2;
+    UINT32 prod_id_word_3;
+    UINT32 oem_table_ptr_address;
+    UINT16 oem_table_size;
+    UINT16 entry_count;
+    UINT32 local_apic_memmap_address;
+    UINT16 extended_table_length;
+    UINT8  extended_table_checksum;
+    UINT8  reserved0;
+} MpConfigTableHeader;
+
+
 
 /******
  * ARGUMENTS:
@@ -65,6 +96,36 @@ UINT16* statusToString( EFI_STATUS status_code );
  *  - Print ELF header information to conout
  *******/
 void printElfHeaderInfo( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, Elf64_Ehdr* header, CHAR16* wbuf );
+
+
+/******
+ * ARGUMENT:
+ *  - left          : an EFI GUID
+ *  - right         : another EFI GUID
+ * DESCRIPTION:
+ *  - Return true if 'left' and 'right' have the same struct values; false otherwise
+ *******/
+int compareEfiGUIDs( EFI_GUID left, EFI_GUID right );
+
+
+/******
+ * ARGUMENT:
+ *  - mfps_addr     : address of the MP Floating Pointer Structure
+ *  - conout        : pointer to SimpleTextOutputProtocol handler where info should be printed
+ *  - wbuf          : pinger to a wide character buffer used to format output
+ * DESCRIPTION:
+ *  - Print MP Table Information
+ *******/
+void printMPTableInformation( MpFloatingStructure* mpfs, EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, CHAR16* wbuf );
+
+
+EFI_GUID  EFI_ACPI_20_TABLE_GUID = {0x8868e871,0xe4f1,0x11d3,0xbc,0x22,0x0,0x80,0xc7,0x3c,0x88,0x81};
+EFI_GUID  ACPI_TABLE_GUID        = {0xeb9d2d30,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
+EFI_GUID  SAL_SYSTEM_TABLE_GUID  = {0xeb9d2d32,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
+EFI_GUID  SMBIOS_TABLE_GUID      = {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
+EFI_GUID  MPS_TABLE_GUID         = {0xeb9d2d2f,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
+EFI_GUID  EFI_ACPI_TABLE_GUID    = {0x8868e871,0xe4f1,0x11d3,0xbc,0x22,0x0,0x80,0xc7,0x3c,0x88,0x81};
+EFI_GUID  ACPI_10_TABLE_GUID     = {0xeb9d2d30,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
 
 
 /* Name of the kernel binary to load */
@@ -107,6 +168,11 @@ UefiMain(
     /* Basic UEFI data structures for gathering all other information */
     EFI_SYSTEM_TABLE   *gST;
     EFI_BOOT_SERVICES  *gBS;
+
+    /* For ACPI Information */
+    UINTN efi_configuration_table_entry_count;
+    EFI_CONFIGURATION_TABLE* efi_config_table_entries;
+    EFI_GUID vendor_guid;
 
     /* For GetMemoryMap() */
     UINTN memmap_size = 4096*256;
@@ -291,6 +357,23 @@ UefiMain(
     swprintf( wbuf, 1024, L"lfb = 0x%08x; hrez = %u; vrez = %u\r\n", (UINT32*)(gop->Mode->FrameBufferBase), hrez, vrez );
     gST->ConOut->OutputString( gST->ConOut, wbuf );
 
+    efi_configuration_table_entry_count = gST->NumberOfTableEntries;
+    swprintf( wbuf, 1024, L"Configuration Table Entry Count = %lu\r\n", efi_configuration_table_entry_count );
+    gST->ConOut->OutputString( gST->ConOut, wbuf );
+
+    efi_config_table_entries = gST->ConfigurationTable;
+    for (i = 0; i < efi_configuration_table_entry_count; i++) {
+        vendor_guid = efi_config_table_entries[i].VendorGuid;
+        swprintf( wbuf, 1024, L" [%lu] GUID = %08x %04x %04x %02x %02x %02x %02x %02x %02x %02x %02x\r\n",
+                    i, vendor_guid.Data1, vendor_guid.Data2, vendor_guid.Data3,
+                    vendor_guid.Data4[0], vendor_guid.Data4[1], vendor_guid.Data4[2], vendor_guid.Data4[3],
+                    vendor_guid.Data4[4], vendor_guid.Data4[5], vendor_guid.Data4[6], vendor_guid.Data4[7] );
+        gST->ConOut->OutputString( gST->ConOut, wbuf );
+
+        if (compareEfiGUIDs( vendor_guid, MPS_TABLE_GUID ))
+            printMPTableInformation( (MpFloatingStructure*)(efi_config_table_entries[i].VendorTable), gST->ConOut, wbuf );
+    }
+
     /* Build memory map, which is required to ExitBootServices */
     if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &rbuf )) != EFI_SUCCESS)
         return PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
@@ -314,11 +397,59 @@ UefiMain(
     if ((status = gBS->ExitBootServices( ImageHandle, map_key )) != EFI_SUCCESS)
         return PreBootHalt( gST->ConOut, L"ExitBootServices() failed", statusToString( status ) );
 
-    asm volatile( "movq %0, %%r9" : : "r"(boot_info) );
-    asm volatile( "push $0x100000\n\t"
-                  "ret" );
+//    asm volatile( "movq %0, %%r9" : : "r"(boot_info) );
+//    asm volatile( "push $0x100000\n\t"
+//                  "ret" );
+
+    for ( ;; ) ;
 
     return EFI_SUCCESS;
+}
+
+
+void printMPTableInformation( MpFloatingStructure* mpfs, EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, CHAR16* wbuf ) {
+    MpConfigTableHeader* mcth;
+
+    conout->OutputString( conout, L"  --> MPS Table\r\n" );
+
+    if (mpfs->signature == 0x5f504d5f) {
+        conout->OutputString( conout, L"    -- signature matches\r\n" );
+        swprintf( wbuf, 1024, L"    -- phys_addr = %08x\r\n    -- length = %02x\r\n    -- spec_rev = %02x\r\n    -- checksum = %02x\r\n    -- mp_feature_1 = %02x\r\n    -- mp_feature_bytes_2-5 = %08x\r\n", mpfs->physical_addr_ptr, mpfs->length, mpfs->spec_rev, mpfs->checksum, mpfs->mp_feature_byte_1, mpfs->mp_feature_bytes_2_5 );
+        conout->OutputString( conout, wbuf );
+    
+        if (mpfs->physical_addr_ptr != 0) {
+            conout->OutputString( conout, L"    -- Has table entries (phys addr != 0)\r\n" );
+
+            mcth = (MpConfigTableHeader*)((UINTN)(mpfs->physical_addr_ptr));
+
+            if (mcth->signature == 0x504d4350) {
+                conout->OutputString( conout, L"      -- signature matches\r\n" );
+                swprintf( wbuf, 1024, L"      -- oem table ptr = %08x\r\n      -- entry count = %04x\r\n      -- local apic mmap addr = %08x\r\n      -- extended table len = %04x\r\n", mcth->oem_table_ptr_address, mcth->entry_count, mcth->local_apic_memmap_address, mcth->extended_table_length );
+                conout->OutputString( conout, wbuf );
+            }
+            else {
+                conout->OutputString( conout, L"      -- signature does not match\r\n" );
+                return;
+            }
+        }
+        else {
+            conout->OutputString( conout, L"    -- No table entries (phys addr = 0)\r\n" );
+            return;
+        }
+    }
+    else {
+        conout->OutputString( conout, L"    -- signature does not match\r\n" );
+        return;
+    }
+}
+
+
+
+int compareEfiGUIDs( EFI_GUID left, EFI_GUID right ) {
+    return left.Data1 == right.Data1 && left.Data2 == right.Data2 && left.Data3 == right.Data3 &&
+            left.Data4[0] == right.Data4[0] && left.Data4[1] == right.Data4[1] && left.Data4[2] == right.Data4[2] &&
+            left.Data4[3] == right.Data4[3] && left.Data4[4] == right.Data4[4] && left.Data4[5] == right.Data4[5] &&
+            left.Data4[6] == right.Data4[6] && left.Data4[7] == right.Data4[7];
 }
 
 

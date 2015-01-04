@@ -296,66 +296,67 @@
 isr000:
 	push_isr_regs
 	mov $0, %rdi
-	call isr_routine_does_not_exist
+	call isr_divide_by_zero
 	pop_isr_regs
 	iretq
 
 isr001:
 	push_isr_regs
 	mov $1, %rdi
-	call isr_routine_does_not_exist
+	call isr_debug
 	pop_isr_regs
 	iretq
 
 isr002:
 	push_isr_regs
 	mov $2, %rdi
-	call isr_routine_does_not_exist
+	call isr_non_maskable_interrupt
 	pop_isr_regs
 	iretq
 
 isr003:
 	push_isr_regs
 	mov $3, %rdi
-	call isr_routine_does_not_exist
+	call isr_breakpoint
 	pop_isr_regs
 	iretq
 
 isr004:
 	push_isr_regs
 	mov $4, %rdi
-	call isr_routine_does_not_exist
+	call isr_overflow
 	pop_isr_regs
 	iretq
 
 isr005:
 	push_isr_regs
 	mov $5, %rdi
-	call isr_routine_does_not_exist
+	call isr_bound_range
 	pop_isr_regs
 	iretq
 
 isr006:
 	push_isr_regs
 	mov $6, %rdi
-	call isr_routine_does_not_exist
+	call isr_invalid_opcode
 	pop_isr_regs
 	iretq
 
 isr007:
 	push_isr_regs
 	mov $7, %rdi
-	call isr_routine_does_not_exist
+	call isr_device_not_available
 	pop_isr_regs
 	iretq
 
 isr008:
 	push_isr_regs
 	mov $8, %rdi
-	call isr_routine_does_not_exist
+	call isr_double_fault
 	pop_isr_regs
 	iretq
 
+# coprocessor-segment-overrun: reserved and not supported
 isr009:
 	push_isr_regs
 	mov $9, %rdi
@@ -366,28 +367,28 @@ isr009:
 isr010:
 	push_isr_regs
 	mov $10, %rdi
-	call isr_routine_does_not_exist
+	call isr_invalid_tss
 	pop_isr_regs
 	iretq
 
 isr011:
 	push_isr_regs
 	mov $11, %rdi
-	call isr_routine_does_not_exist
+	call isr_segment_not_present
 	pop_isr_regs
 	iretq
 
 isr012:
 	push_isr_regs
 	mov $12, %rdi
-	call isr_routine_does_not_exist
+	call isr_stack
 	pop_isr_regs
 	iretq
 
 isr013:
 	push_isr_regs
 	mov $13, %rdi
-	call isr_routine_does_not_exist
+	call isr_general_protection
 	pop_isr_regs
 haltp:
     jmp haltp
@@ -396,10 +397,11 @@ haltp:
 isr014:
 	push_isr_regs
 	mov $14, %rdi
-	call isr_routine_does_not_exist
+	call isr_page_fault
 	pop_isr_regs
 	iretq
 
+# reserved
 isr015:
 	push_isr_regs
 	mov $15, %rdi
@@ -410,31 +412,32 @@ isr015:
 isr016:
 	push_isr_regs
 	mov $16, %rdi
-	call isr_routine_does_not_exist
+	call isr_floating_point_exception_pending
 	pop_isr_regs
 	iretq
 
 isr017:
 	push_isr_regs
 	mov $17, %rdi
-	call isr_routine_does_not_exist
+	call isr_alignment_check
 	pop_isr_regs
 	iretq
 
 isr018:
 	push_isr_regs
 	mov $18, %rdi
-	call isr_routine_does_not_exist
+	call isr_machine_check
 	pop_isr_regs
 	iretq
 
 isr019:
 	push_isr_regs
 	mov $19, %rdi
-	call isr_routine_does_not_exist
+	call isr_simd_floating_point
 	pop_isr_regs
 	iretq
 
+# reserved
 isr020:
 	push_isr_regs
 	mov $20, %rdi
@@ -442,6 +445,7 @@ isr020:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr021:
 	push_isr_regs
 	mov $21, %rdi
@@ -449,6 +453,7 @@ isr021:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr022:
 	push_isr_regs
 	mov $22, %rdi
@@ -456,6 +461,7 @@ isr022:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr023:
 	push_isr_regs
 	mov $23, %rdi
@@ -463,6 +469,7 @@ isr023:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr024:
 	push_isr_regs
 	mov $24, %rdi
@@ -470,6 +477,7 @@ isr024:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr025:
 	push_isr_regs
 	mov $25, %rdi
@@ -477,6 +485,7 @@ isr025:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr026:
 	push_isr_regs
 	mov $26, %rdi
@@ -484,6 +493,7 @@ isr026:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr027:
 	push_isr_regs
 	mov $27, %rdi
@@ -491,6 +501,7 @@ isr027:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr028:
 	push_isr_regs
 	mov $28, %rdi
@@ -498,6 +509,7 @@ isr028:
 	pop_isr_regs
 	iretq
 
+# reserved
 isr029:
 	push_isr_regs
 	mov $29, %rdi
@@ -508,10 +520,11 @@ isr029:
 isr030:
 	push_isr_regs
 	mov $30, %rdi
-	call isr_routine_does_not_exist
+	call isr_security_exception
 	pop_isr_regs
 	iretq
 
+# reserved
 isr031:
 	push_isr_regs
 	mov $31, %rdi
@@ -519,6 +532,7 @@ isr031:
 	pop_isr_regs
 	iretq
 
+# Remainder (32 .. 255) open for use
 isr032:
 	push_isr_regs
 	mov $32, %rdi
