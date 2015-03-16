@@ -6,10 +6,10 @@ INCLUDES        = -I$(includedir) -I$(includedir)/stdlib
 EDK_OBJ_DIR     = /home/vwells/src/edk2/Build/KOSUefi/DEBUG_GCC47/X64
 EDK_SRC_DIR     = src
 
-KERNEL_OBJS     = $(objdir)/start.o   $(objdir)/kmain.o $(objdir)/lfb.o  $(objdir)/text_terminal.o $(objdir)/string.o   \
-                  $(objdir)/stdio.o   $(objdir)/asm.o   $(objdir)/kosh.o $(objdir)/kosh_cmd.o      $(objdir)/kmalloc.o  \
-                  $(objdir)/kerror.o  $(objdir)/isr.o   $(objdir)/idt.o  $(objdir)/isr_routines.o  $(objdir)/gdt.o      \
-                  $(objdir)/gdt_asm.o
+KERNEL_OBJS     = $(objdir)/start.o   $(objdir)/kmain.o    $(objdir)/lfb.o  $(objdir)/text_terminal.o $(objdir)/string.o   \
+                  $(objdir)/stdio.o   $(objdir)/asm.o      $(objdir)/kosh.o $(objdir)/kosh_cmd.o      $(objdir)/kmalloc.o  \
+                  $(objdir)/kerror.o  $(objdir)/isr.o      $(objdir)/idt.o  $(objdir)/isr_routines.o  $(objdir)/gdt.o      \
+                  $(objdir)/gdt_asm.o $(objdir)/pic_8259.o
 
 
 ifdef TESTING
@@ -17,11 +17,11 @@ ifdef TESTING
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 
-install: $(objdir)/kernel.elf bootloader mntdsk install-bootloader install-kernel umntdsk
+install: $(objdir)/kernel.elf mntdsk install-kernel umntdsk
 
 bootloader: $(EDK_OBJ_DIR)/KOSUefi.efi
 
-$(EDK_OBJ_DIR)/KOSUefi.efi: KOSUefi.dsc KOSUefi.inf $(EDK_SRC_DIR)/boot.c
+$(EDK_OBJ_DIR)/KOSUefi.efi: KOSUefi.dsc KOSUefi.inf $(EDK_SRC_DIR)/boot/uefi.c
 	cd /home/vwells/src/edk2
 	. edksetup.sh
 	build -p KOSUefi/KOSUefi.dsc -a X64 -m KOSUefi/KOSUefi.inf
@@ -79,6 +79,9 @@ $(objdir)/gdt.o: src/platform/x86_64/gdt.c include/platform/x86_64/gdt.h
 
 $(objdir)/gdt_asm.o: src/platform/x86_64/gdt_asm.s include/platform/x86_64/gdt.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/gdt_asm.o src/platform/x86_64/gdt_asm.s
+
+$(objdir)/pic_8259.o: src/platform/x86_64/pic_8259.c include/platform/x86_64/pic_8259.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(objdir)/pic_8259.o src/platform/x86_64/pic_8259.c
 
 mntdsk:
 	-sudo losetup -d /dev/loop0

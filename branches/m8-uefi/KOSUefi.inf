@@ -28,7 +28,7 @@
 #
 
 [Sources]
-  src/boot.c
+  src/boot/uefi.c
 
 [Packages]
   MdePkg/MdePkg.dec

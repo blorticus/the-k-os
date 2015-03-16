@@ -8,8 +8,12 @@ void kerror_init( term_entry* error_terminal ) {
     ERROR_TERMINAL = error_terminal;
 }
 
-
-void kerror( const wchar_t* str ) {
+void kerror( const wchar_t* str, ... ) {
     term_set_pos( ERROR_TERMINAL, 0, 0 );
     term_printf( ERROR_TERMINAL, "%ls\n", str );
+}
+
+void kerror_silly( u8 interrupt, u8 irq ) {
+    term_set_pos( ERROR_TERMINAL, 0, 0 );
+    term_printf ( ERROR_TERMINAL, "Spurious IRQ (irq = %d, interrupt = %d)\n", irq, interrupt );
 }

@@ -5,127 +5,62 @@
 #include <stdio.h>
 #include <wchar.h>
 
-
-typedef unsigned long  Elf64_Addr;
-typedef unsigned long  Elf64_Off;
-typedef unsigned short Elf64_Half;
-typedef unsigned int   Elf64_Word;
-typedef int            Elf64_Sword;
-typedef unsigned long  Elf64_Xword;
-typedef long           Elf64_Sxword;
-
-
-typedef struct {
-    unsigned char e_ident[16];
-    Elf64_Half e_type;
-    Elf64_Half e_machine;
-    Elf64_Word e_version;
-    Elf64_Addr e_entry;
-    Elf64_Off  e_phoff;
-    Elf64_Off  e_shoff;
-    Elf64_Word e_flags;
-    Elf64_Half e_ehsize;
-    Elf64_Half e_phentsize;
-    Elf64_Half e_phnum;
-    Elf64_Half e_shentsize;
-    Elf64_Half e_shnum;
-    Elf64_Half e_shstrndx;
-} Elf64_Ehdr;
-
-
-typedef struct {
-    UINT32 signature;
-    UINT32 physical_addr_ptr;
-    UINT8  length;
-    UINT8  spec_rev;
-    UINT8  checksum;
-    UINT8  mp_feature_byte_1;
-    UINT32 mp_feature_bytes_2_5;
-} MpFloatingStructure;
-
-
-typedef struct {
-    UINT32 signature;
-    UINT16 base_table_length;
-    UINT8  spec_rev;
-    UINT8  checksum;
-    UINT32 oem_word_1;
-    UINT32 oem_word_2;
-    UINT32 prod_id_word_1;
-    UINT32 prod_id_word_2;
-    UINT32 prod_id_word_3;
-    UINT32 oem_table_ptr_address;
-    UINT16 oem_table_size;
-    UINT16 entry_count;
-    UINT32 local_apic_memmap_address;
-    UINT16 extended_table_length;
-    UINT8  extended_table_checksum;
-    UINT8  reserved0;
-} MpConfigTableHeader;
-
-
-
-/******
- * ARGUMENTS:
- *  - conerr        : pointer to SimpleTextOutputProtocol handler where error message should be printed
- *  - msg           : the message to print to conerr
- *  - status_string : additional string to print to print to conerr after literal '; '
- * RETURN:
- *  - EFI_SUCCESS
- *******/
-EFI_STATUS PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string );
-
-
-/******
- * ARGUMENTS:
- *  - status_code   : an EFI_STATUS value
- * RETURN:
- *  - a wide-string of the status value (e.g., the string "EFI_SUCCESS" if the
- *    status_code is EFI_SUCCESS).  If the status_code is not known, it is
- *    the string "<unknown>"
- *******/
+void drawTriangle( EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color );
+void PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string );
 UINT16* statusToString( EFI_STATUS status_code );
 
 
-/******
- * ARGUMENT:
- *  - conout        : pointer to SimpleTextOutputProtocol handler where info should be printed
- *  - header        : pointer to ELF header struct
- *  - wbuf          : pointer to a wide character buffer used to format output
- * DESCRIPTION:
- *  - Print ELF header information to conout
- *******/
-void printElfHeaderInfo( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, Elf64_Ehdr* header, CHAR16* wbuf );
+/* ELF Header */
+typedef struct {
+    CHAR8   e_ident[16];
+    UINT16  e_type;
+    UINT16  e_machine;
+    UINT32  e_version;
+    UINT64  e_entry;
+    UINT64  e_phoff;
+    UINT64  e_shoff;
+    UINT32  e_flags;
+    UINT16  e_ehsize;
+    UINT16  e_phentsize;
+    UINT16  e_phnum;
+    UINT16  e_shentsize;
+    UINT16  e_shnum;
+    UINT16  e_shstrndx;
+} Elf64_Ehdr;
 
+/* ELF Program Header */
+typedef struct {
+    UINT32  p_type;
+    UINT32  p_flags;
+    UINT64  p_offset;
+    UINT64  p_vaddr;
+    UINT64  p_paddr;
+    UINT64  p_filesz;
+    UINT64  p_memsz;
+    UINT64  p_align;
+} Elf64_Phdr;
 
-/******
- * ARGUMENT:
- *  - left          : an EFI GUID
- *  - right         : another EFI GUID
- * DESCRIPTION:
- *  - Return true if 'left' and 'right' have the same struct values; false otherwise
- *******/
-int compareEfiGUIDs( EFI_GUID left, EFI_GUID right );
+/* ELF Section Header */
+typedef struct {
+    UINT32  sh_name;
+    UINT32  sh_type;
+    UINT64  sh_flags;
+    UINT64  sh_addr;
+    UINT64  sh_offset;
+    UINT64  sh_size;
+    UINT32  sh_link;
+    UINT32  sh_info;
+    UINT64  sh_addralign;
+    UINT64  sh_entsize;
+} Elf64_Shdr;
 
-
-/******
- * ARGUMENT:
- *  - mfps_addr     : address of the MP Floating Pointer Structure
- *  - conout        : pointer to SimpleTextOutputProtocol handler where info should be printed
- *  - wbuf          : pinger to a wide character buffer used to format output
- * DESCRIPTION:
- *  - Print MP Table Information
- *******/
-void printMPTableInformation( MpFloatingStructure* mpfs, EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, CHAR16* wbuf );
-
-
-EFI_GUID  EFI_ACPI_20_TABLE_GUID = {0x8868e871,0xe4f1,0x11d3,0xbc,0x22,0x0,0x80,0xc7,0x3c,0x88,0x81};
-EFI_GUID  ACPI_TABLE_GUID        = {0xeb9d2d30,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
-EFI_GUID  SAL_SYSTEM_TABLE_GUID  = {0xeb9d2d32,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
-EFI_GUID  SMBIOS_TABLE_GUID      = {0xeb9d2d31,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
-EFI_GUID  MPS_TABLE_GUID         = {0xeb9d2d2f,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
-EFI_GUID  EFI_ACPI_TABLE_GUID    = {0x8868e871,0xe4f1,0x11d3,0xbc,0x22,0x0,0x80,0xc7,0x3c,0x88,0x81};
-EFI_GUID  ACPI_10_TABLE_GUID     = {0xeb9d2d30,0x2d88,0x11d3,0x9a,0x16,0x0,0x90,0x27,0x3f,0xc1,0x4d};
+/* Information Summary for loading information from ELF kernel */
+typedef struct {
+    EFI_PHYSICAL_ADDRESS   code_segment_start_addr;
+    UINT64                 code_segment_length;    /* in bytes */
+    EFI_PHYSICAL_ADDRESS   bss_segment_start_addr;
+    UINT64                 bss_segment_length;     /* in bytes */
+} LoadInfo;
 
 
 /* Name of the kernel binary to load */
@@ -150,14 +85,6 @@ UINT8* kernel_location = (UINT8*)0x100000;
 #endif
 
 
-typedef struct {
-    UINT32*                     linear_frame_buffer_start;
-    UINT32                      lfb_hrez;
-    UINT32                      lfb_vrez;
-    EFI_GRAPHICS_PIXEL_FORMAT   pixel_format;
-} BootInfo;
-
-
 EFI_STATUS
 EFIAPI
 UefiMain(
@@ -169,10 +96,8 @@ UefiMain(
     EFI_SYSTEM_TABLE   *gST;
     EFI_BOOT_SERVICES  *gBS;
 
-    /* For ACPI Information */
-    UINTN efi_configuration_table_entry_count;
-    EFI_CONFIGURATION_TABLE* efi_config_table_entries;
-    EFI_GUID vendor_guid;
+    /* For AllocatePages() */
+    EFI_PHYSICAL_ADDRESS membase = 0;
 
     /* For GetMemoryMap() */
     UINTN memmap_size = 4096*256;
@@ -193,17 +118,20 @@ UefiMain(
     UINT32 chosen_mode_number;
 
     CHAR16* wbuf = 0;
-    EFI_PHYSICAL_ADDRESS rbuf = 0;   /* general buffer for data reads */
 
     /* For file operations */
     EFI_SIMPLE_FILE_SYSTEM_PROTOCOL* fs;
     EFI_FILE_PROTOCOL* root;
     EFI_FILE* file_handle;
     UINTN i;
-    UINTN read_bytes;
+    UINTN file_read_bytes;
 
-    BootInfo* boot_info;
-    Elf64_Ehdr* elf_header;
+    /* Reading ELF Info */
+    Elf64_Ehdr elf_header;
+//    Elf64_Phdr elf_program_header;
+//    Elf64_Shdr elf_section_header;
+//    LoadInfo   load_info;
+
 
     /* Load SystemTable and BootServices */
     if (!(gST = SystemTable))
@@ -223,7 +151,7 @@ UefiMain(
                                       &handle_buffer );
 
     if (status != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"LocateHandleBuffer() failed", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"LocateHandleBuffer() failed", statusToString( status ) );
 
     DEBUG_PRINT( gST->ConOut, L"Located HandleBuffer set for GraphicsOutputProtocol\r\n" );
 
@@ -232,15 +160,15 @@ UefiMain(
                                   (VOID **)&gop );
 
     if (status != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"HandleProtocol() failed", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"HandleProtocol() failed", statusToString( status ) );
 
     DEBUG_PRINT( gST->ConOut, L"Retrieved GraphicsOutputProtocol handle\r\n" );
 
 
     /* Allocate memory for writable buffer, which will be used for some output */
-    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &rbuf )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"AllocatePages() failed", statusToString( status ) );
-    wbuf = (CHAR16*)rbuf;
+    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &membase )) != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"AllocatePages() failed", statusToString( status ) );
+    wbuf = (CHAR16*)membase;
 
 
     /* Scan for available video modes rom GraphicsOutputProtocol in order to find
@@ -271,7 +199,7 @@ UefiMain(
     }
 
     if (!hrez)
-        return PreBootHalt( gST->ConOut, L"Failed to find desired mode", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"Failed to find desired mode", statusToString( status ) );
 
 #ifdef UEFI_LOADER_DEBUG
     swprintf( wbuf, 256, L"selected mode is %d x %d and pixel_format is %d\r\n", hrez, vrez, pixel_format );
@@ -282,7 +210,7 @@ UefiMain(
     /* Select the desired mode.  This will blank the screen (this is described in the UEFI spec),
        so any debugging information already printed will be lost */
     if ((status = gop->SetMode( gop, chosen_mode_number )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"SetMode() failed", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"SetMode() failed", statusToString( status ) );
 
 #ifdef UEFI_LOADER_DEBUG
     swprintf( wbuf, 256, L"Setting Display Mode to %d x %d and pixel_format %d using mode number %d\r\n", hrez, vrez, pixel_format, chosen_mode_number );
@@ -299,7 +227,7 @@ UefiMain(
         &handle_buffer );
 
     if (status != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"LocateHandleBuffer() for SimpleFileSystemProtocol failed", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"LocateHandleBuffer() for SimpleFileSystemProtocol failed", statusToString( status ) );
 
     DEBUG_PRINT( gST->ConOut, L"Located HandleBuffer set for SimpleFileSystemProtocol\r\n" );
 
@@ -310,75 +238,77 @@ UefiMain(
                     break;
 
     if (status != EFI_SUCCESS || i >= handle_count)
-        return PreBootHalt( gST->ConOut, L"Failed to find kernel file\r\n", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"Failed to find kernel file\r\n", statusToString( status ) );
 
     DEBUG_PRINT( gST->ConOut, L"Successfully Opened Directory and File Handles for Kernel File\r\n" );
 
-    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &rbuf )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"AllocatePages() failed", statusToString( status ) );
 
-    read_bytes = sizeof( Elf64_Ehdr );
-    if ((status = file_handle->Read( file_handle, &read_bytes, (void*)rbuf )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"Failed to copy file to kernel start location\r\n", statusToString( status ) );
+    /* Read ELF Header */
+    file_read_bytes = sizeof( elf_header );
+    if ((status = file_handle->Read( file_handle, &file_read_bytes, (void*)&elf_header )) != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"Unable to read Kernel file ELF header\r\n", statusToString( status ) );
 
-    if (read_bytes < sizeof( Elf64_Ehdr ))
-        return PreBootHalt( gST->ConOut, L"File too short for ELF header", 0 );
+    if (file_read_bytes < sizeof( elf_header )) {
+        file_handle->Close( file_handle );
+        PreBootHalt( gST->ConOut, L"Kernel File Does not Appear to be ELF Format; Not Long Enough\r\n", 0 );
+    }
 
-    elf_header = (Elf64_Ehdr*)rbuf;
 
-    printElfHeaderInfo( gST->ConOut, elf_header, wbuf );
+    /* Verify ELF Magic */
+    if (*((UINT32*)elf_header.e_ident) != 0x464c457f) {  /* 7f followed by 'E' 'L' 'F', but little-endian */
+        file_handle->Close( file_handle );
+        swprintf( wbuf, 256, L"Invalid ELF Magic Number (should be 0x7f454c46, is [0x%08x])\r\n", *((UINT32*)elf_header.e_ident) );
+        PreBootHalt( gST->ConOut, wbuf, 0 );
+    }
+
+    DEBUG_PRINT( gST->ConOut, L"ELF Magic Number Matches\r\n" );
+
+#ifdef UEFI_LOADER_DEBUG
+    swprintf( wbuf, 256, L"ELF entry point = %016x\r\nphoff = %016x, shoff = %016x\r\n", elf_header.e_entry, elf_header.e_phoff, elf_header.e_shoff );
+    DEBUG_PRINT( gST->ConOut, wbuf );
+#endif
 
     if ((status = file_handle->SetPosition( file_handle, 0x100000 )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"Failed to set kernel file position\r\n", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"Failed to set kernel file position\r\n", statusToString( status ) );
 
-    read_bytes = 0x100000;
-    if ((status = file_handle->Read( file_handle, &read_bytes, (void*)kernel_location )) != EFI_SUCCESS) {
+    file_read_bytes = 0x100000;
+    if ((status = file_handle->Read( file_handle, &file_read_bytes, (void*)kernel_location )) != EFI_SUCCESS) {
         file_handle->Close( file_handle );
-        return PreBootHalt( gST->ConOut, L"Failed to copy file to kernel start location\r\n", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"Failed to copy file to kernel start location\r\n", statusToString( status ) );
     }
 
     DEBUG_PRINT( gST->ConOut, L"Read ELF Binary Segments to Text Memory Base\r\n" );
 
     if ((status = file_handle->Close( file_handle )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"Failed to Close() kernel file", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"Failed to Close() kernel file", statusToString( status ) );
 
     DEBUG_PRINT( gST->ConOut, L"Closed Kernel File Handle\r\n" );
 
-    boot_info = (BootInfo*)kernel_location - 1;
-
-    boot_info->linear_frame_buffer_start = (UINT32*)(gop->Mode->FrameBufferBase);
-    boot_info->lfb_hrez     = hrez;
-    boot_info->lfb_vrez     = vrez;
-    boot_info->pixel_format = pixel_format;
-
-    swprintf( wbuf, 1024, L"size = %d\r\n", sizeof( unsigned int ) );
+    swprintf( wbuf, 1024, L"kernel_size = %u; fbp = %08x\r\n", file_read_bytes, gop->Mode->FrameBufferBase );
     gST->ConOut->OutputString( gST->ConOut, wbuf );
 
-    swprintf( wbuf, 1024, L"lfb = 0x%08x; hrez = %u; vrez = %u\r\n", (UINT32*)(gop->Mode->FrameBufferBase), hrez, vrez );
-    gST->ConOut->OutputString( gST->ConOut, wbuf );
-
-    efi_configuration_table_entry_count = gST->NumberOfTableEntries;
-    swprintf( wbuf, 1024, L"Configuration Table Entry Count = %lu\r\n", efi_configuration_table_entry_count );
-    gST->ConOut->OutputString( gST->ConOut, wbuf );
-
-    efi_config_table_entries = gST->ConfigurationTable;
-    for (i = 0; i < efi_configuration_table_entry_count; i++) {
-        vendor_guid = efi_config_table_entries[i].VendorGuid;
-        swprintf( wbuf, 1024, L" [%lu] GUID = %08x %04x %04x %02x %02x %02x %02x %02x %02x %02x %02x\r\n",
-                    i, vendor_guid.Data1, vendor_guid.Data2, vendor_guid.Data3,
-                    vendor_guid.Data4[0], vendor_guid.Data4[1], vendor_guid.Data4[2], vendor_guid.Data4[3],
-                    vendor_guid.Data4[4], vendor_guid.Data4[5], vendor_guid.Data4[6], vendor_guid.Data4[7] );
-        gST->ConOut->OutputString( gST->ConOut, wbuf );
-
-        if (compareEfiGUIDs( vendor_guid, MPS_TABLE_GUID ))
-            printMPTableInformation( (MpFloatingStructure*)(efi_config_table_entries[i].VendorTable), gST->ConOut, wbuf );
-    }
+////    gST->ConOut->OutputString( gST->ConOut, L"Hex: " );
+////    for (i = 0; i < file_read_bytes && i < 12; i++) {
+////        swprintf( wbuf, 1024, L"%02x ", *(kernel_location + i) );
+////        gST->ConOut->OutputString( gST->ConOut, wbuf );
+////    }
+////    gST->ConOut->OutputString( gST->ConOut, L"\r\n" );
+////
+//////    asm volatile( "movq $0x80000000, %r8" );
+//////    asm volatile( "movq $10240, %rcx" );
+//////    asm volatile( "L1:" );
+//////    asm volatile( "    movl $0x00ff69b4, (%r8)" );
+//////    asm volatile( "    add $4, %r8" );
+//////    asm volatile( "loop L1" );
+////
+////    gST->ConOut->OutputString( gST->ConOut, L"Done.\r\n" );
+//
 
     /* Build memory map, which is required to ExitBootServices */
-    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 1, &rbuf )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
+    if ((status = gBS->AllocatePages( AllocateAnyPages, EfiLoaderData, 256, &membase )) != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
 
-    memmap = (UINT8*)rbuf;
+    memmap = (UINT8*)membase;
 
     DEBUG_PRINT( gST->ConOut, L"Allocated memory for memmap retrieval\r\nAbout to GetMemoryMap() and ExitBootServices()\r\n" );
 
@@ -391,65 +321,19 @@ UefiMain(
                                 &descriptor_version );
 
     if (status != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"GetMemoryMap() failed", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"GetMemoryMap() failed", statusToString( status ) );
 
     /* Exit UEFI boot services so that we can jump to kernel code */
     if ((status = gBS->ExitBootServices( ImageHandle, map_key )) != EFI_SUCCESS)
-        return PreBootHalt( gST->ConOut, L"ExitBootServices() failed", statusToString( status ) );
+        PreBootHalt( gST->ConOut, L"ExitBootServices() failed", statusToString( status ) );
 
-//    asm volatile( "movq %0, %%r9" : : "r"(boot_info) );
-//    asm volatile( "push $0x100000\n\t"
-//                  "ret" );
+    asm volatile( "movq $0x80000000, %r9" );
 
-    for ( ;; ) ;
+    asm volatile( "push $0x100000\n\t"
+                  "ret" );
 
+    /* should never reach this point.  If we do, then return to caller (e.g., UEFI shell) */
     return EFI_SUCCESS;
-}
-
-
-void printMPTableInformation( MpFloatingStructure* mpfs, EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, CHAR16* wbuf ) {
-    MpConfigTableHeader* mcth;
-
-    conout->OutputString( conout, L"  --> MPS Table\r\n" );
-
-    if (mpfs->signature == 0x5f504d5f) {
-        conout->OutputString( conout, L"    -- signature matches\r\n" );
-        swprintf( wbuf, 1024, L"    -- phys_addr = %08x\r\n    -- length = %02x\r\n    -- spec_rev = %02x\r\n    -- checksum = %02x\r\n    -- mp_feature_1 = %02x\r\n    -- mp_feature_bytes_2-5 = %08x\r\n", mpfs->physical_addr_ptr, mpfs->length, mpfs->spec_rev, mpfs->checksum, mpfs->mp_feature_byte_1, mpfs->mp_feature_bytes_2_5 );
-        conout->OutputString( conout, wbuf );
-    
-        if (mpfs->physical_addr_ptr != 0) {
-            conout->OutputString( conout, L"    -- Has table entries (phys addr != 0)\r\n" );
-
-            mcth = (MpConfigTableHeader*)((UINTN)(mpfs->physical_addr_ptr));
-
-            if (mcth->signature == 0x504d4350) {
-                conout->OutputString( conout, L"      -- signature matches\r\n" );
-                swprintf( wbuf, 1024, L"      -- oem table ptr = %08x\r\n      -- entry count = %04x\r\n      -- local apic mmap addr = %08x\r\n      -- extended table len = %04x\r\n", mcth->oem_table_ptr_address, mcth->entry_count, mcth->local_apic_memmap_address, mcth->extended_table_length );
-                conout->OutputString( conout, wbuf );
-            }
-            else {
-                conout->OutputString( conout, L"      -- signature does not match\r\n" );
-                return;
-            }
-        }
-        else {
-            conout->OutputString( conout, L"    -- No table entries (phys addr = 0)\r\n" );
-            return;
-        }
-    }
-    else {
-        conout->OutputString( conout, L"    -- signature does not match\r\n" );
-        return;
-    }
-}
-
-
-
-int compareEfiGUIDs( EFI_GUID left, EFI_GUID right ) {
-    return left.Data1 == right.Data1 && left.Data2 == right.Data2 && left.Data3 == right.Data3 &&
-            left.Data4[0] == right.Data4[0] && left.Data4[1] == right.Data4[1] && left.Data4[2] == right.Data4[2] &&
-            left.Data4[3] == right.Data4[3] && left.Data4[4] == right.Data4[4] && left.Data4[5] == right.Data4[5] &&
-            left.Data4[6] == right.Data4[6] && left.Data4[7] == right.Data4[7];
 }
 
 
@@ -499,7 +383,24 @@ UINT16* statusToString( EFI_STATUS status_code ) {
 
 
 
-EFI_STATUS PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string ) {
+void drawTriangle( EFI_PHYSICAL_ADDRESS lfb_base_addr, UINTN center_x, UINTN center_y, UINTN width, UINT32 color ) {
+//    UINT32* at = (UINT32*)lfb_base_addr;
+//    UINTN row, col;
+//
+//    at += (DESIRED_HREZ * (center_y - width / 2) + center_x - width / 2);
+//
+//    for (row = 0; row < width / 2; row++) {
+//        for (col = 0; col < width - row * 2; col++)
+//            *at++ = color;
+//        at += (DESIRED_HREZ - col);
+//        for (col = 0; col < width - row * 2; col++)
+//            *at++ = color;
+//        at += (DESIRED_HREZ - col + 1);
+//    }
+}
+
+
+void PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string ) {
     conerr->OutputString( conerr, msg );
     if (status_string) {
         conerr->OutputString( conerr, L"; status = " );
@@ -507,27 +408,5 @@ EFI_STATUS PreBootHalt( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conerr, UINT16* msg, UI
         conerr->OutputString( conerr, L"\r\n" );
     }
 
-    return EFI_SUCCESS;
+    for (;;) ;
 }
-
-
-//    unsigned char e_ident[16];
-//    Elf64_Half e_type;
-//    Elf64_Half e_machine;
-//    Elf64_Word e_version;
-//    Elf64_Addr e_entry;
-//    Elf64_Off  e_phoff;
-//    Elf64_Off  e_shoff;
-//    Elf64_Word e_flags;
-//    Elf64_Half e_ehsize;
-//    Elf64_Half e_phentsize;
-//    Elf64_Half e_phnum;
-//    Elf64_Half e_shentsize;
-//    Elf64_Half e_shnum;
-//    Elf64_Half e_shstrndx;
-
-void printElfHeaderInfo( EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL* conout, Elf64_Ehdr* header, CHAR16* wbuf ) {
-    swprintf( wbuf, 1024, L"e_entry = %08x, e_phoff = %08x, e_shoff = %08x\r\n", header->e_entry, header->e_phoff, header->e_shoff );
-    conout->OutputString( conout, wbuf );
-}
-

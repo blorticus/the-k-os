@@ -532,122 +532,139 @@ isr031:
 	pop_isr_regs
 	iretq
 
-# Remainder (32 .. 255) open for use
+# 8259 PIC IRQs remapped here
 isr032:
 	push_isr_regs
 	mov $32, %rdi
-	call isr_routine_does_not_exist
+    mov $0, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr033:
 	push_isr_regs
 	mov $33, %rdi
-	call isr_routine_does_not_exist
+    mov $1, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr034:
 	push_isr_regs
 	mov $34, %rdi
-	call isr_routine_does_not_exist
+    mov $2, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr035:
 	push_isr_regs
 	mov $35, %rdi
-	call isr_routine_does_not_exist
+    mov $3, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr036:
 	push_isr_regs
 	mov $36, %rdi
-	call isr_routine_does_not_exist
+    mov $4, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr037:
 	push_isr_regs
 	mov $37, %rdi
-	call isr_routine_does_not_exist
+    mov $5, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr038:
 	push_isr_regs
 	mov $38, %rdi
-	call isr_routine_does_not_exist
+    mov $6, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr039:
 	push_isr_regs
 	mov $39, %rdi
-	call isr_routine_does_not_exist
+    mov $7, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr040:
 	push_isr_regs
 	mov $40, %rdi
-	call isr_routine_does_not_exist
+    mov $8, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr041:
 	push_isr_regs
 	mov $41, %rdi
-	call isr_routine_does_not_exist
+    mov $9, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr042:
 	push_isr_regs
 	mov $42, %rdi
-	call isr_routine_does_not_exist
+    mov $10, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr043:
 	push_isr_regs
 	mov $43, %rdi
-	call isr_routine_does_not_exist
+    mov $11, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr044:
 	push_isr_regs
 	mov $44, %rdi
-	call isr_routine_does_not_exist
+    mov $12, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr045:
 	push_isr_regs
 	mov $45, %rdi
-	call isr_routine_does_not_exist
+    mov $13, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr046:
 	push_isr_regs
 	mov $46, %rdi
-	call isr_routine_does_not_exist
+    mov $14, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr047:
 	push_isr_regs
 	mov $47, %rdi
-	call isr_routine_does_not_exist
+    mov $15, %rsi
+	call isr_irq_pic_spurious
 	pop_isr_regs
 	iretq
 
 isr048:
 	push_isr_regs
 	mov $48, %rdi
+    mov $16, %rsi
 	call isr_routine_does_not_exist
 	pop_isr_regs
 	iretq

@@ -9,6 +9,7 @@
 #include <platform/x86_64/idt.h>
 #include <platform/x86_64/gdt.h>
 #include <platform/x86_64/asm.h>
+#include <platform/x86_64/pic_8259.h>
 
 
 typedef enum {
@@ -77,9 +78,14 @@ void kmain( void ) {
     idt_set_all_stock( 0x10 );
     idt_install();
 
+    if (pic_initialize( 32 )) {
+        kerror( L"PIC Init failed" );
+        for ( ; ; ) ;
+    }
+
     enable_interrupts();
 
-    term_printf( &te, "\nBring them all.\n" );
+    term_printf( &te, "\nBring them all\n" );
 
 //    kosh_start_shell( &ks, &te );    
 

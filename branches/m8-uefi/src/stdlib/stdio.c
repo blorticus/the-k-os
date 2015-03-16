@@ -28,7 +28,7 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
      * the buffer */
     if (base == 16) {
         /* In this case, mask all but the lowest order 4 bits, extract its value, then shift 4 bits to the right.  Have to handle
-         * value of 0 in a special way, because we ignore leading zeroes */
+         * value of 0 in a special way, in case we ignore leading zeroes */
         do {
             if (max_len-- == 0)
                 return 0;
@@ -156,12 +156,12 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
     } 
 
 
-#define M_produce_string(conv_func,base,tvar)   \
-    s = buf;                                    \
-    count = conv_func( buf, tvar, base, 19 );   \
-    if (count > 0) {                            \
-        padding -= count;                       \
-        goto print_string;                      \
+#define M_produce_string(conv_func,base,tvar)                       \
+    s = buf;                                                        \
+    count = conv_func( buf, tvar, base, 19 );                       \
+    if (count > 0) {                                                \
+        padding -= count;                                           \
+        goto print_string;                                          \
     }
 
 
@@ -302,6 +302,10 @@ int cprintf( void (*putchar_f)(int, ...), void (*putwchar_f)(wchar_t, ...), char
                     break;
 
                 case '0':
+                    if (padding == 0) {
+                        goto inner;
+                    }
+
                 case '1':
                 case '2':
                 case '3':

@@ -1,6 +1,7 @@
 #include <kerror.h>
+#include <video/text_terminal.h>
 #include <platform/x86_64/isr_routines.h>
-#include <kerror.h>
+#include <platform/x86_64/pic_8259.h>
 
 void isr_alignment_check( void ) {
     kerror( L"Alignment Check Exception: #AC (17)\n" );
@@ -95,5 +96,11 @@ void isr_simd_floating_point( void ) {
 void isr_stack( void ) {
     kerror( L"Stack Exception: #SS (12)\n" );
     for ( ;; ) ;
+}
+
+
+void isr_irq_pic_spurious( u8 interrupt, u8 irq ) {
+    pic_send_eoi( irq );
+    kerror_silly( interrupt, irq );
 }
 
