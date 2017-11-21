@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [[ $# -eq 2 ]]; then
+    img=$1
+    mnt=$2
+else
+    echo "mnt-uefi <img> <mnt-point>" >&2
+    exit 1
+fi
+
+if [[ ! -f $img ]]; then
+    echo "Missing <img> file ($img)" >&2
+    exit 1
+fi
+
+if [[ ! -d $mnt ]]; then
+    echo "Missing <mnt> directory ($mnt)" >&2
+    exit 1
+fi
+
+
+sudo losetup --offset 1048576 /dev/loop0 $img
+sudo mount /dev/loop0 $mnt
+
+echo "Mounted ($img) to ($mnt)"

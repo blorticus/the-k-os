@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [[ $# -gt 2 || $# -lt 1 ]]; then
+    echo "mkuefidisk <dest> [<size-in-MBi>]" >&2
+    exit 1
+elif [[ $# -eq 2 ]]; then
+    size=$2
+    dest=$1
+else
+    size=45
+    dest=$1
+fi
+
+block_count=$((2048*$size))
+
+dd if=/dev/zero of=$dest bs=512 count=$block_count
+
+echo -e "\n ===== \n\nUse Options: 'o', 'Y', 'n', (default), (default), (default), 'ef00', 'w', 'Y'\n\n ==== \n"
+
+gdisk vm/uefi.img
+
+sudo losetup --offset 1048576 /dev/loop0 $dest
+sudo mkdosfs -F 32 /dev/loop0
+sudo mount /dev/loop0 mnt
+sudo mkdir -p mnt/EFI/BOOT
+sudo umount mnt
+sudo losetup -d /dev/loop0

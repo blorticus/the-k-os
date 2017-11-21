@@ -1,22 +1,13 @@
-# This is the root level Makefile using gnu make syntax
-# Targets are described below, but the primary target is 'imgdisk'
-# ENVIRONMENTAL VARS:
-# 	- VM_DIR		: where vm images live when building with custom (non-GRUB) bootloader.  Uses default if not set.
-# 	- FLOPPY_FILLER : device used by 'dd' when filling a floppy to 2880 512-byte sectors.  Uses default if not set.
-#	- MK_IMG_DISK	: script used to build a virtual machine floppy image when using GRUB bootloader.  Uses default if not
-#					  set.
+UEFI_INCLUDES := -I/usr/local/include/efi -I/usr/local/include/efi/x86_64 -I/usr/src/sys/build/include
+UEFI_CFLAGS := -mno-red-zone -fpic -O2 -Wall -Wextra -Werror -fshort-wchar -fno-strict-aliasing -fno-merge-all-constants -ffreestanding -fno-stack-protector -fno-stack-check -DCONFIG_x86_64 -DGNU_EFI_USE_MS_ABI -maccumulate-outgoing-args --std=c11 -D__KERNEL__
+UEFI_LDFLAGS := -nostdlib --warn-common --no-undefined --fatal-warnings --build-id=sha1 -shared -Bsymbolic
+UEFI_LDLIBS := -L/usr/local/lib -lefi -lgnuefi /usr/lib/gcc/x86_64-linux-gnu/7/libgcc.a 
+UEFI_EFILDS := -T /home/vwells/src/gnu-efi-3.0.6/apps/../gnuefi/elf_x86_64_efi.lds
+UEFI_LDLIBS := -L/usr/local/lib -lefi -lgnuefi /usr/lib/gcc/x86_64-linux-gnu/7/libgcc.a 
+EFILDS := -T /home/vwells/src/gnu-efi-3.0.6/apps/../gnuefi/elf_x86_64_efi.lds
+UEFI_OBJCOPY := objcopy
 
 
-# -- ENVIRONMENTAL VARS
-# -- 
-VM_DIR ?= /home/vwells/svn/the-k-os/vm
-FLOPPY_FILLER ?= /dev/zero
-MK_IMG_DISK ?= bin/mkimgdisk
-#MK_BOCHS_IMG_DISK ?= bin/mkbochs
-
-
-# -- COMPILER ARGS
-# --
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 #CC_FLAGS = -fno-builtin -nostdinc -Wall
@@ -24,26 +15,19 @@ CC_FLAGS = -nostdinc -Wall -fno-stack-protector
 LD_FLAGS = 
 MAKEFLAGS = -e
 DEFS =
-OBJDIR = i386-obj
-PLATFORM = ia-32
+OBJDIR = x86_64-obj
+PLATFORM = x86_64
 
 ifdef WITH_DEBUG
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 
-ifdef D32_ON_64
-    CC_FLAGS := $(CC_FLAGS) -m32
-    LD_FLAGS := $(LD_FLAGS) -melf_i386
-endif
-
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
-	CC_FLAGS := $(CC_FLAGS) -g # -arch i386
+	CC_FLAGS := $(CC_FLAGS) -g
 endif
 
 
-# -- TARGET SYMBOLS
-# --
 KMAIN_LD := link/kmain.ld
 
 OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o
@@ -53,27 +37,16 @@ kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
 
-# TARGET: build a virtual image floppy when using GRUB
-imgdisk: kernel.bin
-	$(MK_IMG_DISK)
+$(OBJDIR)/uefi-bootloader.o: src/boot/uefi/uefi-bootloader.c
+	$(CC) src/boot/uefi/uefi-bootloader.c -c -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -I /usr/local/include/efi -I /usr/local/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -o $(OBJDIR)/uefi-bootloader.o
 
+$(OBJDIR)/uefi-bootloader.so: $(OBJDIR)/uefi-bootloader.o
+	$(LD) $(OBJDIR)/uefi-bootloader.o /usr/local/lib/crt0-efi-x86_64.o -nostdlib -znocombreloc -T /usr/local/lib/elf_x86_64_efi.lds -shared -Bsymbolic -L /usr/local/lib -l:libgnuefi.a -l:libefi.a -o $(OBJDIR)/uefi-bootloader.so
 
-# TARGET: build a bochs virtual floppy image
-bochs: kernel.bin
-	$(MK_BOCHS_IMG_DISK) -r
+$(OBJDIR)/uefi.efi: $(OBJDIR)/uefi-bootloader.so
+	$(UEFI_OBJCOPY) -j .text -j .sdata -j .data -j .dynamic -j .dynsym -j .rel -j .rela -j .rel.* -j .rela.* -j .rel* -j .rela* -j .reloc --target efi-app-x86_64 $(OBJDIR)/uefi-bootloader.so $(OBJDIR)/uefi.efi
 
-
-# TARGET: build virtual image floppy when using custom (non-GRUB) bootloader
-silly-floppy: kernel.bin
-	dd if=boot.bin of=$(VM_DIR)/floppy.flp bs=512 count=1
-	dd if=kernel.bin of=$(VM_DIR)/floppy.flp bs=512 seek=1
-	dd if=$(FLOPPY_FILLER) of=$(VM_DIR)/floppy.flp bs=512 seek=10 count=2870
-
-
-# TARGET: build custom first-stage bootloader
-boot.bin: boot/kos-silly-loader.asm
-	$(ASM) -f bin -o boot.bin boot/kos-silly-loader.asm
-
+uefi.efi: $(OBJDIR)/uefi.efi
 
 cprintf.o:
 	$(MAKE) -C src/stdlib ../../$(OBJDIR)/cprintf.o
@@ -217,7 +190,7 @@ $(OBJDIR)/kbit_field.o: src/util/kbit_field.c include/util/kbit_field.h
 .PHONY: clean
 clean:
 	rm -f *.bin *.o
-	rm -f i386-obj/*
+	rm -f $(OBJDIR)/*
 	rm -f src/*.bin src/*.o
 
 
