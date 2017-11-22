@@ -38,7 +38,7 @@ kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 
 
 $(OBJDIR)/uefi-bootloader.o: src/boot/uefi/uefi-bootloader.c
-	$(CC) src/boot/uefi/uefi-bootloader.c -c -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -I /usr/local/include/efi -I /usr/local/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -o $(OBJDIR)/uefi-bootloader.o
+	$(CC) -Werror src/boot/uefi/uefi-bootloader.c -c -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -I /usr/local/include/efi -I /usr/local/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -o $(OBJDIR)/uefi-bootloader.o
 
 $(OBJDIR)/uefi-bootloader.so: $(OBJDIR)/uefi-bootloader.o
 	$(LD) $(OBJDIR)/uefi-bootloader.o /usr/local/lib/crt0-efi-x86_64.o -nostdlib -znocombreloc -T /usr/local/lib/elf_x86_64_efi.lds -shared -Bsymbolic -L /usr/local/lib -l:libgnuefi.a -l:libefi.a -o $(OBJDIR)/uefi-bootloader.so
