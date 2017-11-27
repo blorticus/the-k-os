@@ -42,7 +42,7 @@ int strcmp(const char *s1, const char *s2) {
 }
 
 
-unsigned int strlen( const char *s1 ) {
+size_t strlen( const char *s1 ) {
     int l = 0;
 
     while (*s1++)
@@ -55,7 +55,7 @@ unsigned int strlen( const char *s1 ) {
 int isstringint( const char* s ) {
     char* t = (char*)s;
 
-    if (s == NULL || *t == NULL)
+    if (s == NULL || *t == '\0')
         return 0;
 
     if (*t == '-'|| *t == '+')
@@ -78,7 +78,7 @@ strtol( const char* str, char** endptr, int base ) {
     long retval = 0;
     unsigned short digit;
 
-    if (str == NULL || str[0] == NULL) {
+    if (str == NULL || str[0] == '\0') {
         endptr = NULL;
         return 0;
     }

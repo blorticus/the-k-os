@@ -1,5 +1,6 @@
 #include <video/fb/text-terminal.h>
 #include <video/font.h>
+#include <string.h>
 
 void fbtt_init( FBTT fbtt, unsigned int hrez, unsigned int vrez, unsigned int font_hrez_bytes, unsigned int font_vrez_bytes, void* fb_start_addr, uint32 fg_color, uint32 bg_color ) {
     fbtt->hrez             = hrez;
@@ -46,4 +47,9 @@ void fbtt_draw_ascii_char_at( FBTT fbtt, char c, unsigned int row, unsigned int 
 
         fbb += (fbtt->hrez - fbtt->font_hrez);
     }
+}
+
+void fbtt_clear_screen( FBTT fbtt ) {
+    void* s = (void*)(fbtt->fb_first_pixel_addr);
+    memset( s, (int)fbtt->bg_color, fbtt->hrez * fbtt->vrez * 4 );
 }

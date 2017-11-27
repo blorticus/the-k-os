@@ -2,7 +2,7 @@
 #define __SYS_TYPES_H__
 
 
-#define NULL '\0'
+#define NULL ((void*)'\0')
 
 typedef unsigned char       uint8;
 typedef unsigned short      uint16;
@@ -15,5 +15,7 @@ typedef int                 sint32;
 typedef long long           sint64;
 
 typedef void*               memptr;
+
+typedef unsigned long       size_t;
 
 #endif

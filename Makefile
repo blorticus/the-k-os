@@ -11,8 +11,8 @@ UEFI_OBJCOPY := objcopy
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 #CC_FLAGS = -fno-builtin -nostdinc -Wall
-CC_FLAGS = -nostdinc -Wall -fno-stack-protector
-LD_FLAGS = 
+CC_FLAGS = -nostdinc -Wall -fno-stack-protector -O2 -Werror
+LD_FLAGS = -O2
 MAKEFLAGS = -e
 DEFS =
 OBJDIR = x86_64-obj
@@ -36,8 +36,8 @@ OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o 
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
-$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o
-	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o
+$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o
+	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o
 
 
 $(OBJDIR)/uefi-bootloader.o: src/boot/uefi/uefi-bootloader.c

@@ -13,7 +13,7 @@
  * RE-ENTRANT?:     yes
  *
  */ 
-unsigned int strlen( const char *s1 );
+size_t strlen( const char *s1 );
 
 
 /**
