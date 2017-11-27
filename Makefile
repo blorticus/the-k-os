@@ -36,6 +36,9 @@ OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o 
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
+$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o
+	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o
+
 
 $(OBJDIR)/uefi-bootloader.o: src/boot/uefi/uefi-bootloader.c
 	$(CC) -Werror src/boot/uefi/uefi-bootloader.c -c -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -I /usr/local/include/efi -I /usr/local/include/efi/x86_64 -DEFI_FUNCTION_WRAPPER -o $(OBJDIR)/uefi-bootloader.o
@@ -68,7 +71,7 @@ libstd.a:
 
 # TARGET: build asm kernel entry point
 $(OBJDIR)/start.o: src/start.asm
-	$(ASM) -f elf -o $(OBJDIR)/start.o src/start.asm
+	$(ASM) -f elf64 -o $(OBJDIR)/start.o src/start.asm
 
 
 # TARGET: build C kmain() kernel entry point
@@ -185,6 +188,12 @@ $(OBJDIR)/kcirc_list.o: src/util/kcirc_list.c include/util/kcirc_list.h
 
 $(OBJDIR)/kbit_field.o: src/util/kbit_field.c include/util/kbit_field.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kbit_field.o src/util/kbit_field.c
+
+$(OBJDIR)/text-terminal.o: src/video/fb/text-terminal.c include/video/fb/text-terminal.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/text-terminal.o src/video/fb/text-terminal.c
+
+$(OBJDIR)/font.o: src/video/font.c include/video/font.h
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/font.o src/video/font.c
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean

@@ -1,4 +1,4 @@
-[BITS 32]
+[BITS 64]
 
 ; BRIEF         : This is the first entry point for the kernel, loaded by the bootloader.
 ; ASSUMES       : interrupts are disabled.  Mode is 32-bit protected with limited GDT.
@@ -31,7 +31,6 @@ multiboot_header:
     dd MULTIBOOT_CHECKSUM
 
 
-
 kentry:
     extern kmain
     call kmain
@@ -39,11 +38,11 @@ kentry:
     jmp $
 
 
-global idt_load
-extern idtp
-idt_load:
-    lidt [idtp]
-    ret
+;global idt_load
+;extern idtp
+;idt_load:
+;    lidt [idtp]
+;    ret
 
 SECTION .bss
     resb 8192
