@@ -4,10 +4,10 @@
 void fbtt_init( FBTT fbtt, unsigned int hrez, unsigned int vrez, unsigned int font_hrez_bytes, unsigned int font_vrez_bytes, void* fb_start_addr, uint32 fg_color, uint32 bg_color ) {
     fbtt->hrez             = hrez;
     fbtt->vrez             = vrez;
-    unsigned int font_hrez = 8 * font_hrez_bytes;
-    unsigned int font_vrez = 8 * font_vrez_bytes;
-    fbtt->columns          = hrez / font_hrez;
-    fbtt->rows             = vrez / font_vrez;
+    fbtt->font_hrez        = 8 * font_hrez_bytes;
+    fbtt->font_vrez        = 8 * font_vrez_bytes;
+    fbtt->columns          = hrez / fbtt->font_hrez;
+    fbtt->rows             = vrez / fbtt->font_vrez;
 
     fbtt->fb_first_pixel_addr = fb_start_addr;
 
@@ -24,8 +24,8 @@ static __attribute__((always_inline)) inline unsigned int* _get_start_pixel( FBT
 void fbtt_draw_ascii_char_at( FBTT fbtt, char c, unsigned int row, unsigned int col ) {
     uint32 *fbb = (uint32*)(fbtt->fb_first_pixel_addr);
     int i, j;
-    const uint32 bg = fbtt->bg_color;
-    const uint32 fg = fbtt->fg_color;
+    const uint32 bg = 0x00000000;
+    const uint32 fg = 0xffffffff;
     uint8 col_def;
     uint8* fontmap;
 
