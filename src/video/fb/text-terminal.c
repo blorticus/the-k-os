@@ -10,6 +10,9 @@ void fbtt_init( FBTT fbtt, unsigned int hrez, unsigned int vrez, unsigned int fo
     fbtt->columns          = hrez / fbtt->font_hrez;
     fbtt->rows             = vrez / fbtt->font_vrez;
 
+    fbtt->bytes_per_row    = hrez * fbtt->font_vrez * 4;
+    fbtt->bytes_per_screen = fbtt->bytes_per_row * fbtt->rows;
+
     fbtt->fb_first_pixel_addr = fb_start_addr;
 
     fbtt->fg_color = fg_color;
@@ -52,4 +55,17 @@ void fbtt_draw_ascii_char_at( FBTT fbtt, char c, unsigned int row, unsigned int 
 void fbtt_clear_screen( FBTT fbtt ) {
     void* s = (void*)(fbtt->fb_first_pixel_addr);
     memset( s, (int)fbtt->bg_color, fbtt->hrez * fbtt->vrez * 4 );
+}
+
+void fbtt_scroll( FBTT fbtt, unsigned int rows_to_scroll ) {
+    void* s  = (void*)(fbtt->fb_first_pixel_addr);
+    char* sc = (char*)(fbtt->fb_first_pixel_addr);
+
+    memcpy( s,
+            (const void*)(fbtt->fb_first_pixel_addr + (fbtt->bytes_per_row * rows_to_scroll)),
+            fbtt->bytes_per_screen - (fbtt->bytes_per_row * rows_to_scroll) );
+
+    memset( (void*)(sc + (fbtt->bytes_per_screen - (fbtt->bytes_per_row * rows_to_scroll))),
+            (int)fbtt->bg_color,
+            fbtt->bytes_per_row * rows_to_scroll );
 }

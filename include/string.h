@@ -79,8 +79,18 @@ int isstringint( const char* s );
  *
  */
 
-long
-strtol( const char* str, char ** endptr, int base );
+long strtol( const char* str, char ** endptr, int base );
+
+
+/**
+ *
+ * DESCRIPTION:     copy 'n' bytes of data from 'src' to 'dest'.
+ * RETURN:          pointer to 'dest' after move is completed
+ * SIDE-EFFECTS:    if 'src' and 'dest' are overlapping memory segments, results may be undefined
+ * RE-ENTRANT?:     yes
+ *
+ */
+void *memcpy(void *dest, const void *src, size_t n);
 
 
 #endif

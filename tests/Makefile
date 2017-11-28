@@ -3,7 +3,7 @@
 CC_FLAGS := -g -Wall -fno-stack-protector
 INCLUDES := -I../include -I../lcheck -I../include/stdlib
 LIBS := -L../lcheck -llcheck
-BASE_OBJDIR := i386-obj
+BASE_OBJDIR := x86_64-obj
 
 exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kterm.t strtol.t phys_core.t
 	$(MAKE) -C .. notest-distclean
