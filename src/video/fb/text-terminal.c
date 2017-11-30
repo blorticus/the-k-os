@@ -17,6 +17,10 @@ void fbtt_init( FBTT fbtt, unsigned int hrez, unsigned int vrez, unsigned int fo
 
     fbtt->fg_color = fg_color;
     fbtt->bg_color = bg_color;
+
+    // pointer to where the next character would be drawn
+    fbtt->current_row       = 0;
+    fbtt->current_col       = 0;
 }
 
 static __attribute__((always_inline)) inline unsigned int* _get_start_pixel( FBTT fbtt, unsigned int row, unsigned int column ) {
@@ -55,6 +59,7 @@ void fbtt_draw_ascii_char_at( FBTT fbtt, char c, unsigned int row, unsigned int 
 void fbtt_clear_screen( FBTT fbtt ) {
     void* s = (void*)(fbtt->fb_first_pixel_addr);
     memset( s, (int)fbtt->bg_color, fbtt->hrez * fbtt->vrez * 4 );
+    fbtt->current_row = fbtt->current_col = 0;
 }
 
 void fbtt_scroll( FBTT fbtt, unsigned int rows_to_scroll ) {
@@ -68,4 +73,60 @@ void fbtt_scroll( FBTT fbtt, unsigned int rows_to_scroll ) {
     memset( (void*)(sc + (fbtt->bytes_per_screen - (fbtt->bytes_per_row * rows_to_scroll))),
             (int)fbtt->bg_color,
             fbtt->bytes_per_row * rows_to_scroll );
+}
+
+
+void fbtt_write_string( FBTT fbtt, int* s ) {
+    for ( ; *s ; s++ ) {
+        fbtt_write_char( fbtt, *s );
+    }
+}
+
+
+// put character and advance the pointer
+void fbtt_write_char( FBTT fbtt, char_t c ) {
+    // XXX: only handle ASCII at this point
+    if (c < 128) {
+        switch ((char)c) {
+            case '\n':
+                if (++fbtt->current_row >= fbtt->rows) {
+                    fbtt_scroll( fbtt, 1 );
+                    fbtt->current_row = fbtt->rows - 1;
+                }
+                fbtt->current_col = 0;
+                break;
+
+            case '\r':
+                fbtt->current_col = 0;
+                break;
+
+            case '\t':
+                if ((fbtt->current_col += 4) >= fbtt->columns) {
+                    fbtt_write_char( fbtt, (char_t)'\n' );
+                }
+                break;
+
+            case '\b':
+                if (fbtt->current_col == 0) {
+                    if (fbtt->current_row > 0) {
+                        fbtt->current_row--;
+                        fbtt->current_col = fbtt->columns - 1;
+                    }
+                } else {
+                    fbtt->current_col--;
+                }
+                break;
+
+            default:
+                fbtt_draw_ascii_char_at( fbtt, c, fbtt->current_row, fbtt->current_col );
+                if (++fbtt->current_col >= fbtt->columns) {
+                    if (++fbtt->current_row >= fbtt->rows) {
+                        fbtt_scroll( fbtt, 1 );
+                        fbtt->current_row = fbtt->rows - 1;
+                    }
+                    fbtt->current_col = 0;
+                }
+                break;
+        }
+    }
 }

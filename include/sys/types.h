@@ -18,4 +18,6 @@ typedef void*               memptr;
 
 typedef unsigned long       size_t;
 
+typedef int                 char_t;
+
 #endif
