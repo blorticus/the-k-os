@@ -3,6 +3,7 @@
 
 #include <sys/types.h>
 #include <sys/unicode.h>
+#include <stdlib/stdio.h>
 
 typedef struct {
     unsigned int hrez;
@@ -30,5 +31,7 @@ void fbtt_scroll             ( FBTT fbtt, unsigned int rows );
 
 void fbtt_write_char         ( FBTT fbtt, char_t uc );
 void fbtt_write_string       ( FBTT fbtt, char_t* s );
+
+#define fbtt_printf(fbtt,fmt, ...) lprintf((void*)fbtt_write_char, (char*)fbtt, fmt, ## __VA_ARGS__)
 
 #endif

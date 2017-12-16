@@ -1,16 +1,31 @@
 #include <video/font.h>
 #include <video/fb/text-terminal.h>
 #include <sys/types.h>
+#include <string.h>
+#include <boot/attributes.h>
 
 void kmain( void ) {
     frame_buffer_text_terminal fbtt;
-//    int i, j;
-//    char c;
+    memaddr ba;
+    boot_attributes bootattrs;
+    uint32 x = 20;
+    //char* s = "a char string";
 
-    fbtt_init( &fbtt, 1024, 768, 1, 2, (void*)0x80000000, 0xffffffff, 0x00000000 );
+    // need to make a localized copy, because the memory from the UEFI
+    // bootloader will be trashed
+    asm volatile( "movq %%r9, %0"
+                  : "=r"(ba)
+                  : 
+                );
+
+    memcpy( (void*)&bootattrs, (const void*)ba, sizeof(boot_attributes) );
+
+    fbtt_init( &fbtt, bootattrs.fb_hrez, bootattrs.fb_vrez, 1, 2, (void*)(bootattrs.fb_start_addr), 0xffffffff, 0x00000000 );
 
     fbtt_clear_screen( &fbtt );
-    fbtt_write_string( &fbtt, L"The K-OS\nBrought to you by\tNing Enterprises" );
+    fbtt_write_string( &fbtt, L"The K-OS\nBrought to you by\tNing Enterprises\n" );
+
+    fbtt_printf( &fbtt, L"From printf: %d\n", x );
 
     for ( ;; )
         ;

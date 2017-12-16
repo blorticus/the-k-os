@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <video/kterm.h>
+
 
 /* Given a particular number base (currently 10 and 16 are supported), convert 'value' into its ascii numeric representation.
  * Place the acsii representation in 'buf', which will be null terminated.  If 'max_len' greater than characters needed to
@@ -68,6 +68,67 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
 }
 
 
+static unsigned int wctoi( const char_t* buf, long value, unsigned int base, unsigned short max_len ) {
+    int i = 0;
+    unsigned char v;
+    char_t* sbuf = (char_t*)buf;
+    unsigned int count = 0;
+
+    /* fill buffer with required characters in reverse order, then pad out required number of spaces.  Finally, reverse
+     * the buffer */
+    if (base == 16) {
+        /* In this case, mask all but the lowest order 4 bits, extract its value, then shift 4 bits to the right.  Have to handle
+         * value of 0 in a special way, because we ignore leading zeroes */
+        do {
+            if (max_len-- == 0)
+                return 0;
+
+            v = value & 0x0f;
+            sbuf[i++] = v < 10 ? '0' + v : 'a' + (v - 10);
+            count++;
+
+            /* this must be cast to force the bit-shift operator to fill with zeros from the left */
+            value = (unsigned long)value >> 4;
+        } while (value);
+
+        sbuf[i] = '\0';
+    }
+    else {  // ASSERT: base must equal 10
+        /* In this case, mod by 10, then integer divide by 10 until value is zero.  This means we're working
+         * backwards through this, so we'll have to reverse the buffer when we're done.  Also, we may need to
+         * add a sign */
+        if (value < 0) {
+            if (--max_len < 1)
+                return 0;
+
+            sbuf[i++] = '-';
+            count++;
+            value *= -1;  // silly way to make absolute value, and inline asm would be faster, but...
+        }
+
+        do {
+            if (max_len-- == 0)
+                return 0;
+
+            sbuf[i++] = '0' + (value % 10);
+            count++;
+            value /= 10;
+        } while (value);
+
+        sbuf[i] = '\0';
+    }
+
+    int j = sbuf[0] == '-' ? 1 : 0;  // skip negative sign if there is one
+
+    char_t t;
+    for( i-- ; j < i ; j++, i--) {  // i-- because i points at \0
+        t = sbuf[j];
+        sbuf[j] = sbuf[i];
+        sbuf[i] = t;
+    }
+
+    return count;
+}
 
 
 char buf[20];
@@ -144,6 +205,112 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
 
                         while (*s) {
                             putchar_f( *s++, putchar_args );
+                            printed_chars++;
+                        }
+
+                    break;
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    padding = padding * 10 + (*p - '0'); 
+                    goto inner;
+            }
+
+            p++;  // advance beyond format char
+        }
+    }
+
+    return printed_chars;
+}
+
+
+char_t wcbuf[20];
+int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t *fmt, ... ) {
+    uint64 *next_stack_arg;
+
+    asm __volatile__ ("pushq %%r9\n\t"
+                      "pushq %%r8\n\t"
+                      "pushq %%rcx\n\t"
+                      "movq %%rsp, %0"
+                      : "=r"(next_stack_arg)
+                      :
+                      );
+
+    unsigned int printed_chars = 0;
+
+    const char_t* p = fmt;
+
+    long l;
+    char c;
+    unsigned int count;
+    int padding;
+    const char_t* s;
+
+    while (*p) {
+        padding = 0;
+        if (*p != '%') {
+            putwchar_f( putwchar_f_arg, *p++ );
+            printed_chars++;
+        }
+        else {
+            inner:
+            switch (*++p) {
+                case '%':
+                    putwchar_f( putwchar_f_arg, '%' );
+                    printed_chars++;
+                    break;
+
+                case 'i':
+                case 'd':
+                    l = (int)*next_stack_arg++;
+                    s = wcbuf;
+                    count = wctoi( wcbuf, l, 10, 19 );
+
+                    if (count > 0) {
+                        padding -= count; 
+                        goto print_string;
+                    }
+
+                    break;
+
+                case 'x':
+                    l = (long)*next_stack_arg++;
+                    s = wcbuf;
+                    count = wctoi( wcbuf, l, 16, 19 );
+
+                    if (count > 0) {
+                        padding -= count;
+                        goto print_string;
+                    }
+
+                    break;
+
+                case 'c':
+                    //c = *((char*)next_vararg);
+                    c = (char)*next_stack_arg++;
+                    putwchar_f( putwchar_f_arg, c );
+                    printed_chars++;
+                    break;
+
+                case 's':
+                    s = (char_t*)next_stack_arg++;
+
+                    print_string:
+                        while (padding-- > 0) {
+                            putwchar_f( putwchar_f_arg, ' ' );
+                            printed_chars++;
+                        }
+
+                        while (*s) {
+                            putwchar_f( putwchar_f_arg, *s++ );
                             printed_chars++;
                         }
 

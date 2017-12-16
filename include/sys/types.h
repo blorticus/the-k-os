@@ -15,6 +15,7 @@ typedef int                 sint32;
 typedef long long           sint64;
 
 typedef void*               memptr;
+typedef uint64              memaddr;
 
 typedef unsigned long       size_t;
 

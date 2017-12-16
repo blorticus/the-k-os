@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <wchar.h>
 
+typedef struct  {
+    void* frame_buffer_start_addr;
+    unsigned int fb_hrez;
+    unsigned int fb_vrez;
+} boot_attributes;
+
 void PreBootHalt( EFI_SIMPLE_TEXT_OUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string );
 UINT16* statusToString( EFI_STATUS status_code );
 
@@ -27,7 +33,9 @@ UINT8* kernel_location = (UINT8*)0x100000;
     #define DEBUG_PRINT(conout,msg) ;
 #endif
 
+boot_attributes bootattrs;
  
+
 EFI_STATUS
 EFIAPI
 efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
@@ -64,8 +72,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     UINTN map_key, descriptor_size;
     UINT8*  memmap;
     UINT32 descriptor_version;
-
-
 
     #define WBUF_LEN 256
     CHAR16 wbuf[WBUF_LEN];
@@ -211,6 +217,10 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     DEBUG_PRINT( gST->ConOut, L"Allocated memory for memmap retrieval\r\nAbout to GetMemoryMap() and ExitBootServices()\r\n" );
 
+    bootattrs.frame_buffer_start_addr = (void*)(gop->Mode->FrameBufferBase);
+    bootattrs.fb_hrez = 1024;
+    bootattrs.fb_vrez = 768;
+
     /* Cannot emit debugging message before calling ExitBootServices, because once MemoryMap
        is retrieved, no further changes are allowed before calling ExitBootServices */
     status = uefi_call_wrapper( gBS->GetMemoryMap, 5, &memmap_size, (EFI_MEMORY_DESCRIPTOR*)memmap, &map_key, &descriptor_size, &descriptor_version );
@@ -222,7 +232,12 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     if ((status = uefi_call_wrapper( gBS->ExitBootServices, 2, ImageHandle, map_key )) != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"ExitBootServices() failed", statusToString( status ) );
 
-    asm volatile( "movq $0x80000000, %r9" );
+    asm volatile( "movq %0, %%r9\n\t"
+                  "push $0x100000\n\t"
+                  "ret"
+                    :
+                    : "r"((UINT64)&bootattrs)
+                );
     asm volatile( "push $0x100000\n\t"
                   "ret" );
 

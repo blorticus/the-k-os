@@ -1,6 +1,8 @@
 #ifndef __STDIO_H__
 #define __STDIO_H__
 
+#include <sys/types.h>
+
 /**
  * BRIEF:           A (weak) attempt at implementing C stdlib's stdio
  * BACKGROUND:      C standard I/O routines
@@ -35,6 +37,19 @@ int getchar( void );
  *
  */ 
 int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, ... );
+
+
+/**
+ *
+ * DESCRIPTION:     A generalized printf() routine for widechar support.  'putwchar_f' is a pointer to a function that handles each character produced by this routine;
+ *                  The first parameter to 'putwchar_f' is a pointer to anything required for it to work (it could, of course, be null).
+ * RETURN:          The number of characters pushed to 'putchar_f'
+ * SIDE-EFFECTS:    -
+ * NOTES:           No check is made that varargs has enough arguments for 'fmt'.  If there is a mismatch, the results are undefined.
+ * RE-ENTRANT?:     NO
+ *
+ */ 
+int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t *fmt, ... );
 
 
 #endif
