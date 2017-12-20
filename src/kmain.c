@@ -8,8 +8,9 @@ void kmain( void ) {
     frame_buffer_text_terminal fbtt;
     memaddr ba;
     boot_attributes bootattrs;
-    uint32 x = 20;
-    //char* s = "a char string";
+    uint32 x;
+    char* test_s = "a char string";
+    char_t* test_w = L"a wchar string";
 
     // need to make a localized copy, because the memory from the UEFI
     // bootloader will be trashed
@@ -25,7 +26,8 @@ void kmain( void ) {
     fbtt_clear_screen( &fbtt );
     fbtt_write_string( &fbtt, L"The K-OS\nBrought to you by\tNing Enterprises\n" );
 
-    fbtt_printf( &fbtt, L"From printf: %d\n", x );
+    for (x = 1; x < 50; x++)
+        fbtt_printf( &fbtt, L"- %c, %w, %s\n", 'Z', test_w, test_s );
 
     for ( ;; )
         ;

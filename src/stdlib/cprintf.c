@@ -232,27 +232,96 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
 }
 
 
-char_t wcbuf[20];
-int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t *fmt, ... ) {
-    uint64 *next_stack_arg;
+typedef struct {
+    uint64 first_non_fp;
+    uint64 second_non_fp;
+    uint64 third_non_fp;
+    uint64 fourth_non_fp;
+    uint64 fifth_non_fp;
+    uint64 sixth_non_fp;
 
-    asm __volatile__ ("pushq %%r9\n\t"
-                      "pushq %%r8\n\t"
-                      "pushq %%rcx\n\t"
-                      "movq %%rsp, %0"
-                      : "=r"(next_stack_arg)
+    double first_fp;
+    double second_fp;
+    double third_fp;
+    double fourth_fp;
+    double fifth_fp;
+    double sixth_fp;
+    double seventh_fp;
+    double eighth_fp;
+} t_saved_varargs;
+
+static __attribute__((always_inline)) inline uint64 vargs_get_next_non_fp_arg( t_saved_varargs* va, int int_va_count ) {
+    switch (int_va_count) {
+        case 1: return va->first_non_fp; break;
+        case 2: return va->second_non_fp; break;
+        case 3: return va->third_non_fp; break;
+        case 4: return va->fourth_non_fp; break;
+        case 5: return va->fifth_non_fp; break;
+        case 6: return va->sixth_non_fp; break;
+        default:
+            return 0;
+            break;
+    }
+}
+
+static __attribute__((always_inline)) inline uint64 vargs_get_next_fp_arg( t_saved_varargs* va, int fp_va_count ) {
+    switch (fp_va_count) {
+        case 1: return va->first_fp; break;
+        case 2: return va->second_fp; break;
+        case 3: return va->third_fp; break;
+        case 4: return va->fourth_fp; break;
+        case 5: return va->fifth_fp; break;
+        case 6: return va->sixth_fp; break;
+        case 7: return va->seventh_fp; break;
+        case 8: return va->eighth_fp; break;
+        default:
+            return 0.0;
+            break;
+    }
+}
+
+int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t *fmt, ... ) {
+    char_t wcbuf[20];
+
+    uint64 rax;
+    t_saved_varargs va;
+
+    asm __volatile__ ("movq %%rcx, %0\n\t"
+                      "movq %%r8, %1\n\t"
+                      "movq %%r9, %2"
+                      : "=r"(va.fourth_non_fp), "=r"(va.fifth_non_fp), "=r"(va.sixth_non_fp)
                       :
                       );
+
+    asm __volatile__ ("movq %%rax, %0" : "=r"(rax) : );
+
+    if (rax > 0) {
+        asm __volatile__ ("movq %%xmm0, %0\n\t"
+                          "movq %%xmm1, %1\n\t"
+                          "movq %%xmm2, %2\n\t"
+                          "movq %%xmm3, %3\n\t"
+                          "movq %%xmm4, %4\n\t"
+                          "movq %%xmm5, %5\n\t"
+                          "movq %%xmm6, %6\n\t"
+                          "movq %%xmm7, %7"
+                          : "=r"(va.first_fp), "=r"(va.second_fp), "=r"(va.third_fp), "=r"(va.fourth_fp),
+                            "=r"(va.fifth_fp), "=r"(va.sixth_fp), "=r"(va.seventh_fp), "=r"(va.eighth_fp)
+                          :
+                         );
+    }
 
     unsigned int printed_chars = 0;
 
     const char_t* p = fmt;
 
+    int next_non_fp_arg_num = 4;
+
     long l;
     char c;
     unsigned int count;
     int padding;
-    const char_t* s;
+    const char* s;
+    const char_t* w;
 
     while (*p) {
         padding = 0;
@@ -270,47 +339,64 @@ int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t 
 
                 case 'i':
                 case 'd':
-                    l = (int)*next_stack_arg++;
-                    s = wcbuf;
+                    //l = (int)*next_stack_arg++;
+                    l = vargs_get_next_non_fp_arg( &va, next_non_fp_arg_num++ );
+                    w = wcbuf;
                     count = wctoi( wcbuf, l, 10, 19 );
 
                     if (count > 0) {
                         padding -= count; 
-                        goto print_string;
+                        goto print_wchar_string;
                     }
 
                     break;
 
                 case 'x':
-                    l = (long)*next_stack_arg++;
-                    s = wcbuf;
+                    //l = (long)*next_stack_arg++;
+                    l = vargs_get_next_non_fp_arg( &va, next_non_fp_arg_num++ );
+                    w = wcbuf;
                     count = wctoi( wcbuf, l, 16, 19 );
 
                     if (count > 0) {
                         padding -= count;
-                        goto print_string;
+                        goto print_wchar_string;
                     }
 
                     break;
 
                 case 'c':
                     //c = *((char*)next_vararg);
-                    c = (char)*next_stack_arg++;
+                    c = (char)(vargs_get_next_non_fp_arg( &va, next_non_fp_arg_num++ ));
                     putwchar_f( putwchar_f_arg, c );
                     printed_chars++;
                     break;
 
                 case 's':
-                    s = (char_t*)next_stack_arg++;
+                    s = (char*)(vargs_get_next_non_fp_arg( &va, next_non_fp_arg_num++ ));
 
-                    print_string:
-                        while (padding-- > 0) {
+                    while (padding-- > 0) {
+                        putwchar_f( putwchar_f_arg, ' ' );
+                        printed_chars++;
+                    }
+
+                    while (*s) {
+                        putwchar_f( putwchar_f_arg, *s++ );
+                        printed_chars++;
+                    }
+
+                    break;
+
+                case 'w':
+                    w = (char_t*)(vargs_get_next_non_fp_arg( &va, next_non_fp_arg_num++ ));
+
+                    print_wchar_string:
+                         while (padding-- > 0) {
                             putwchar_f( putwchar_f_arg, ' ' );
                             printed_chars++;
                         }
 
-                        while (*s) {
-                            putwchar_f( putwchar_f_arg, *s++ );
+                        while (*w) {
+                            putwchar_f( putwchar_f_arg, *w++ );
                             printed_chars++;
                         }
 
