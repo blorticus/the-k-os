@@ -5,7 +5,7 @@ CC_FLAGS := -nostdinc -Wall -fno-stack-protector
 BASE_OBJDIR = x86_64-obj
 OBJDIR := ../../$(BASE_OBJDIR)
 
-ifdef WITH_DEBUG
+ifdef DEBUG
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 

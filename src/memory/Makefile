@@ -5,7 +5,7 @@ CC_FLAGS := -g -nostdinc -Wall -fno-stack-protector
 DEFS =
 OBJDIR = ../../i386-obj
 
-ifdef WITH_DEBUG
+ifdef DEBUG
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 

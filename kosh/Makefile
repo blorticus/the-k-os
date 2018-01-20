@@ -10,7 +10,7 @@ TEST_LIBS := -lcheck -L. -lkoshlib
 TEST_CC_FLAGS := -Wall -g -DTESTING
 OBJDIR = i386-obj
 
-ifdef WITH_DEBUG
+ifdef DEBUG
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 
