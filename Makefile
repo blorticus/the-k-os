@@ -18,7 +18,7 @@ DEFS =
 OBJDIR = x86_64-obj
 PLATFORM = x86_64
 
-ifdef WITH_DEBUG
+ifdef DEBUG
     CC_FLAGS := $(CC_FLAGS) -g
 endif
 
