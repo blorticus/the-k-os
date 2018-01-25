@@ -11,7 +11,7 @@ endif
 
 ifdef TESTING
     DEFS := $(DEFS) -DTEST
-    CC_FLAGS := $(CC_FLAGS) -g -arch i386
+    CC_FLAGS := $(CC_FLAGS) -g
 endif
 
 
