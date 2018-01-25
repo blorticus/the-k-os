@@ -1,6 +1,8 @@
 #ifndef __LCHECK_H__
 #define __LCHECK_H__
 
+typedef int char_t;
+
 typedef struct {
     char*           name;
     unsigned int    tests_run;
@@ -14,6 +16,7 @@ void          fmt_fail_unless( lcheck_suite* s, int result, char* testname_fmt, 
 int           conclude_suite ( lcheck_suite* s );
 
 int   __strncmp       ( const char* s1, const char* s2, unsigned int n );
+int   __ustrncmp      ( const char_t* s1, const char_t* s2, unsigned int n );
 int   __strcmp        ( const char* s1, const char* s2 );
 char* __strcat_realloc( const char* dest, const char* src );
 int   __strlen        ( const char* s1 );

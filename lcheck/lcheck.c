@@ -53,6 +53,18 @@ int __strncmp( const char *s1, const char *s2, unsigned int n ) {
 }
 
 
+int __ustrncmp( const char_t *s1, const char_t *s2, unsigned int n ) {
+    for ( ; *s1 && *s2 && n > 0; s1++, s2++, n--) {
+        if (*s1 < *s2) return -1;
+        if (*s1 > *s2) return 1;
+    }
+
+    if (*s1 < *s2) return -1;
+    if (*s1 > *s2) return 1;
+
+    return 0;
+}
+
 int __strcmp( const char *s1, const char *s2 ) {
     return strcmp( s1, s2 );
 }
@@ -93,4 +105,3 @@ int __sprintf( char* s, const char* fmt, ... ) {
 void* __memset( void *b, int c, unsigned int len ) {
     return memset( b, c, len );
 }
-
