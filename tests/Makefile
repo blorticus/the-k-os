@@ -29,6 +29,9 @@ stringmem.t: stringmem.o test_stringmem.c liblcheck.a
 cprintf.t: test_cprintf.c liblcheck.a cprintf.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o cprintf.t test_cprintf.c ../$(BASE_OBJDIR)/cprintf.o $(LIBS)
 
+lprintf.t: test_lprintf.c liblcheck.a cprintf.o
+	$(CC) $(CC_FLAGS) $(INCLUDES) -o lprintf.t test_lprintf.c ../$(BASE_OBJDIR)/cprintf.o $(LIBS)
+
 kmalloc.t: test_kmalloc.c liblcheck.a kmalloc.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o kmalloc.t test_kmalloc.c ../$(BASE_OBJDIR)/kmalloc.o $(LIBS)
 

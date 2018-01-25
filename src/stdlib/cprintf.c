@@ -68,10 +68,9 @@ static unsigned int atoi( const char* buf, long value, unsigned int base, unsign
 }
 
 
-static unsigned int wctoi( const char_t* buf, long value, unsigned int base, unsigned short max_len ) {
+static unsigned int wctoi( char_t* buf, int value, unsigned int base, unsigned short max_len ) {
     int i = 0;
     unsigned char v;
-    char_t* sbuf = (char_t*)buf;
     unsigned int count = 0;
 
     /* fill buffer with required characters in reverse order, then pad out required number of spaces.  Finally, reverse
@@ -84,14 +83,14 @@ static unsigned int wctoi( const char_t* buf, long value, unsigned int base, uns
                 return 0;
 
             v = value & 0x0f;
-            sbuf[i++] = v < 10 ? '0' + v : 'a' + (v - 10);
+            buf[i++] = v < 10 ? '0' + v : 'a' + (v - 10);
             count++;
 
             /* this must be cast to force the bit-shift operator to fill with zeros from the left */
-            value = (unsigned long)value >> 4;
+            value = (unsigned int)value >> 4;
         } while (value);
 
-        sbuf[i] = '\0';
+        buf[i] = '\0';
     }
     else {  // ASSERT: base must equal 10
         /* In this case, mod by 10, then integer divide by 10 until value is zero.  This means we're working
@@ -101,7 +100,7 @@ static unsigned int wctoi( const char_t* buf, long value, unsigned int base, uns
             if (--max_len < 1)
                 return 0;
 
-            sbuf[i++] = '-';
+            buf[i++] = '-';
             count++;
             value *= -1;  // silly way to make absolute value, and inline asm would be faster, but...
         }
@@ -110,21 +109,21 @@ static unsigned int wctoi( const char_t* buf, long value, unsigned int base, uns
             if (max_len-- == 0)
                 return 0;
 
-            sbuf[i++] = '0' + (value % 10);
+            buf[i++] = '0' + (value % 10);
             count++;
             value /= 10;
         } while (value);
 
-        sbuf[i] = '\0';
+        buf[i] = '\0';
     }
 
-    int j = sbuf[0] == '-' ? 1 : 0;  // skip negative sign if there is one
+    int j = buf[0] == '-' ? 1 : 0;  // skip negative sign if there is one
 
     char_t t;
     for( i-- ; j < i ; j++, i--) {  // i-- because i points at \0
-        t = sbuf[j];
-        sbuf[j] = sbuf[i];
-        sbuf[i] = t;
+        t = buf[j];
+        buf[j] = buf[i];
+        buf[i] = t;
     }
 
     return count;
@@ -174,7 +173,7 @@ int cprintf( void (*putchar_f)(int, ...), char* putchar_args, const char *fmt, .
                     break;
 
                 case 'x':
-                    l = (long)*next_vararg;
+                    l = *(int*)next_vararg;
                     next_vararg++;
                     s = buf;
                     count = atoi( buf, l, 16, 19 );
@@ -241,7 +240,7 @@ int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t 
 
     const char_t* p = fmt;
 
-    long l;
+    sint32 l;
     char c;
     unsigned int count;
     int padding;
@@ -266,7 +265,7 @@ int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t 
 
                 case 'i':
                 case 'd':
-                    l = va_arg(ap, sint64);
+                    l = va_arg(ap, sint32);
                     w = wcbuf;
                     count = wctoi( wcbuf, l, 10, 19 );
 
@@ -278,7 +277,7 @@ int lprintf( void (*putwchar_f)(void*, int), void* putwchar_f_arg, const char_t 
                     break;
 
                 case 'x':
-                    l = va_arg(ap, sint64);
+                    l = va_arg(ap, sint32);
                     w = wcbuf;
                     count = wctoi( wcbuf, l, 16, 19 );
 

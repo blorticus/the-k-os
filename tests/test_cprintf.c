@@ -1,7 +1,7 @@
 #include <lcheck.h>
 #include <stdio.h>
 
-#define NULL ((char*)'\0')
+//#define NULL ((char*)'\0')
 
 //int cprintf( void (*putchar_f)(int), const char *fmt, ... )
 
