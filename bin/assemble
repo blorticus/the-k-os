@@ -1,0 +1,10 @@
+#!/bin/bash
+
+make x86_64-obj/kernel.elf || exit 1
+
+bin/mnt-uefi vm/uefi.img mnt
+echo "sudo rm mnt/BOOT/kos/kernel.elf"
+sudo rm mnt/BOOT/kos/kernel.elf
+echo "sudo cp x86_64-obj/kernel.elf mnt/BOOT/kos/kernel.elf"
+sudo cp x86_64-obj/kernel.elf mnt/BOOT/kos/kernel.elf
+bin/umnt-uefi mnt
