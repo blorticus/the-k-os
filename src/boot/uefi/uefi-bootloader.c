@@ -3,11 +3,22 @@
 #include <stdio.h>
 #include <wchar.h>
 
-typedef struct  {
-    void* frame_buffer_start_addr;
-    unsigned int fb_hrez;
-    unsigned int fb_vrez;
+// These are repeated here (from boot/attributes.h) because this uefi bootloader is compiled
+// using the hosted stdlib
+typedef struct {
+    void*    start_addr;
+    uint64_t size_in_bytes;
+    int      is_reserved;
+} boot_memory_map_block;
+
+typedef struct {
+    void*                   fb_start_addr;
+    unsigned int            fb_hrez;
+    unsigned int            fb_vrez;
+    uint64_t                memory_block_count;
+    boot_memory_map_block*  memory_blocks;
 } boot_attributes;
+
 
 void PreBootHalt( EFI_SIMPLE_TEXT_OUT_PROTOCOL* conerr, UINT16* msg, UINT16* status_string );
 UINT16* statusToString( EFI_STATUS status_code );
@@ -69,9 +80,11 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     /* For GetMemoryMap() */
     UINTN memmap_size = 4096*256;
-    UINTN map_key, descriptor_size;
-    UINT8*  memmap;
+    UINTN map_key, descriptor_size, descriptor_count;
+    UINT8* memmap;
     UINT32 descriptor_version;
+    EFI_MEMORY_DESCRIPTOR* descriptor;
+    boot_memory_map_block* memmap_block;
 
     #define WBUF_LEN 256
     CHAR16 wbuf[WBUF_LEN];
@@ -209,7 +222,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     DEBUG_PRINT( gST->ConOut, L"Closed Kernel File Handle\r\n" );
 
-    /* Build memory map, which is required to ExitBootServices */
     if ((status = uefi_call_wrapper( gBS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, 256, &membase )) != EFI_SUCCESS)
         PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
 
@@ -217,9 +229,27 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 
     DEBUG_PRINT( gST->ConOut, L"Allocated memory for memmap retrieval\r\nAbout to GetMemoryMap() and ExitBootServices()\r\n" );
 
-    bootattrs.frame_buffer_start_addr = (void*)(gop->Mode->FrameBufferBase);
+    bootattrs.fb_start_addr = (void*)(gop->Mode->FrameBufferBase);
     bootattrs.fb_hrez = 1024;
     bootattrs.fb_vrez = 768;
+
+    status = uefi_call_wrapper( gBS->GetMemoryMap, 5, &memmap_size, (EFI_MEMORY_DESCRIPTOR*)memmap, &map_key, &descriptor_size, &descriptor_version );
+
+    if (status != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"GetMemoryMap() failed", statusToString( status ) );
+
+    descriptor_count = memmap_size / descriptor_size;
+
+    if ((status = uefi_call_wrapper( gBS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, (memmap_size >> 12) + 1, &(bootattrs.memory_blocks) )) != EFI_SUCCESS)
+        PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
+
+    for (i = 0; i < descriptor_count; i++) {
+        descriptor = ((EFI_MEMORY_DESCRIPTOR*)memmap) + i;
+        memmap_block = bootattrs.memory_blocks + i;
+        memmap_block->start_addr    = (void*)(descriptor->PhysicalStart);
+        memmap_block->size_in_bytes = descriptor->NumberOfPages * 4096;
+        memmap_block->is_reserved   = descriptor->Type == EfiReservedMemoryType ? 1 : 0;
+    }
 
     /* Cannot emit debugging message before calling ExitBootServices, because once MemoryMap
        is retrieved, no further changes are allowed before calling ExitBootServices */
@@ -238,8 +268,6 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
                     :
                     : "r"((UINT64)&bootattrs)
                 );
-    asm volatile( "push $0x100000\n\t"
-                  "ret" );
 
     /* should never reach this point.  If we do, then return to caller (e.g., UEFI shell) */
     Print( L"Load or Jump failure.\r\n" );
