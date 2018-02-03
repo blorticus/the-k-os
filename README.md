@@ -1,4 +1,6 @@
-Currently, in order to compile the kernel:
+In order to compile the kernel, you need to install [gnu-efi](https://sourceforge.net/projects/gnu-efi/).
+
+Currently, to build the kernel:
 
     make x86_64-obj/kernel.elf
     
