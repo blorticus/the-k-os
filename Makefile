@@ -30,6 +30,9 @@ endif
 
 KMAIN_LD := link/kmain.ld
 
+$(OBJDIR):
+	mkdir $@
+
 OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o
 
 # TARGET: build kernel image
