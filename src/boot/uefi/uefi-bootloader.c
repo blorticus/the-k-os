@@ -233,23 +233,23 @@ efi_main (EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
     bootattrs.fb_hrez = 1024;
     bootattrs.fb_vrez = 768;
 
-    status = uefi_call_wrapper( gBS->GetMemoryMap, 5, &memmap_size, (EFI_MEMORY_DESCRIPTOR*)memmap, &map_key, &descriptor_size, &descriptor_version );
-
-    if (status != EFI_SUCCESS)
-        PreBootHalt( gST->ConOut, L"GetMemoryMap() failed", statusToString( status ) );
-
-    descriptor_count = memmap_size / descriptor_size;
-
-    if ((status = uefi_call_wrapper( gBS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, (memmap_size >> 12) + 1, &(bootattrs.memory_blocks) )) != EFI_SUCCESS)
-        PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
-
-    for (i = 0; i < descriptor_count; i++) {
-        descriptor = ((EFI_MEMORY_DESCRIPTOR*)memmap) + i;
-        memmap_block = bootattrs.memory_blocks + i;
-        memmap_block->start_addr    = (void*)(descriptor->PhysicalStart);
-        memmap_block->size_in_bytes = descriptor->NumberOfPages * 4096;
-        memmap_block->is_reserved   = descriptor->Type == EfiReservedMemoryType ? 1 : 0;
-    }
+//    status = uefi_call_wrapper( gBS->GetMemoryMap, 5, &memmap_size, (EFI_MEMORY_DESCRIPTOR*)memmap, &map_key, &descriptor_size, &descriptor_version );
+//
+//    if (status != EFI_SUCCESS)
+//        PreBootHalt( gST->ConOut, L"GetMemoryMap() failed", statusToString( status ) );
+//
+//    descriptor_count = memmap_size / descriptor_size;
+//
+//    if ((status = uefi_call_wrapper( gBS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, (memmap_size >> 12) + 1, &(bootattrs.memory_blocks) )) != EFI_SUCCESS)
+//        PreBootHalt( gST->ConOut, L"Failed to AllocatePages() for memory map", statusToString( status ) );
+//
+//    for (i = 0; i < descriptor_count; i++) {
+//        descriptor = ((EFI_MEMORY_DESCRIPTOR*)memmap) + i;
+//        memmap_block = bootattrs.memory_blocks + i;
+//        memmap_block->start_addr    = (void*)(descriptor->PhysicalStart);
+//        memmap_block->size_in_bytes = descriptor->NumberOfPages * 4096;
+//        memmap_block->is_reserved   = descriptor->Type == EfiReservedMemoryType ? 1 : 0;
+//    }
 
     /* Cannot emit debugging message before calling ExitBootServices, because once MemoryMap
        is retrieved, no further changes are allowed before calling ExitBootServices */
