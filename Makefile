@@ -7,10 +7,13 @@ UEFI_LDLIBS := -L/usr/local/lib -lefi -lgnuefi /usr/lib/gcc/x86_64-linux-gnu/7/l
 EFILDS := -T /home/vwells/src/gnu-efi-3.0.6/apps/../gnuefi/elf_x86_64_efi.lds
 UEFI_OBJCOPY := objcopy
 
+VM_DIR := vm
+VM_TMP_BUILD_DIR := $(VM_DIR)
+VM_TMP_PARTITION := $(VM_TMP_BUILD_DIR)/part.img
+VM_IMG := $(VM_DIR)/uefi.img
 
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
-#CC_FLAGS = -fno-builtin -nostdinc -Wall
 CC_FLAGS = -nostdinc -Wall -fno-stack-protector -Werror
 LD_FLAGS = 
 MAKEFLAGS = -e
@@ -31,7 +34,7 @@ endif
 KMAIN_LD := link/kmain.ld
 
 $(OBJDIR):
-	mkdir $@
+	mkdir -p $@
 
 OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o $(OBJDIR)/idt.o $(OBJDIR)/gdt.o $(OBJDIR)/irq_handlers.o $(OBJDIR)/isr_handlers.o $(OBJDIR)/isrs.o $(OBJDIR)/irq.o $(OBJDIR)/asm.o $(OBJDIR)/keyboard.o $(OBJDIR)/kterm.o $(OBJDIR)/multiboot.o $(OBJDIR)/cpuid.o $(OBJDIR)/cpu.o $(OBJDIR)/pic.o $(OBJDIR)/phys_core.o $(OBJDIR)/paging.o $(OBJDIR)/stringmem.o $(OBJDIR)/kernel_stack.o $(OBJDIR)/kmalloc.o $(OBJDIR)/pci.o $(OBJDIR)/kqueue.o $(OBJDIR)/kcirc_list.o $(OBJDIR)/scheduler.o $(OBJDIR)/task.o $(OBJDIR)/kbit_field.o
 
@@ -198,8 +201,29 @@ $(OBJDIR)/text-terminal.o: src/video/fb/text-terminal.c include/video/fb/text-te
 $(OBJDIR)/font.o: src/video/font.c include/video/font.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/font.o src/video/font.c
 
-.PHONY: image
-image: $(OBJDIR)/kernel.elf uefi.efi
+$(VM_IMG): $(OBJDIR)/kernel.elf $(OBJDIR)/uefi.efi
+	mkdir -p vm
+	rm -f $(VM_IMG)
+	dd if=/dev/zero of=$(VM_IMG) bs=512 count=93750
+	parted $(VM_IMG) -s -a minimal mklabel gpt
+	parted $(VM_IMG) -s -a minimal mkpart EFI FAT32 2048s 93716s
+	parted $(VM_IMG) -s -a minimal toggle 1 boot
+
+.PHONY: $(VM_TMP_PARTITION)
+$(VM_TMP_PARTITION):
+	mkdir -p vm
+	rm -f $(VM_TMP_PARTITION)
+	dd if=/dev/zero of=$(VM_TMP_PARTITION) bs=512 count=91669
+	mformat -i $(VM_TMP_PARTITION) -h 32 -t 32 -n 64 -c 1
+
+.PHONY: vm-img
+vm-img: $(VM_TMP_PARTITION) $(VM_IMG) $(OBJDIR)/uefi.efi $(OBJDIR)/kernel.elf
+	mmd -i $(VM_TMP_PARTITION) ::EFI ::EFI/BOOT
+	mcopy -i $(VM_TMP_PARTITION) $(OBJDIR)/uefi.efi ::EFI/BOOT/BOOTX64.EFI
+	mmd -i $(VM_TMP_PARTITION) ::BOOT ::BOOT/kos
+	mcopy -i $(VM_TMP_PARTITION) $(OBJDIR)/kernel.elf ::BOOT/kos/kernel.elf
+	dd if=$(VM_TMP_PARTITION) of=$(VM_IMG) bs=512 count=91669 seek=2048 conv=notrunc
+
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
@@ -229,3 +253,5 @@ notest-distclean: veryclean
 .PHONY: distclean
 distclean: notest-distclean
 	$(MAKE) -C tests clean
+
+# vim: filetype=make noexpandtab
