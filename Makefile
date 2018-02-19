@@ -15,8 +15,8 @@ CC_FLAGS = -nostdinc -Wall -fno-stack-protector -Werror
 LD_FLAGS = 
 MAKEFLAGS = -e
 DEFS =
-OBJDIR = x86_64-obj
 PLATFORM = x86_64
+OBJDIR = $(PLATFORM)-obj
 
 ifdef DEBUG
     CC_FLAGS := $(CC_FLAGS) -g
@@ -197,6 +197,9 @@ $(OBJDIR)/text-terminal.o: src/video/fb/text-terminal.c include/video/fb/text-te
 
 $(OBJDIR)/font.o: src/video/font.c include/video/font.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/font.o src/video/font.c
+
+.PHONY: image
+image: $(OBJDIR)/kernel.elf uefi.efi
 
 # TARGET: clean target, removes object and bin files
 .PHONY: clean
