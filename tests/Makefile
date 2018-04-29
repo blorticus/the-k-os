@@ -74,8 +74,8 @@ task_impl.t: test_IMPL_task.c liblcheck.a kbit_field.o kcirc_list.o kqueue.o tas
 font.t: test_font.cpp libtestsuite.a cpp-text-terminal.o
 	$(CXX) $(CXX_FLAGS) -o $@ $< ../$(BASE_OBJDIR)/cpp-text-terminal.o $(CXX_LIBS) $(CXX_INCLUDES)
 
-TestSuite.o:
-	$(MAKE) -C ../lcheck TestSuite.o TESTING=1
+text_terminal.t: test_text_terminal.cpp libtestsuite.a cpp-text-terminal.o
+	$(CXX) $(CXX_FLAGS) -o $@ $< ../$(BASE_OBJDIR)/cpp-text-terminal.o $(CXX_LIBS) $(CXX_INCLUDES)
 
 libtestsuite.a:
 	$(MAKE) -C ../lcheck libtestsuite.a TESTING=1

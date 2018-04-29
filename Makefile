@@ -15,7 +15,7 @@ VM_IMG := $(VM_DIR)/uefi.img
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 CC_FLAGS = -nostdinc -Wall -fno-stack-protector -Werror
-CXX_FLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -Werror
+CXX_FLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -Werror -std=c++14
 LD_FLAGS = 
 MAKEFLAGS = -e
 DEFS =

@@ -21,7 +21,7 @@ TestSuite::TestSuite( string name )
 }
 
  
-void TestSuite::failUnless( bool result, string testname ) {
+void TestSuite::assertBool( bool result, string testname ) {
     m_tests_run++;
 
     if (!result) {
@@ -31,7 +31,7 @@ void TestSuite::failUnless( bool result, string testname ) {
 }
 
 
-void TestSuite::failUnless( unsigned char have[], unsigned char expect[], int compare_bytes, string testname ) {
+void TestSuite::assertArraysEqual( unsigned char have[], unsigned char expect[], int compare_bytes, string testname ) {
     m_tests_run++;
 
     for (int i = 0; i < compare_bytes; i++) {
@@ -43,6 +43,18 @@ void TestSuite::failUnless( unsigned char have[], unsigned char expect[], int co
     }
 }
 
+
+void TestSuite::assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, string testname ) {
+    m_tests_run++;
+    
+    for (int i = 0; i < ar_len; i++) {
+        if (ar[i] != expect) {
+            cerr << " -- failed test number [" << m_tests_run << "]: " << testname << ", at byte [" << i << "], expected [" << hex << expect << "], got [" << hex << ar[i] << "]" << endl;
+            m_tests_failed++;
+            return;
+        }
+    }
+}
 
 int TestSuite::doneTesting() {
     cerr << "++ TEST [" << m_name << "] COMPLETE: Ran [" << m_tests_run << "] Tests: [" << (m_tests_run - m_tests_failed) << "] Succeeded, [" << m_tests_failed << "] Failed  -- " << (m_tests_failed > 0 ? "NOT OK" : "OK") << " -- " << endl;

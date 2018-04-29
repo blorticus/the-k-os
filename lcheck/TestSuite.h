@@ -7,8 +7,9 @@ class TestSuite {
     public:
         TestSuite();
         TestSuite( std::string name );  
-        void failUnless( bool result, std::string testname );
-        void failUnless( unsigned char* have, unsigned char* expect, int compare_bytes, std::string testname );
+        void assertBool( bool result, std::string testname );
+        void assertArraysEqual( unsigned char* have, unsigned char* expect, int compare_bytes, std::string testname );
+        void assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname );
         int doneTesting();
 
     private:

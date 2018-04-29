@@ -9,11 +9,11 @@ int main( void ) {
 
     FrameBuffer::Font f = FrameBuffer::Font();
 
-    t->failUnless( f.getCharHrez() == 8, "Default Font hrez" );
-    t->failUnless( f.getCharVrez() == 16, "Default Font vrez" );
+    t->assertBool( f.getCharHrez() == 8, "Default Font hrez" );
+    t->assertBool( f.getCharVrez() == 16, "Default Font vrez" );
 
     uint8 expected[] = { 0x00, 0x00, 0x7C, 0xC6, 0xC6, 0xCE, 0xD6, 0xD6, 0xE6, 0xC6, 0xC6, 0x7C, 0x00, 0x00, 0x00, 0x00 };
-    t->failUnless( (unsigned char*)f.getBitmapFor( 48 ), (unsigned char*)expected, 16, "Default Font getBitmapFor( 48 )" );
+    t->assertArraysEqual( (unsigned char*)f.getBitmapFor( 48 ), (unsigned char*)expected, 16, "Default Font getBitmapFor( 48 )" );
 
     return t->doneTesting();
 }

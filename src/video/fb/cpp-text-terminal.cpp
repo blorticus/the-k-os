@@ -1,4 +1,6 @@
 #include <video/fb/cpp-text-terminal.h>
+#include <cstdint>
+#include <algorithm>
 
 namespace FrameBuffer {
     uint8 FONT_MAP_8x16[] =
@@ -295,29 +297,59 @@ namespace FrameBuffer {
     
     
     FrameBuffer::TextTerminal::TextTerminal() 
-        :m_hrez(1024),
-         m_vrez(768),
-         m_fg_color(0x00000000),
-         m_bg_color(0xffffffff),
-         m_initialized(false) {
+        :   m_fg_color(0x00000000),
+            m_bg_color(0xffffffff),
+            m_initialized(false) {
     
     }
     
-    FrameBuffer::TextTerminal::TextTerminal(int hrez, int vrez, uint32 fg_color, uint32 bg_color)
-        :m_hrez(hrez),
-         m_vrez(vrez),
-         m_fg_color(fg_color),
-         m_bg_color(bg_color),
-         m_initialized(false) {
+    FrameBuffer::TextTerminal::TextTerminal(void* fb_start_addr, int hrez, int vrez, uint32 fg_color, uint32 bg_color)
+        :   m_fb_first_pixel_addr((uint32*)fb_start_addr),
+            m_hrez(hrez),
+            m_vrez(vrez),
+            m_fg_color(fg_color),
+            m_bg_color(bg_color),
+            m_current_row(0),
+            m_current_col(0),
+            m_initialized(false) {
     
     }
     
-    FrameBuffer::Font* FrameBuffer::TextTerminal::setActiveFont( Font* f ) {
-        return f;
+    void FrameBuffer::TextTerminal::setFrameBufferStartAddr(void* fb_start_addr, int hrez, int vrez) {
+        m_fb_first_pixel_addr = (uint32*)fb_start_addr;
+        m_hrez = hrez;
+        m_vrez = vrez;
+        
+        if (m_active_font)
+            m_initialized = true;
+    }
+    
+    void FrameBuffer::TextTerminal::setActiveFont( Font* f ) {
+        m_active_font = f;
+        
+        m_bytes_per_row = m_hrez / f->getCharHrez() / 8;
+        m_bytes_per_screen = m_hrez * m_vrez / 8;
+        m_columns = m_hrez / f->getCharHrez();
+        m_rows = m_vrez / f->getCharVrez();
+        m_current_col = 0;
+        m_current_row = 0;
+        
+        if (m_fb_first_pixel_addr)
+            m_initialized = true;
     }
 }
 
-
+    uint32* FrameBuffer::TextTerminal::getCharStartPixel( unsigned int char_at_row, unsigned int char_at_col ) {
+        return (uint32*)m_fb_first_pixel_addr + (char_at_row * m_active_font->getCharVrez() + char_at_col * m_active_font->getCharHrez());
+    }
+    
+    void FrameBuffer::TextTerminal::clear( void ) {
+        if (!m_initialized)
+            return;
+        
+        std::fill_n( m_fb_first_pixel_addr, m_bytes_per_screen / 4, m_bg_color );
+    }
+    
 //void fbtt_init( FBTT fbtt, unsigned int hrez, unsigned int vrez, unsigned int font_hrez_bytes, unsigned int font_vrez_bytes, void* fb_start_addr, uint32 fg_color, uint32 bg_color ) {
 //    fbtt->hrez             = hrez;
 //    fbtt->vrez             = vrez;

@@ -22,24 +22,33 @@ namespace FrameBuffer {
     class TextTerminal {
         public:
             TextTerminal();
-            TextTerminal( int hrez, int vrez, uint32 fg_color, uint32 bg_color );
+            TextTerminal( void* fb_start_addr, int hrez, int vrez, uint32 fg_color, uint32 bg_color );
 
-            Font* setActiveFont( Font* f );
+            /** Set the address of the first byte of the Frame Buffer into which characters should be written **/
+            void setFrameBufferStartAddr(void* fb_start_addr, int hrez, int vrez);
+            
+            /** Set the font to be used for drawing characters **/
+            void setActiveFont( Font* f );
+            
+            /** Clear the text Frame Buffer, setting each pixel to the background color **/
+            void clear();
     
         private:
+            uint32*      m_fb_first_pixel_addr;
             unsigned int m_hrez;
             unsigned int m_vrez;
             unsigned int m_columns;
             unsigned int m_rows;
-            Font         m_active_font;
+            Font*        m_active_font;
             unsigned int m_bytes_per_row;
             unsigned int m_bytes_per_screen;
-            void*        m_fb_first_pixel_addr;
             uint32       m_fg_color;
             uint32       m_bg_color;
             unsigned int m_current_row;
             unsigned int m_current_col;
             bool         m_initialized;
+            
+            uint32* getCharStartPixel( unsigned int char_at_row, unsigned int char_at_col );
     };
 }
 
