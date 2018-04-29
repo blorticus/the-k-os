@@ -1,8 +1,11 @@
 #TOOLBIN := /usr/bin
 #GCC := $(TOOLBIN)/gcc
 CC_FLAGS := -g -Wall -fno-stack-protector
+CXX_FLAGS := -g -Wall -std=c++14
 INCLUDES := -I../include -I../lcheck -I../include/stdlib
+CXX_INCLUDES := -I../include -I../lcheck
 LIBS := -L../lcheck -llcheck
+CXX_LIBS := -L../lcheck -ltestsuite #../lcheck/TestSuite.o
 BASE_OBJDIR := x86_64-obj
 
 exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kterm.t strtol.t phys_core.t
@@ -68,6 +71,15 @@ kbit_field.t: test_kbit_field.c liblcheck.a kbit_field.o
 task_impl.t: test_IMPL_task.c liblcheck.a kbit_field.o kcirc_list.o kqueue.o task.o
 	$(CC) $(CC_FLAGS) $(INCLUDES) -o task_impl.t test_IMPL_task.c ../$(BASE_OBJDIR)/kbit_field.o ../$(BASE_OBJDIR)/kcirc_list.o  ../$(BASE_OBJDIR)/kqueue.o ../$(BASE_OBJDIR)/task.o $(LIBS)
 
+font.t: test_font.cpp libtestsuite.a cpp-text-terminal.o
+	$(CXX) $(CXX_FLAGS) -o $@ $< ../$(BASE_OBJDIR)/cpp-text-terminal.o $(CXX_LIBS) $(CXX_INCLUDES)
+
+TestSuite.o:
+	$(MAKE) -C ../lcheck TestSuite.o TESTING=1
+
+libtestsuite.a:
+	$(MAKE) -C ../lcheck libtestsuite.a TESTING=1
+
 liblcheck.a:
 	$(MAKE) -C ../lcheck liblcheck.a TESTING=1
 
@@ -115,6 +127,9 @@ kbit_field.o:
 
 task.o:
 	$(MAKE) -C .. $(BASE_OBJDIR)/task.o TESTING=1
+
+cpp-text-terminal.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/cpp-text-terminal.o TESTING=1
 
 
 

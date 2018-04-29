@@ -15,7 +15,7 @@ lcheck_suite* create_suite( const char* name ) {
 }
 
 
-void fail_unless( lcheck_suite* s, int result, char* testname ) {
+void fail_unless( lcheck_suite* s, int result, const char* testname ) {
     s->tests_run++;
 
     if (!result) {
@@ -27,7 +27,7 @@ void fail_unless( lcheck_suite* s, int result, char* testname ) {
 
 char fmt_buf[1024];
 
-void fmt_fail_unless( lcheck_suite *s, int result, char* testname_fmt, ... ) {
+void fmt_fail_unless( lcheck_suite *s, int result, const char* testname_fmt, ... ) {
     va_list argptr;
     va_start( argptr, testname_fmt );
     vsnprintf( fmt_buf, 1023, testname_fmt, argptr );

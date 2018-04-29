@@ -15,6 +15,7 @@ VM_IMG := $(VM_DIR)/uefi.img
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 CC_FLAGS = -nostdinc -Wall -fno-stack-protector -Werror
+CXX_FLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -Werror
 LD_FLAGS = 
 MAKEFLAGS = -e
 DEFS =
@@ -28,8 +29,12 @@ endif
 ifdef TESTING
 	DEFS := $(DEFS) -DTEST
 	CC_FLAGS := $(CC_FLAGS) -g
+	CXX_FLAGS := $(CXX_FLAGS) -g
 endif
 
+# from https://wiki.osdev.org/Calling_Global_Constructors
+CRTBEGIN_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtbegin.o)
+CRTEND_OBJ:=$(shell $(CC) $(CFLAGS) -print-file-name=crtend.o)
 
 KMAIN_LD := link/kmain.ld
 
@@ -44,6 +49,7 @@ kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 
 $(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o cprintf.o 
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o $(OBJDIR)/cprintf.o
+
 
 
 $(OBJDIR)/uefi-bootloader.o: src/boot/uefi/uefi-bootloader.c
@@ -200,6 +206,9 @@ $(OBJDIR)/text-terminal.o: src/video/fb/text-terminal.c include/video/fb/text-te
 
 $(OBJDIR)/font.o: src/video/font.c include/video/font.h
 	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/font.o src/video/font.c
+
+$(OBJDIR)/cpp-text-terminal.o: src/video/fb/cpp-text-terminal.cpp include/video/fb/cpp-text-terminal.h
+	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
 
 $(VM_IMG): $(OBJDIR)/kernel.elf $(OBJDIR)/uefi.efi
 	mkdir -p vm

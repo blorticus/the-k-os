@@ -21,6 +21,4 @@ typedef unsigned long       size_t;
 
 typedef int                 char_t;
 
-typedef int                 bool;
-
 #endif
