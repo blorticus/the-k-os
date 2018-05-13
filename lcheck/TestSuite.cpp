@@ -4,6 +4,60 @@
 
 using namespace std;
 
+BufferDescriptor::BufferDescriptor() : m_elements(0) {
+}
+
+
+BufferDescriptor* BufferDescriptor::addRepeatingValue( unsigned int count, unsigned int value ) {
+    m_elements += count;
+
+    descriptor* d = new descriptor;
+    d->type = Repeating;
+    d->length = count;
+    d->value = value;
+    
+    m_descriptors.push_back(d);
+    
+    return this;
+}
+
+
+BufferDescriptor* BufferDescriptor::addExplicitValues( unsigned int count, unsigned int* values ) {
+    m_elements += count;
+    
+    descriptor* d = new descriptor;
+    d->type = Explicit;
+    d->length = count;
+    d->pvalue = values;
+    
+    m_descriptors.push_back(d);
+
+    return this;
+}
+
+
+unsigned int* BufferDescriptor::inflate() {
+    unsigned int* inflated = new unsigned int[m_elements];
+    
+    unsigned int i = 0;
+    for (std::list<descriptor*>::iterator it = m_descriptors.begin(); it != m_descriptors.end(); it++) {
+        descriptor* d = *it;
+        switch (d->type) {
+            case Repeating:
+                for (unsigned int j = 0; j < d->length; j++)
+                    inflated[i++] = d->value;            
+                break;
+            
+            case Explicit:
+                for (unsigned int j = 0; j < d->length; j++)
+                    inflated[i++] = (d->pvalue)[j];
+                break;
+        }
+    }
+    
+    return inflated;
+}
+
 
 TestSuite::TestSuite()
     :m_name("TestSuite"),
@@ -36,7 +90,19 @@ void TestSuite::assertArraysEqual( unsigned char have[], unsigned char expect[],
 
     for (int i = 0; i < compare_bytes; i++) {
         if (have[i] != expect[i]) {
-            cerr << " -- failed test number [" << m_tests_run << "]: " << testname << ", at byte [" << i << "], expected [" << hex << expect[i] << "], got [" << hex << have[i] << "]" << endl;
+            cerr << " -- failed test number [" << m_tests_run << "]: " << testname << ", at element [" << i << "], expected [" << hex << expect[i] << "], got [" << hex << have[i] << "]" << endl;
+            m_tests_failed++;
+            return;
+        }
+    }
+}
+
+void TestSuite::assertArraysEqual( unsigned int*  have, unsigned int*  expect, int compare_bytes, std::string testname ) {
+    m_tests_run++;
+
+    for (int i = 0; i < compare_bytes; i++) {
+        if (have[i] != expect[i]) {
+            cerr << " -- failed test number [" << m_tests_run << "]: " << testname << ", at element [" << i << "], expected [" << hex << expect[i] << "], got [" << hex << have[i] << "]" << endl;
             m_tests_failed++;
             return;
         }
@@ -44,7 +110,7 @@ void TestSuite::assertArraysEqual( unsigned char have[], unsigned char expect[],
 }
 
 
-void TestSuite::assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, string testname ) {
+void TestSuite::assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname ) {
     m_tests_run++;
     
     for (int i = 0; i < ar_len; i++) {

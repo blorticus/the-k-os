@@ -15,7 +15,7 @@ VM_IMG := $(VM_DIR)/uefi.img
 ASM = /usr/bin/nasm
 INCLUDES = -I./include -I./include/stdlib
 CC_FLAGS = -nostdinc -Wall -fno-stack-protector -Werror
-CXX_FLAGS = -ffreestanding -O2 -Wall -Wextra -fno-exceptions -fno-rtti -Werror -std=c++14
+CXX_FLAGS = -ffreestanding -Wall -Wextra -fno-exceptions -fno-rtti -Werror -std=c++14
 LD_FLAGS = 
 MAKEFLAGS = -e
 DEFS =
@@ -30,6 +30,9 @@ ifdef TESTING
 	DEFS := $(DEFS) -DTEST
 	CC_FLAGS := $(CC_FLAGS) -g
 	CXX_FLAGS := $(CXX_FLAGS) -g
+else
+    CC_FLAGS := $(CC_FLAGS) -O2
+    CXX_FLAGS := $(CXX_FLAGS) -O2
 endif
 
 # from https://wiki.osdev.org/Calling_Global_Constructors
