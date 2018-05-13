@@ -297,13 +297,13 @@ namespace FrameBuffer {
     
     
     FrameBuffer::TextTerminal::TextTerminal() 
-        :   m_fg_color(0x00000000),
-            m_bg_color(0xffffffff),
+        :   m_fg_color(Black),
+            m_bg_color(White),
             m_initialized(false) {
     
     }
     
-    FrameBuffer::TextTerminal::TextTerminal(void* fb_start_addr, int hrez, int vrez, uint32 fg_color, uint32 bg_color)
+    FrameBuffer::TextTerminal::TextTerminal(void* fb_start_addr, int hrez, int vrez, Color fg_color, Color bg_color)
         :   m_fb_first_pixel_addr((uint32*)fb_start_addr),
             m_hrez(hrez),
             m_vrez(vrez),
@@ -326,11 +326,10 @@ namespace FrameBuffer {
     
     void FrameBuffer::TextTerminal::setActiveFont( Font* f ) {
         m_active_font = f;
-        
-        m_bytes_per_row = m_hrez / f->getCharHrez() / 8;
-        m_bytes_per_screen = m_hrez * m_vrez / 8;
-        m_columns = m_hrez / f->getCharHrez();
-        m_rows = m_vrez / f->getCharVrez();
+        m_font_hrez = f->getCharHrez();
+        m_font_vrez = f->getCharVrez();
+        m_columns = m_hrez / m_font_hrez;
+        m_rows = m_vrez / m_font_vrez;
         m_current_col = 0;
         m_current_row = 0;
         
@@ -340,14 +339,45 @@ namespace FrameBuffer {
 }
 
     uint32* FrameBuffer::TextTerminal::getCharStartPixel( unsigned int char_at_row, unsigned int char_at_col ) {
-        return (uint32*)m_fb_first_pixel_addr + (char_at_row * m_active_font->getCharVrez() + char_at_col * m_active_font->getCharHrez());
+        return (uint32*)m_fb_first_pixel_addr + (char_at_row * m_font_vrez + char_at_col * m_font_hrez);
     }
     
     void FrameBuffer::TextTerminal::clear( void ) {
         if (!m_initialized)
             return;
         
-        std::fill_n( m_fb_first_pixel_addr, m_bytes_per_screen / 4, m_bg_color );
+        std::fill_n( m_fb_first_pixel_addr, m_hrez * m_vrez, m_bg_color );
+    }
+    
+    void FrameBuffer::TextTerminal::setColors( Color fg_color, Color bg_color ) {
+        m_fg_color = fg_color;
+        m_bg_color = bg_color;
+    }
+    
+    void FrameBuffer::TextTerminal::drawCharAt( uint32 c, unsigned int row, unsigned int col ) {
+        if (row > m_rows || col > m_columns)
+            return;
+        
+        uint8* char_bitmap = m_active_font->getBitmapFor( c );
+        
+        if (!char_bitmap)
+            return;
+        
+        uint32* next_pixel = getCharStartPixel( row, col );
+        
+        for (unsigned int i = 0; i < m_font_vrez; i++) {
+            uint8 nrow = char_bitmap[i];
+            for (unsigned int j = 0; j < m_font_hrez; j++) {
+                if (nrow & 0x80)
+                    *next_pixel++ = (uint32)m_fg_color;
+                else
+                    *next_pixel++ = (uint32)m_bg_color;
+                
+                nrow <<= 1;
+            }
+            
+            next_pixel += (m_columns * m_font_hrez - m_columns);
+        }
     }
     
 //void fbtt_init( FBTT fbtt, unsigned int hrez, unsigned int vrez, unsigned int font_hrez_bytes, unsigned int font_vrez_bytes, void* fb_start_addr, uint32 fg_color, uint32 bg_color ) {

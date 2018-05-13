@@ -1,5 +1,5 @@
-#ifndef __SYS_TYPES_H__
-#define __SYS_TYPES_H__
+#ifndef SYS_TYPES_H
+#define SYS_TYPES_H
 
 
 #define NULL ((void*)'\0')
@@ -13,12 +13,13 @@ typedef char                sint8;
 typedef short               sint16;
 typedef int                 sint32;
 typedef long long           sint64;
-
 typedef void*               memptr;
 typedef uint64              memaddr;
 
 typedef unsigned long       size_t;
 
 typedef int                 char_t;
+
+typedef uint32              uchar_t;
 
 #endif
