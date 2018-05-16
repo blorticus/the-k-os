@@ -41,7 +41,7 @@ namespace FrameBuffer {
             void setColors( Color fg_color, Color bg_color );
             
             /** Clear the text Frame Buffer, setting each pixel to the background color **/
-            void clear();
+            void clearScreen();
             
             /** Draws a character at the specific location **/
             void drawCharAt( uchar_t c, unsigned int row, unsigned int col );
@@ -60,6 +60,7 @@ namespace FrameBuffer {
             unsigned int m_current_row;
             unsigned int m_current_col;
             bool         m_initialized;
+            unsigned int m_pixels_per_row;
             
             uint32* getCharStartPixel( unsigned int char_at_row, unsigned int char_at_col );
     };

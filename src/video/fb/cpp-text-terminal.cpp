@@ -333,22 +333,24 @@ namespace FrameBuffer {
         m_current_col = 0;
         m_current_row = 0;
         
+        m_pixels_per_row    = m_hrez * m_font_vrez;
+        
         if (m_fb_first_pixel_addr)
             m_initialized = true;
     }
 }
 
     uint32* FrameBuffer::TextTerminal::getCharStartPixel( unsigned int char_at_row, unsigned int char_at_col ) {
-        return (uint32*)m_fb_first_pixel_addr + (char_at_row * m_font_vrez + char_at_col * m_font_hrez);
+        return (uint32*)m_fb_first_pixel_addr + (char_at_row * m_pixels_per_row) + (m_font_hrez * char_at_col);
     }
     
-    void FrameBuffer::TextTerminal::clear( void ) {
+    void FrameBuffer::TextTerminal::clearScreen( void ) {
         if (!m_initialized)
             return;
         
         std::fill_n( m_fb_first_pixel_addr, m_hrez * m_vrez, m_bg_color );
     }
-    
+
     void FrameBuffer::TextTerminal::setColors( Color fg_color, Color bg_color ) {
         m_fg_color = fg_color;
         m_bg_color = bg_color;
@@ -376,7 +378,7 @@ namespace FrameBuffer {
                 nrow <<= 1;
             }
             
-            next_pixel += (m_columns * m_font_hrez - m_columns);
+            next_pixel += (m_hrez - m_font_hrez);
         }
     }
     

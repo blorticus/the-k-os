@@ -58,6 +58,10 @@ unsigned int* BufferDescriptor::inflate() {
     return inflated;
 }
 
+void BufferDescriptor::reset() {
+    m_descriptors.clear();
+    m_elements = 0;
+}
 
 TestSuite::TestSuite()
     :m_name("TestSuite"),
@@ -128,3 +132,17 @@ int TestSuite::doneTesting() {
     return m_tests_failed;
 }
 
+
+void TestSuite::printTwoValue2dArray( unsigned int* array, unsigned int columns, unsigned int rows, unsigned int v1 ) {
+    cout << "<<<<<<<<<<" << endl;
+    for (unsigned int i = 0; i < rows; i++) {
+        for (unsigned int j = 0; j < columns; j++) {
+            if (array[i*columns + j] == v1)
+                cout << ".";
+            else
+                cout << "+";
+        }
+        cout << endl;
+    }
+    cout << ">>>>>>>>>>" << endl;
+}

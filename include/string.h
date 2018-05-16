@@ -1,7 +1,10 @@
-#ifndef __STRING_H__
-#define __STRING_H__
+#pragma once
 
 #include <sys/types.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /**
@@ -92,5 +95,6 @@ long strtol( const char* str, char ** endptr, int base );
  */
 void *memcpy(void *dest, const void *src, size_t n);
 
-
+#ifdef __cplusplus
+     }
 #endif

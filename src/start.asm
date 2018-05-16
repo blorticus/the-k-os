@@ -1,12 +1,5 @@
 [BITS 64]
 
-; BRIEF         : This is the first entry point for the kernel, loaded by the bootloader.
-; ASSUMES       : interrupts are disabled.  Mode is 32-bit protected with limited GDT.
-; DESCRIPTION   : sets up small system stack (current 8KB), provides multiboot header, sets up GDT and IDT, then jumps to kmain(),
-;                 the C kernel entry point
-
-; On entry, interrupts are disabled
-
 SECTION .text
 
 global start
@@ -32,8 +25,10 @@ multiboot_header:
 
 
 kentry:
-    extern kmain
-    call kmain
+;    extern kmain
+;    call kmain
+    extern _Z5kmainv
+    call _Z5kmainv
 
     jmp $
 

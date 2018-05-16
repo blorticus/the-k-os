@@ -19,6 +19,7 @@ class BufferDescriptor {
         BufferDescriptor* addRepeatingValue( unsigned int count, unsigned int value );
         BufferDescriptor* addExplicitValues( unsigned int length, unsigned int* values );
         unsigned int* inflate();
+        void reset();
 
     private:
         std::list<descriptor*> m_descriptors;
@@ -34,6 +35,8 @@ class TestSuite {
         void assertArraysEqual( unsigned char* have, unsigned char* expect, int compare_bytes, std::string testname );
         void assertArraysEqual( unsigned int*  have, unsigned int*  expect, int compare_bytes, std::string testname );
         void assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname );
+
+        void printTwoValue2dArray( unsigned int* array, unsigned int columns, unsigned int rows, unsigned int v1 );
         
         int doneTesting();
 

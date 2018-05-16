@@ -1,6 +1,4 @@
-#ifndef SYS_TYPES_H
-#define SYS_TYPES_H
-
+#pragma once
 
 #define NULL ((void*)'\0')
 
@@ -22,4 +20,4 @@ typedef int                 char_t;
 
 typedef uint32              uchar_t;
 
-#endif
+typedef char                bool_t;

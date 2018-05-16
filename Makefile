@@ -50,8 +50,12 @@ OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o 
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
-$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o cprintf.o 
-	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o $(OBJDIR)/cprintf.o
+$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/start.o $(OBJDIR)/cpp-text-terminal.o $(OBJDIR)/stringmem.o 
+	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $@ $^
+#	$(CXX) -T $(KMAIN_LD) -o $@ $(CXX_FLAGS) $^
+
+#$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o cprintf.o 
+#	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o $(OBJDIR)/cprintf.o
 
 
 
@@ -90,9 +94,11 @@ $(OBJDIR)/start.o: src/start.asm
 
 
 # TARGET: build C kmain() kernel entry point
-$(OBJDIR)/kmain.o: src/kmain.c
-	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kmain.o src/kmain.c
+#$(OBJDIR)/kmain.o: src/kmain.c
+#	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $(OBJDIR)/kmain.o src/kmain.c
 
+$(OBJDIR)/kmain.o: src/kmain.cpp
+	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
 
 # TARGET: build multiboot routines
 $(OBJDIR)/multiboot.o: src/multiboot.c
