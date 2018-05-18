@@ -1,6 +1,7 @@
 #include <TestSuite.h>
+#include <video/SimpleFont.h>
 #include <video/fb/cpp-text-terminal.h>
-#include <sys/types.h>
+#include <cstdint>
 
 const uint32 TEST_BUF_CHAR_COLS = 8;
 const uint32 TEST_BUF_CHAR_ROWS = 8;
@@ -19,7 +20,7 @@ int main( void ) {
     TestSuite* t = new TestSuite( "FrameBuffer::TextTerminal" );
 
     FrameBuffer::TextTerminal* fb = new FrameBuffer::TextTerminal( buf, TEST_BUF_CHAR_COLS * 8, TEST_BUF_CHAR_ROWS * 16, (FrameBuffer::Color)TEST_BUF_FG_COLOR_1, (FrameBuffer::Color)TEST_BUF_BG_COLOR_1 );    
-    fb->setActiveFont( new FrameBuffer::Font() );
+    fb->setActiveFont( new Mono8x16SimpleFont() );
 
     fb->clearScreen();
 
@@ -78,12 +79,12 @@ int main( void ) {
      ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
      ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16 * (TEST_BUF_CHAR_ROWS - 2), TEST_BUF_BG_COLOR_2 );
 
- //   t->printTwoValue2dArray( d->inflate(), 64, 8*16, (unsigned int)TEST_BUF_BG_COLOR_2 );
+//    t->printTwoValue2dArray( d->inflate(), 64, 8*16, (unsigned int)TEST_BUF_BG_COLOR_2 );
 //    t->printTwoValue2dArray( buf, 64, 8*16, (unsigned int)TEST_BUF_BG_COLOR_2 );    
 
     t->assertArraysEqual( buf, d->inflate(), TEST_BUF_LEN, "Test 2: drawCharAt(79,1,2)" );
 
-    t->printTwoValue2dArray( d->inflate(), 64, 8*16, (unsigned int)TEST_BUF_BG_COLOR_2 );    
+//    t->printTwoValue2dArray( d->inflate(), 64, 8*16, (unsigned int)TEST_BUF_BG_COLOR_2 );    
     
     return t->doneTesting();
 }

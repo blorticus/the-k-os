@@ -1,13 +1,14 @@
-#include <sys/types.h>
+//#include <cstdlib>
 #include <string.h>
 #include <boot/attributes.h>
 #include <video/fb/cpp-text-terminal.h>
+#include <video/SimpleFont.h>
 
 void kmain( void ) {
     memaddr ba;
     boot_attributes bootattrs;
     FrameBuffer::TextTerminal fbtt;
-    FrameBuffer::Font font;
+    Mono8x16SimpleFont font;
 
     // need to make a localized copy, because the memory from the UEFI
     // bootloader will be trashed
