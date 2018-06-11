@@ -49,7 +49,7 @@ protected:
  * A mono-face terminal font that is 8 pixels x 16 pixels.  It includes only characters
  * in the Windows-1252 set (0..255, inclusive, with 0 encoded as a space).
  */
-class Mono8x16SimpleFont : public SimpleFont {
+class Mono8x16SimpleFont {
 public:
     Mono8x16SimpleFont();
     void* bitmapFor( uint32_t codepoint );
