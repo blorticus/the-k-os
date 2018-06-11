@@ -30,8 +30,9 @@ namespace FrameBuffer {
         if (m_active_font)
             m_initialized = true;
     }
-    
-    void FrameBuffer::TextTerminal::setActiveFont( SimpleFont* f ) {
+
+    void FrameBuffer::TextTerminal::setActiveFont(SimpleFont *f)
+    {
         m_active_font = f;
         m_font_hrez = f->charHrez();
         m_font_vrez = f->charVrez();

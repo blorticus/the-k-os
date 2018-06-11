@@ -36,8 +36,8 @@ namespace FrameBuffer {
             void setFrameBufferStartAddr(void* fb_start_addr, int hrez, int vrez);
             
             /** Set the font to be used for drawing characters **/
-            void setActiveFont( SimpleFont* f );
-            
+            void setActiveFont(SimpleFont *f);
+
             /** Change color set **/
             void setColors( Color fg_color, Color bg_color );
             

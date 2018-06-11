@@ -50,7 +50,7 @@ OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o 
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
-$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/start.o $(OBJDIR)/cpp-text-terminal.o $(OBJDIR)/stringmem.o $(OBJDIR)/cpp-support.o $(OBJDIR)/SimpleFont.o
+$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/start.o $(OBJDIR)/TextTerminal.o $(OBJDIR)/stringmem.o $(OBJDIR)/cpp-support.o $(OBJDIR)/SimpleFont.o
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $@ $^
 #	$(CXX) -T $(KMAIN_LD) -o $@ $(CXX_FLAGS) $^
 
@@ -220,6 +220,9 @@ $(OBJDIR)/SimpleFont.o: src/video/SimpleFont.cpp include/video/SimpleFont.h
 	$(CC) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/cpp-text-terminal.o: src/video/fb/cpp-text-terminal.cpp include/video/fb/cpp-text-terminal.h
+	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/TextTerminal.o: src/video/fb/TextTerminal.cpp include/video/fb/TextTerminal.h
 	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/cpp-support.o: src/support/cpp-support.cpp

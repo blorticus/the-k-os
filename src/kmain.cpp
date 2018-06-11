@@ -1,7 +1,6 @@
-//#include <cstdlib>
 #include <string.h>
 #include <boot/attributes.h>
-#include <video/fb/cpp-text-terminal.h>
+#include <video/fb/TextTerminal.h>
 #include <video/SimpleFont.h>
 
 void kmain( void ) {
@@ -32,12 +31,7 @@ void kmain( void ) {
     fbtt.drawCharAt( 'K', 1, 4 );
     fbtt.drawCharAt( '-', 1, 5 );
     fbtt.drawCharAt( 'O', 1, 6 );
-    fbtt.drawCharAt( 'S', 1, 7 );
-
-//    fbtt_clear_screen( &fbtt );
-//    fbtt_write_string( &fbtt, L"The K-OS\nBrought to you by\tNing Enterprises\n" );
-//
-//    fbtt_printf( &fbtt, L"- %d %d %d %d and %s\n", 10, 20, 30, 40, "a string" );
+    fbtt.drawCharAt( 'Z', 1, 7 );
 
     for ( ;; )
         ;
