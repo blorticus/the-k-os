@@ -1,9 +1,8 @@
-#include <video/fb/TextTerminal.h>
 #include <cstdint>
 #include <algorithm>
+#include <video/fb/TextTerminal.h>
+#include <string.h>
 
-namespace FrameBuffer
-{
 FrameBuffer::TextTerminal::TextTerminal()
     : m_fg_color(Black),
       m_bg_color(White),
@@ -48,7 +47,6 @@ void FrameBuffer::TextTerminal::setActiveFont(SimpleFont *f)
     if (m_fb_first_pixel_addr)
         m_initialized = true;
 }
-} // namespace FrameBuffer
 
 uint32_t *FrameBuffer::TextTerminal::getCharStartPixel(unsigned int char_at_row, unsigned int char_at_col)
 {
@@ -60,7 +58,7 @@ void FrameBuffer::TextTerminal::clearScreen(void)
     if (!m_initialized)
         return;
 
-    std::fill_n(m_fb_first_pixel_addr, m_hrez * m_vrez, m_bg_color);
+    std::fill_n((uint32_t*)m_fb_first_pixel_addr, m_hrez * m_vrez, (uint32_t)m_bg_color);
 }
 
 void FrameBuffer::TextTerminal::setColors(Color fg_color, Color bg_color)
@@ -69,31 +67,94 @@ void FrameBuffer::TextTerminal::setColors(Color fg_color, Color bg_color)
     m_bg_color = bg_color;
 }
 
-void FrameBuffer::TextTerminal::drawCharAt(uint32_t c, unsigned int row, unsigned int col)
+void FrameBuffer::TextTerminal::setCursorPos(unsigned int row, unsigned int col) 
 {
     if (row > m_rows || col > m_columns)
         return;
 
+    m_current_row = row;
+    m_current_col = col;
+}
+
+void FrameBuffer::TextTerminal::drawChar(const wchar_t c) {
     uint8_t *char_bitmap = (uint8_t *)m_active_font->bitmapFor(c);
 
-    if (!char_bitmap)
-        return;
-
-    uint32_t *next_pixel = getCharStartPixel(row, col);
-
-    for (unsigned int i = 0; i < m_font_vrez; i++)
+    switch (c)
     {
-        uint8_t nrow = char_bitmap[i];
-        for (unsigned int j = 0; j < m_font_hrez; j++)
-        {
-            if (nrow & 0x80)
-                *next_pixel++ = (uint32)m_fg_color;
-            else
-                *next_pixel++ = (uint32)m_bg_color;
+        case L'\b':
+            if (m_current_col > 0)
+                m_current_col--;
+            break;
 
-            nrow <<= 1;
-        }
+        case L'\t':
+            for (int i = 0; i < 4; i++)
+                drawChar(L' ');
+            break;
 
-        next_pixel += (m_hrez - m_font_hrez);
+        case L'\n':
+            m_current_col = 0;
+            if (++m_current_row >= m_rows)
+                scroll();
+            break;
+
+        case L'\r':
+            if (++m_current_row >= m_rows) {
+                unsigned int c = m_current_col;
+                scroll();
+                m_current_col = c;
+            }
+            break;
+
+        default:
+            if (!char_bitmap)
+            {
+                char_bitmap = (uint8_t *)m_active_font->bitmapFor(0);
+
+                if (!char_bitmap)
+                    return;
+            }
+
+            uint32_t *next_pixel = getCharStartPixel(m_current_row, m_current_col);
+
+            for (unsigned int i = 0; i < m_font_vrez; i++)
+            {
+                uint8_t nrow = char_bitmap[i];
+                for (unsigned int j = 0; j < m_font_hrez; j++)
+                {
+                    if (nrow & 0x80)
+                        *next_pixel++ = (uint32)m_fg_color;
+                    else
+                        *next_pixel++ = (uint32)m_bg_color;
+
+                    nrow <<= 1;
+                }
+
+                next_pixel += (m_hrez - m_font_hrez);
+            }
+
+            if (++m_current_col >= m_columns) {
+                m_current_col = 0;
+
+                if (++m_current_row >= m_rows) {
+                    scroll();
+                }
+            }
+
+            break;
     }
+}
+
+void FrameBuffer::TextTerminal::scroll() {
+    void* d = (void*)m_fb_first_pixel_addr;
+
+    // scroll up by one
+    memcpy(d, (const void*)(m_fb_first_pixel_addr + m_pixels_per_row), m_pixels_per_row * (m_rows - 1) * 4);
+    
+    // fill last row
+    std::fill_n((uint32_t*)(m_fb_first_pixel_addr + m_pixels_per_row * (m_rows - 1)), m_pixels_per_row, (uint32_t)m_bg_color);
+}
+
+void FrameBuffer::TextTerminal::drawString(const wchar_t *str) {
+    while (*str)
+        drawChar(*str++);
 }

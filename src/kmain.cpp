@@ -23,15 +23,10 @@ void kmain( void ) {
     fbtt.setColors( FrameBuffer::White, FrameBuffer::Black );
 
     fbtt.clearScreen();
+    fbtt.setCursorPos(1, 0);
 
-    fbtt.drawCharAt( 'T', 1, 0 );
-    fbtt.drawCharAt( 'H', 1, 1 );
-    fbtt.drawCharAt( 'E', 1, 2 );
-    fbtt.drawCharAt( ' ', 1, 3 );
-    fbtt.drawCharAt( 'K', 1, 4 );
-    fbtt.drawCharAt( '-', 1, 5 );
-    fbtt.drawCharAt( 'O', 1, 6 );
-    fbtt.drawCharAt( 'Z', 1, 7 );
+    fbtt.drawString(L"The K-OS\n");
+    fbtt.drawString(L"Brought to you by Ning Enterprises.");
 
     for ( ;; )
         ;

@@ -238,10 +238,15 @@ $(VM_IMG): $(OBJDIR)/kernel.elf $(OBJDIR)/uefi.efi
 
 .PHONY: $(VM_TMP_PARTITION)
 $(VM_TMP_PARTITION):
+ifeq ("$(wildcard $(VM_TMP_PARTITION))","")
 	mkdir -p vm
 	rm -f $(VM_TMP_PARTITION)
 	dd if=/dev/zero of=$(VM_TMP_PARTITION) bs=512 count=91669
 	mformat -i $(VM_TMP_PARTITION) -h 32 -t 32 -n 64 -c 1
+else
+	mdeltree -i vm/part.img ::EFI || /bin/true
+	mdeltree -i vm/part.img ::BOOT || /bin/true
+endif
 
 .PHONY: vm-img
 vm-img: $(VM_TMP_PARTITION) $(VM_IMG) $(OBJDIR)/uefi.efi $(OBJDIR)/kernel.elf
