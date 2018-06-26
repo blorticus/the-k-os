@@ -2,6 +2,9 @@
 #include <boot/attributes.h>
 #include <video/fb/TextTerminal.h>
 #include <video/SimpleFont.h>
+#include <platform/amd64/Foundation.h>
+
+uint64_t gdt[3];
 
 void kmain( void ) {
     memaddr ba;
@@ -18,7 +21,13 @@ void kmain( void ) {
 
     memcpy( (void*)&bootattrs, (const void*)ba, sizeof(boot_attributes) );
 
-    fbtt.setFrameBufferStartAddr( (uint32*)(bootattrs.fb_start_addr), bootattrs.fb_hrez, bootattrs.fb_vrez );
+    Sys::GDT::PopulateNullSegmentDescriptor(&gdt[0]);
+    Sys::GDT::PopulateCodeSegmentDescriptor(&gdt[1], Sys::PL0);
+    Sys::GDT::PopulateDataSegmentDescriptor(&gdt[2]);
+
+    //Sys::GDT::Install();
+
+    fbtt.setFrameBufferStartAddr((uint32 *)(bootattrs.fb_start_addr), bootattrs.fb_hrez, bootattrs.fb_vrez);
     fbtt.setActiveFont( &font );
     fbtt.setColors( FrameBuffer::White, FrameBuffer::Black );
 

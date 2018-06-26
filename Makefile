@@ -50,9 +50,8 @@ OBJECTS := $(OBJDIR)/start.o $(OBJDIR)/math.o $(OBJDIR)/vga.o $(OBJDIR)/kmain.o 
 kernel.bin: $(OBJECTS) kosh.o libkoshlib.a libstd.a $(KMAIN_LD)
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.bin $(OBJECTS) kosh/kosh.o -L$(OBJDIR) -lstd -L./kosh -lkoshlib
 
-$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/start.o $(OBJDIR)/TextTerminal.o $(OBJDIR)/stringmem.o $(OBJDIR)/cpp-support.o $(OBJDIR)/SimpleFont.o
+$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/start.o $(OBJDIR)/TextTerminal.o $(OBJDIR)/stringmem.o $(OBJDIR)/cpp-support.o $(OBJDIR)/SimpleFont.o $(OBJDIR)/sysasm.o $(OBJDIR)/Gdt.o $(OBJDIR)/asm-symbols.o
 	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $@ $^
-#	$(CXX) -T $(KMAIN_LD) -o $@ $(CXX_FLAGS) $^
 
 #$(OBJDIR)/kernel.elf: $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o cprintf.o 
 #	$(LD) $(LD_FLAGS) -T $(KMAIN_LD) -o $(OBJDIR)/kernel.elf $(OBJDIR)/kmain.o $(OBJDIR)/font.o $(OBJDIR)/start.o $(OBJDIR)/text-terminal.o $(OBJDIR)/string.o $(OBJDIR)/stringmem.o $(OBJDIR)/cprintf.o
@@ -92,6 +91,12 @@ libstd.a:
 $(OBJDIR)/start.o: src/start.asm
 	$(ASM) -f elf64 -o $(OBJDIR)/start.o src/start.asm
 
+
+$(OBJDIR)/asm-symbols.o: src/platform/amd64/symbols.s
+	$(CC) $(CC_FLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/sysasm.o: src/platform/amd64/sys.asm
+	$(ASM) -f elf64 -o $(OBJDIR)/sysasm.o src/platform/amd64/sys.asm
 
 # TARGET: build C kmain() kernel entry point
 #$(OBJDIR)/kmain.o: src/kmain.c
@@ -226,6 +231,9 @@ $(OBJDIR)/TextTerminal.o: src/video/fb/TextTerminal.cpp include/video/fb/TextTer
 	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
 
 $(OBJDIR)/cpp-support.o: src/support/cpp-support.cpp
+	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
+
+$(OBJDIR)/Gdt.o: src/platform/amd64/Gdt.cpp include/platform/amd64/Foundation.h
 	$(CXX) $(CXX_FLAGS) $(INCLUDES) -c -o $@ $<
 
 $(VM_IMG): $(OBJDIR)/kernel.elf $(OBJDIR)/uefi.efi
