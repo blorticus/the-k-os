@@ -1,16 +1,32 @@
 #!/bin/bash
 
-echo ===========
-echo change vnc password
-echo ===========
-echo
-
 qemu_extra_flags=""
 
-if [[ $1 == "-g" ]]; then
-   qemu_extra_flags="$qemu_extra_flags -s -S"
+while getopts "g" OPTION; do
+    case $OPTION in
+    g)
+        qemu_extra_flags="$qemu_extra_flags -s -S"
+        shift
+        ;;
+    *)
+        echo "Unknown flag ($OPTION)" >&2
+        exit 1
+    esac
+done
+
+if [[ $1 == "local" ]]; then
+    qemu-system-x86_64 -m 128M -bios /usr/share/ovmf/OVMF.fd \
+                       -drive file=vm/uefi.img,if=ide,format=raw $qemu_extra_flags
+elif [[ $# == 0 || $1 == "vnc" ]]; then
+    echo ===========
+    echo change vnc password
+    echo ===========
+    echo
+    
+    qemu-system-x86_64 -m 128M -bios /usr/share/ovmf/OVMF.fd \
+                       -drive file=vm/uefi.img,if=ide,format=raw --vnc :1,password \
+                       -monitor stdio $qemu_extra_flags
+else
+    echo "Unknown command-line options" >&2
+    exit 1
 fi
-
-qemu-system-x86_64 -m 128M -bios /usr/share/ovmf/OVMF.fd -drive file=vm/uefi.img,if=ide --vnc :1,password -monitor stdio $qemu_extra_flags
-
-#qemu-system-x86_64 -m 128M -drive file=vm/uefi.img,if=ide -drive if=pflash,format=raw,readonly,file=/usr/share/OVMF/OVMF_CODE.fd -drive if=pflash,format=raw,file=vm/OVMF_VARS.fd --vnc :1,password -monitor stdio
