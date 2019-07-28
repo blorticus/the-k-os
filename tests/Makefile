@@ -16,8 +16,6 @@ exec_all_tests: clean cprintf.t strntolower.t kterm_readline.t kterm.t strtol.t 
 	@./kterm_readline.t
 	@./phys_core.t
 	@./strtol.t
-#	@./kmalloc.t
-#   @./stringmem.t      -- XXX: ADD THIS WHEN FINISHED
 
 
 kterm_readline.t: test_kterm_readline.c liblcheck.a string.o kterm.o vga.o
@@ -77,8 +75,8 @@ font.t: test_font.cpp libtestsuite.a cpp-text-terminal.o
 SimpleFont.t: test_SimpleFont.cpp libtestsuite.a SimpleFont.o
 	$(CXX) $(CXX_FLAGS) -o $@ $< ../$(BASE_OBJDIR)/SimpleFont.o $(CXX_LIBS) $(CXX_INCLUDES)
 
-text_terminal.t: test_text_terminal.cpp libtestsuite.a cpp-text-terminal.o SimpleFont.o
-	$(CXX) $(CXX_FLAGS) -o $@ $< ../$(BASE_OBJDIR)/cpp-text-terminal.o ../$(BASE_OBJDIR)/SimpleFont.o $(CXX_LIBS) $(CXX_INCLUDES)
+TextTerminal.t: test_TextTerminal.cpp libtestsuite.a TextTerminal.o SimpleFont.o
+	$(CXX) $(CXX_FLAGS) -o $@ $< ../$(BASE_OBJDIR)/TextTerminal.o ../$(BASE_OBJDIR)/SimpleFont.o $(CXX_LIBS) $(CXX_INCLUDES)
 
 libtestsuite.a:
 	$(MAKE) -C ../lcheck libtestsuite.a TESTING=1
@@ -131,8 +129,8 @@ kbit_field.o:
 task.o:
 	$(MAKE) -C .. $(BASE_OBJDIR)/task.o TESTING=1
 
-cpp-text-terminal.o:
-	$(MAKE) -C .. $(BASE_OBJDIR)/cpp-text-terminal.o TESTING=1
+TextTerminal.o:
+	$(MAKE) -C .. $(BASE_OBJDIR)/TextTerminal.o TESTING=1
 
 SimpleFont.o:
 	$(MAKE) -C .. $(BASE_OBJDIR)/SimpleFont.o TESTING=1

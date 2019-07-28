@@ -22,7 +22,7 @@ void TestClearScreen(TestSuite* tester) {
 
     fb->ClearScreen();
 
-    tester->assertArrayRepeats( buf, TEST_BUF_BG_COLOR_1, (int)TEST_BUF_LEN, "TestClearScreen: clear()" );
+    tester->AssertArrayRepeats( buf, TEST_BUF_BG_COLOR_1, (int)TEST_BUF_LEN, "TestClearScreen: clear()" );
 }
 
 void TestChangeOfColorsBetweenClearScreenCalls(TestSuite* tester) {
@@ -30,14 +30,14 @@ void TestChangeOfColorsBetweenClearScreenCalls(TestSuite* tester) {
 
     FrameBuffer::TextTerminal* fb = new FrameBuffer::TextTerminal( buf, TEST_BUF_CHAR_COLS * 8, TEST_BUF_CHAR_ROWS * 16, (FrameBuffer::Color)TEST_BUF_FG_COLOR_1, (FrameBuffer::Color)TEST_BUF_BG_COLOR_1 );    
 
-    tester->assertArrayRepeats( buf, TEST_BUF_BG_COLOR_1, (int)TEST_BUF_LEN,
+    tester->AssertArrayRepeats( buf, TEST_BUF_BG_COLOR_1, (int)TEST_BUF_LEN,
                                 "TestChangeOfColorsBetweenClearScreenCalls: buffer correct after first ClearScreen()" );
 
     fb->SetActiveFont( new Mono8x16SimpleFont() );
     fb->SetColors( TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 );
     fb->ClearScreen();
 
-    tester->assertArrayRepeats( buf, TEST_BUF_BG_COLOR_2, (int)TEST_BUF_LEN, 
+    tester->AssertArrayRepeats( buf, TEST_BUF_BG_COLOR_2, (int)TEST_BUF_LEN, 
                                "TestChangeOfColorsBetweenClearScreenCalls: buffer correct after second ClearScreen()" );
 }
 
@@ -53,25 +53,25 @@ void TestClearScreenAndDrawSingleRuneAtTopLeft(TestSuite* tester) {
 
     BufferDescriptor* d = new BufferDescriptor();
     
-    d->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16 * (TEST_BUF_CHAR_ROWS - 1), TEST_BUF_BG_COLOR_2 );
+    d->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_FG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2, TEST_BUF_BG_COLOR_2 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 8, TEST_BUF_BG_COLOR_2 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_2 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16 * (TEST_BUF_CHAR_ROWS - 1), TEST_BUF_BG_COLOR_2 );
 
-    tester->assertArraysEqual( buf, d->inflate(), TEST_BUF_LEN,
+    tester->AssertArraysEqual( buf, d->Inflate(), TEST_BUF_LEN,
                                "TestClearScreenAndDrawSingleChar: buffer matches expected values" );
 }
 
@@ -86,26 +86,36 @@ void TestClearScreenAndDrawSingleRuneAtNonCorner(TestSuite* tester) {
 
     BufferDescriptor* d = new BufferDescriptor();
     
-    d->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->addExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
-     ->addRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16 * (TEST_BUF_CHAR_ROWS - 2), TEST_BUF_BG_COLOR_1 );
+    d->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( 16, TEST_BUF_BG_COLOR_1)->AddExplicitValues( 8, new uint32[8] { TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_FG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1, TEST_BUF_BG_COLOR_1 } )->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW - 24, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW, TEST_BUF_BG_COLOR_1 )
+     ->AddRepeatingValue( TEST_BUF_PIXELS_PER_ROW * 16 * (TEST_BUF_CHAR_ROWS - 2), TEST_BUF_BG_COLOR_1 );
 
-    tester->assertArraysEqual( buf, d->inflate(), TEST_BUF_LEN, "Test 2: drawCharAt(79,1,2)" );
+    tester->AssertArraysEqual( buf, d->Inflate(), TEST_BUF_LEN, "Test 2: drawCharAt(79,1,2)" );
+}
+
+void TestWriteLineAtTopLeft(TestSuite* tester) {
+    uint32 buf[TEST_BUF_LEN];
+
+    FrameBuffer::TextTerminal* fb = new FrameBuffer::TextTerminal( buf, TEST_BUF_CHAR_COLS * 8, TEST_BUF_CHAR_ROWS * 16, (FrameBuffer::Color)TEST_BUF_FG_COLOR_1, (FrameBuffer::Color)TEST_BUF_BG_COLOR_1 );    
+    fb->SetActiveFont( new Mono8x16SimpleFont() );
+
+    fb->ClearScreen();
+    fb->WriteLineAt(U"Hello World!", {0, 0});
 }
 
 int main( void ) {
@@ -115,6 +125,7 @@ int main( void ) {
     TestChangeOfColorsBetweenClearScreenCalls( t );
     TestClearScreenAndDrawSingleRuneAtTopLeft( t );
     TestClearScreenAndDrawSingleRuneAtNonCorner( t );
+    TestWriteLineAtTopLeft( t );
   
-    return t->doneTesting();
+    return t->DoneTesting();
 }

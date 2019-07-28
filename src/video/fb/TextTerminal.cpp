@@ -23,7 +23,7 @@ FrameBuffer::TextTerminal::TextTerminal(void *fb_start_addr, int hrez, int vrez,
 {
 }
 
-void FrameBuffer::TextTerminal::setFrameBufferStartAddr(void *fb_start_addr, int hrez, int vrez)
+void FrameBuffer::TextTerminal::SetFrameBufferStartAddr(void *fb_start_addr, int hrez, int vrez)
 {
     m_fb_first_pixel_addr = (uint32_t *)fb_start_addr;
     m_hrez = hrez;
@@ -33,7 +33,7 @@ void FrameBuffer::TextTerminal::setFrameBufferStartAddr(void *fb_start_addr, int
         m_initialized = true;
 }
 
-void FrameBuffer::TextTerminal::setActiveFont(SimpleFont *f)
+void FrameBuffer::TextTerminal::SetActiveFont(SimpleFont *f)
 {
     m_active_font = f;
     m_font_hrez = f->charHrez();
@@ -48,14 +48,8 @@ void FrameBuffer::TextTerminal::setActiveFont(SimpleFont *f)
     if (m_fb_first_pixel_addr)
         m_initialized = true;
 }
-} // namespace FrameBuffer
 
-uint32_t *FrameBuffer::TextTerminal::getCharStartPixel(unsigned int char_at_row, unsigned int char_at_col)
-{
-    return (uint32_t *)m_fb_first_pixel_addr + (char_at_row * m_pixels_per_row) + (m_font_hrez * char_at_col);
-}
-
-void FrameBuffer::TextTerminal::clearScreen(void)
+void FrameBuffer::TextTerminal::ClearScreen(void)
 {
     if (!m_initialized)
         return;
@@ -63,23 +57,23 @@ void FrameBuffer::TextTerminal::clearScreen(void)
     std::fill_n(m_fb_first_pixel_addr, m_hrez * m_vrez, m_bg_color);
 }
 
-void FrameBuffer::TextTerminal::setColors(Color fg_color, Color bg_color)
+void FrameBuffer::TextTerminal::SetColors(Color fg_color, Color bg_color)
 {
     m_fg_color = fg_color;
     m_bg_color = bg_color;
 }
 
-void FrameBuffer::TextTerminal::drawCharAt(uint32_t c, unsigned int row, unsigned int col)
+void FrameBuffer::TextTerminal::DrawRuneAt(char32_t rune, unsigned int row, unsigned int col)
 {
     if (row > m_rows || col > m_columns)
         return;
 
-    uint8_t *char_bitmap = (uint8_t *)m_active_font->bitmapFor(c);
+    uint8_t *char_bitmap = (uint8_t *)m_active_font->bitmapFor(rune);
 
     if (!char_bitmap)
         return;
 
-    uint32_t *next_pixel = getCharStartPixel(row, col);
+    uint32_t *next_pixel = getRuneStartPixel(row, col);
 
     for (unsigned int i = 0; i < m_font_vrez; i++)
     {
@@ -96,4 +90,28 @@ void FrameBuffer::TextTerminal::drawCharAt(uint32_t c, unsigned int row, unsigne
 
         next_pixel += (m_hrez - m_font_hrez);
     }
+}
+
+void FrameBuffer::TextTerminal::WriteLineAt(const char32_t* rune_string, RunePosition writing_position) {
+    if (writing_position.row > m_rows)
+        return;
+
+    if (writing_position.column > m_columns) {
+        return;
+    }
+
+    for ( ; *rune_string ; rune_string++) {
+        DrawRuneAt(*rune_string, writing_position.row, writing_position.column);
+
+        if (writing_position.column++ == m_columns) {
+            writing_position.row++;
+            writing_position.column = 0;
+        }
+    }
+}
+
+uint32_t *FrameBuffer::TextTerminal::getRuneStartPixel(unsigned int char_at_row, unsigned int char_at_col)
+{
+    return (uint32_t *)m_fb_first_pixel_addr + (char_at_row * m_pixels_per_row) + (m_font_hrez * char_at_col);
+}
 }

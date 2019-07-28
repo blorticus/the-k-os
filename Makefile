@@ -271,6 +271,7 @@ veryclean: clean
 notest-distclean: veryclean
 	$(MAKE) -C kosh clean
 	$(MAKE) -C lcheck clean
+	$(MAKE) -C tests clean
 	$(MAKE) -C src/stdlib clean
 	$(MAKE) -C src/memory clean
 	

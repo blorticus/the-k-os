@@ -14,6 +14,11 @@ enum Color : uint32_t
     White = 0x00ffffff,
 };
 
+typedef struct {
+    unsigned int row;
+    unsigned int column;
+} RunePosition;
+
 class TextTerminal
 {
   public:
@@ -21,19 +26,22 @@ class TextTerminal
     TextTerminal(void *fb_start_addr, int hrez, int vrez, Color fg_color, Color bg_color);
 
     /** Set the address of the first byte of the Frame Buffer into which characters should be written **/
-    void setFrameBufferStartAddr(void *fb_start_addr, int hrez, int vrez);
+    void SetFrameBufferStartAddr(void *fb_start_addr, int hrez, int vrez);
 
     /** Set the font to be used for drawing characters **/
-    void setActiveFont(SimpleFont *f);
+    void SetActiveFont(SimpleFont *f);
 
     /** Change color set **/
-    void setColors(Color fg_color, Color bg_color);
+    void SetColors(Color fg_color, Color bg_color);
 
     /** Clear the text Frame Buffer, setting each pixel to the background color **/
-    void clearScreen();
+    void ClearScreen();
 
-    /** Draws a character at the specific location **/
-    void drawCharAt(uint32_t c, unsigned int row, unsigned int col);
+    /** Draws a rune at the specific location **/
+    void DrawRuneAt(char32_t rune, unsigned int row, unsigned int col);
+
+    /** Draws a rune string at eh specified location **/
+    void WriteLineAt(const char32_t* rune_string, RunePosition writing_position);
 
   private:
     uint32_t *m_fb_first_pixel_addr;
@@ -51,6 +59,6 @@ class TextTerminal
     bool m_initialized;
     unsigned int m_pixels_per_row;
 
-    uint32_t *getCharStartPixel(unsigned int char_at_row, unsigned int char_at_col);
+    uint32_t *getRuneStartPixel(unsigned int char_at_row, unsigned int char_at_col);
 };
 }

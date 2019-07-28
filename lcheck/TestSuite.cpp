@@ -8,7 +8,7 @@ BufferDescriptor::BufferDescriptor() : m_elements(0) {
 }
 
 
-BufferDescriptor* BufferDescriptor::addRepeatingValue( unsigned int count, unsigned int value ) {
+BufferDescriptor* BufferDescriptor::AddRepeatingValue( unsigned int count, unsigned int value ) {
     m_elements += count;
 
     descriptor* d = new descriptor;
@@ -22,7 +22,7 @@ BufferDescriptor* BufferDescriptor::addRepeatingValue( unsigned int count, unsig
 }
 
 
-BufferDescriptor* BufferDescriptor::addExplicitValues( unsigned int count, unsigned int* values ) {
+BufferDescriptor* BufferDescriptor::AddExplicitValues( unsigned int count, unsigned int* values ) {
     m_elements += count;
     
     descriptor* d = new descriptor;
@@ -36,7 +36,7 @@ BufferDescriptor* BufferDescriptor::addExplicitValues( unsigned int count, unsig
 }
 
 
-unsigned int* BufferDescriptor::inflate() {
+unsigned int* BufferDescriptor::Inflate() {
     unsigned int* inflated = new unsigned int[m_elements];
     
     unsigned int i = 0;
@@ -58,7 +58,7 @@ unsigned int* BufferDescriptor::inflate() {
     return inflated;
 }
 
-void BufferDescriptor::reset() {
+void BufferDescriptor::Reset() {
     m_descriptors.clear();
     m_elements = 0;
 }
@@ -79,7 +79,7 @@ TestSuite::TestSuite( string name )
 }
 
  
-void TestSuite::assertBool( bool result, string testname ) {
+void TestSuite::AssertBool( bool result, string testname ) {
     m_tests_run++;
 
     if (!result) {
@@ -89,7 +89,7 @@ void TestSuite::assertBool( bool result, string testname ) {
 }
 
 
-void TestSuite::assertArraysEqual( unsigned char have[], unsigned char expect[], int compare_bytes, string testname ) {
+void TestSuite::AssertArraysEqual( unsigned char have[], unsigned char expect[], int compare_bytes, string testname ) {
     m_tests_run++;
 
     for (int i = 0; i < compare_bytes; i++) {
@@ -101,7 +101,7 @@ void TestSuite::assertArraysEqual( unsigned char have[], unsigned char expect[],
     }
 }
 
-void TestSuite::assertArraysEqual( unsigned int*  have, unsigned int*  expect, int compare_bytes, std::string testname ) {
+void TestSuite::AssertArraysEqual( unsigned int*  have, unsigned int*  expect, int compare_bytes, std::string testname ) {
     m_tests_run++;
 
     for (int i = 0; i < compare_bytes; i++) {
@@ -114,7 +114,7 @@ void TestSuite::assertArraysEqual( unsigned int*  have, unsigned int*  expect, i
 }
 
 
-void TestSuite::assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname ) {
+void TestSuite::AssertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname ) {
     m_tests_run++;
     
     for (int i = 0; i < ar_len; i++) {
@@ -126,14 +126,14 @@ void TestSuite::assertArrayRepeats( unsigned int ar[], unsigned int expect, int 
     }
 }
 
-int TestSuite::doneTesting() {
+int TestSuite::DoneTesting() {
     cerr << "++ TEST [" << m_name << "] COMPLETE: Ran [" << m_tests_run << "] Tests: [" << (m_tests_run - m_tests_failed) << "] Succeeded, [" << m_tests_failed << "] Failed  -- " << (m_tests_failed > 0 ? "NOT OK" : "OK") << " -- " << endl;
 
     return m_tests_failed;
 }
 
 
-void TestSuite::printTwoValue2dArray( unsigned int* array, unsigned int columns, unsigned int rows, unsigned int v1 ) {
+void TestSuite::PrintTwoValue2dArray( unsigned int* array, unsigned int columns, unsigned int rows, unsigned int v1 ) {
     cout << "<<<<<<<<<<" << endl;
     for (unsigned int i = 0; i < rows; i++) {
         for (unsigned int j = 0; j < columns; j++) {

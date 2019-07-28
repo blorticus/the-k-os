@@ -27,4 +27,11 @@ Once you've started `qemu`, you can attach a VNC console.  If you use the Mac-na
 password for the VNC session.  Do so by typing this in the `qemu` monitor shell:
 
     change vnc password
-    
+
+## Conventions
+
+For the C++ code, I've chosen as a convention the requirement in Golang.
+Private methods and members stat with lowercase letter; public start with
+uppercase.  Camel-case is used ofr method and class names; underscores are used
+for variables.  no variables are public except in structs.
+

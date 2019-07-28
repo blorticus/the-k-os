@@ -18,20 +18,20 @@ void kmain( void ) {
 
     memcpy( (void*)&bootattrs, (const void*)ba, sizeof(boot_attributes) );
 
-    fbtt.setFrameBufferStartAddr( (uint32*)(bootattrs.fb_start_addr), bootattrs.fb_hrez, bootattrs.fb_vrez );
-    fbtt.setActiveFont( &font );
-    fbtt.setColors( FrameBuffer::White, FrameBuffer::Black );
+    fbtt.SetFrameBufferStartAddr( (uint32*)(bootattrs.fb_start_addr), bootattrs.fb_hrez, bootattrs.fb_vrez );
+    fbtt.SetActiveFont( &font );
+    fbtt.SetColors( FrameBuffer::White, FrameBuffer::Black );
 
-    fbtt.clearScreen();
+    fbtt.ClearScreen();
 
-    fbtt.drawCharAt( 'T', 1, 0 );
-    fbtt.drawCharAt( 'H', 1, 1 );
-    fbtt.drawCharAt( 'E', 1, 2 );
-    fbtt.drawCharAt( ' ', 1, 3 );
-    fbtt.drawCharAt( 'K', 1, 4 );
-    fbtt.drawCharAt( '-', 1, 5 );
-    fbtt.drawCharAt( 'O', 1, 6 );
-    fbtt.drawCharAt( 'Z', 1, 7 );
+    fbtt.DrawCharAt( 'T', 1, 0 );
+    fbtt.DrawCharAt( 'H', 1, 1 );
+    fbtt.DrawCharAt( 'E', 1, 2 );
+    fbtt.DrawCharAt( ' ', 1, 3 );
+    fbtt.DrawCharAt( 'K', 1, 4 );
+    fbtt.DrawCharAt( '-', 1, 5 );
+    fbtt.DrawCharAt( 'O', 1, 6 );
+    fbtt.DrawCharAt( 'Z', 1, 7 );
 
     for ( ;; )
         ;

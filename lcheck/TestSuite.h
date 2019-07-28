@@ -16,10 +16,10 @@ class BufferDescriptor {
     
     public:
         BufferDescriptor();
-        BufferDescriptor* addRepeatingValue( unsigned int count, unsigned int value );
-        BufferDescriptor* addExplicitValues( unsigned int length, unsigned int* values );
-        unsigned int* inflate();
-        void reset();
+        BufferDescriptor* AddRepeatingValue( unsigned int count, unsigned int value );
+        BufferDescriptor* AddExplicitValues( unsigned int length, unsigned int* values );
+        unsigned int* Inflate();
+        void Reset();
 
     private:
         std::list<descriptor*> m_descriptors;
@@ -31,14 +31,14 @@ class TestSuite {
     public:
         TestSuite();
         TestSuite( std::string name );  
-        void assertBool( bool result, std::string testname );
-        void assertArraysEqual( unsigned char* have, unsigned char* expect, int compare_bytes, std::string testname );
-        void assertArraysEqual( unsigned int*  have, unsigned int*  expect, int compare_bytes, std::string testname );
-        void assertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname );
+        void AssertBool( bool result, std::string testname );
+        void AssertArraysEqual( unsigned char* have, unsigned char* expect, int compare_bytes, std::string testname );
+        void AssertArraysEqual( unsigned int*  have, unsigned int*  expect, int compare_bytes, std::string testname );
+        void AssertArrayRepeats( unsigned int ar[], unsigned int expect, int ar_len, std::string testname );
 
-        void printTwoValue2dArray( unsigned int* array, unsigned int columns, unsigned int rows, unsigned int v1 );
+        void PrintTwoValue2dArray( unsigned int* array, unsigned int columns, unsigned int rows, unsigned int v1 );
         
-        int doneTesting();
+        int DoneTesting();
 
     private:
         std::string m_name;
