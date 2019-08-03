@@ -24,14 +24,7 @@ void kmain( void ) {
 
     fbtt.ClearScreen();
 
-    fbtt.DrawCharAt( 'T', 1, 0 );
-    fbtt.DrawCharAt( 'H', 1, 1 );
-    fbtt.DrawCharAt( 'E', 1, 2 );
-    fbtt.DrawCharAt( ' ', 1, 3 );
-    fbtt.DrawCharAt( 'K', 1, 4 );
-    fbtt.DrawCharAt( '-', 1, 5 );
-    fbtt.DrawCharAt( 'O', 1, 6 );
-    fbtt.DrawCharAt( 'Z', 1, 7 );
+    fbtt.WriteLineAt( U"The K-OS", { 1, 1 } );
 
     for ( ;; )
         ;
