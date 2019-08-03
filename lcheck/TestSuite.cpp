@@ -36,6 +36,23 @@ BufferDescriptor* BufferDescriptor::AddExplicitValues( unsigned int count, unsig
 }
 
 
+BufferDescriptor* BufferDescriptor::ValuesFromStringImage( std::string image, unsigned int character_map_entry_count, BDImageValue* image_character_to_int_map ) {
+    unsigned int map[256] = {};
+
+    for (unsigned int i = 0; i < character_map_entry_count; i++) {
+        BDImageValue v = image_character_to_int_map[i];
+        map[(int)(v.CharacterInImage)] = v.ValueForCharacterInBuffer;
+    }
+
+    for (unsigned int i = 0; i < image.length(); i++) {
+        unsigned int buf_value = map[(int)(image[i])];
+        AddExplicitValues( 1, new uint32_t[1] { buf_value } );
+    }
+
+    return this;
+}
+
+
 unsigned int* BufferDescriptor::Inflate() {
     unsigned int* inflated = new unsigned int[m_elements];
     

@@ -3,6 +3,10 @@
 #include <string>
 #include <list>
 
+typedef struct {
+    char CharacterInImage;
+    unsigned int ValueForCharacterInBuffer;
+} BDImageValue;
 
 class BufferDescriptor {
     enum descriptorType { Repeating, Explicit };
@@ -13,11 +17,13 @@ class BufferDescriptor {
         unsigned int* pvalue;
         unsigned int value;
     };
-    
+
+  
     public:
         BufferDescriptor();
         BufferDescriptor* AddRepeatingValue( unsigned int count, unsigned int value );
         BufferDescriptor* AddExplicitValues( unsigned int length, unsigned int* values );
+        BufferDescriptor* ValuesFromStringImage( std::string image, unsigned int character_map_entry_count, BDImageValue* image_character_to_int_map );
         unsigned int* Inflate();
         void Reset();
 
