@@ -2,3 +2,7 @@ vm
 vm/*
 x86_64-obj
 x86_64-obj/*
+*.swp
+**/*.swp
+.ycm_extra_conf.py
+**/.ycm_extra_conf.py
