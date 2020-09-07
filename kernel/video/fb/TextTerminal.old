@@ -1,0 +1,328 @@
+#include <video/fb/TextTerminal.h>
+
+/**
+ *
+ * InitializeTextTerminal( terminal, fb_start );
+ * SetTerminalResolution( terminal, hrez, vrez );
+ * SetFontFBColors( terminal, White, Black );
+ * SetActiveFont( MonoFixed8x16 );
+ *
+ * ClearScreen();
+ * SetPointerLocation( RenderingAreaPoint{ .row = 10, .column = 50 } );
+ * ScrollScreen();
+ * Printf( ..., ... );
+ * WriteRune( rune );
+ * WriteRuneString( U"..." );
+ * PrintfAt( ..., ..., RenderingAreaPoint{ .row = 50, .column = 60 } );
+ * WriteRuneAt( rune, RenderingAreaPoint{ .row = 50, .column = 60 } );
+ * WriteRuneStringAt( U"...", RenderingAreaPoint{ .row = 50, .column = 60 } );
+ * row = terminal->PointerLocationRuneRow();
+ * col = terminal->PointerLocationRuneColumn();
+ * 
+ **/
+void InitializeTextTerminal( TextTerminal terminal, void* address_of_framebuffer_start ) {
+    terminal->fb_first_pixel_addr = (uint32_t *)address_of_framebuffer_start;
+    terminal->hrez = 0;
+    terminal->vrez = 0;
+
+    terminal->logical_cursor_position = (RunePosition){ .row = 0, .column = 0 };
+}
+
+void SetTerminalResolution( TextTerminal terminal, int hrez, int vrez ) {
+    terminal->hrez = hrez;
+    terminal->vrez = vrez;
+}
+
+void SetFontFBColors( TextTerminal terminal, RGBColor foreground, RGBColor background ) {
+    terminal->fg_color = foreground;
+    terminal->bg_color = background;
+}
+
+void SetActiveFont( TextTerminal terminal, SimpleFixedFont font ) {
+
+}
+
+//void ClearScreen(TextTerminal terminal) {
+//    uint32_t* pixel = m_fb_first_pixel_addr;
+//    for (uint32_t i = 0; i < m_hrez * m_vrez; i++)
+//        *pixel++ = (uint32_t)m_bg_color;
+//
+//}
+//
+//void WriteRuneAt( TextTerminal terminal, Rune_t rune, RenderAreaPoint point ) {
+//    if (row > m_rows || col > m_columns)
+//        return;
+//
+//    RenderingAreaPoint logical_cursor_position_before_write = m_logical_cursor_position;
+//    m_logical_cursor_position = {row, col};
+//    DrawRune(rune);
+//    m_logical_cursor_position = logical_cursor_position_before_write;
+//}
+//
+//void ScrollScreen( TextTerminal terminal ) {
+//    uint32_t* copy_destination = (uint32_t*)terminal->fb_first_pixel_addr;
+//    uint32_t* copy_source = getRuneStartPixel( terminal, (RendingAreaPoint){ .row: 1, .col: 0} );
+//
+//    while (copy_source <= terminal->fb_addr_of_last_pixel)
+//        *copy_destination++ = *copy_source++;
+//
+//    while (copy_destination <= terminal->fb_addr_of_last_pixel)
+//        *copy_destination++ = terminal->bg_color;
+//
+//}
+//
+//void Printf( TextTerminal terminal, Rune_t* rune_string, ... ) {
+//
+//}
+//
+//void WriteRune( TextTerminal terminal, Rune_t rune ) {
+//    switch (rune) {
+//        case U'\n':
+//            AdvanceLogicalCursorToNextRow( terminal );
+//            MoveLogicalCursorToStartOfCurrentRow( terminal );
+//            break;
+//        
+//        case U'\b':
+//            BackupOneSpaceWithRuneRemovalWithoutRowChange( terminal );
+//            break;
+//
+//        case U'\t':
+//            InsertTabWithPossibleRowChange( terminal );
+//            break;
+//
+//        case U'\r':
+//            MoveLogicalCursorToStartOfCurrentRow( terminal );
+//            break;
+//
+//        default:
+//            uint8_t *char_bitmap = (uint8_t *)terminal->active_font->bitmapFor(rune);
+//
+//            if (char_bitmap == (void*)0)
+//                return;
+//
+//            uint32_t *next_pixel = getRuneStartPixelForPosition( terminal, terminal->logical_cursor_position );
+//            renderRunePositionedByStartPixel( terminal, char_bitmap, next_pixel );
+//            advanceLogicalCursorLinearPosition( terminal, 1 );
+//    }
+//}
+//
+//void WriteRuneString( TextTerminal terminal, Rune_t* rune_string )
+//{
+//
+//}
+//
+//void WriteRuneStringAt( TextTerminal terminal, const Rune_t* rune_string, RenderingAreaPoint write_position )
+//{
+//    if (writing_position.row > terminal->rows)
+//        return;
+//
+//    if (writing_position.column > terminal->columns) {
+//        return;
+//    }
+//
+//    RenderingAreaPoint logical_cursor_position_before_write = terminal->logical_cursor_position;
+//    terminal->logical_cursor_position = {writing_position.row, writing_position.column};
+//    writeRuneString( terminal, rune_string );
+//    terminal->logical_cursor_position = logical_cursor_position_before_write;
+//
+//}
+//
+//void PrintfAt( TextTerminal terminal, RenderingAreaPoint point, Rune_t* rune_string, ... )
+//{
+//
+//}
+//
+//unsigned int PointerLocationRuneRow( TextTerminal terminal )
+//{
+//
+//}
+//
+//unsigned int PointerLocationRuneColumn( TextTerminal terminal )
+//{
+//
+//}
+//
+//uint32_t* getRuneStartPixelForPosition( TextTerminal terminal, RenderingAreaPoint rune_position )
+//{
+//    return (uint32_t *)terminal->fb_first_pixel_addr + (rune_position.row * terminal->pixels_per_row) + (terminal->font_hrez * rune_position.column);
+//}
+//
+//void backupOneSpaceWithRuneRemovalWithoutRowChange( TextTerminal terminal )
+//{
+//    if (terminal->logical_cursor_position.column == 0)
+//        return;
+//
+//    terminal->logical_cursor_position.column--;
+//
+//    WriteRuneAt( TextTerminal terminal, U' ', terminal->logical_cursor_position.row, terminal->logical_cursor_position.column);
+//}
+//
+//void insertTabWithPossibleRowChange( TextTerminal terminal )
+//{
+//    advanceLogicalCursorLinearPosition( terminal, 4 );
+//}
+//
+//void moveLogicalCursorToStartOfCurrentRow( TextTerminal terminal )
+//{
+//    terminal->logical_cursor_position.column = 0;
+//}
+//
+//void moveLogicalCursorToSpecificPosition( RenderingAreaPoint new_cursor_position )
+//{
+//    if (new_cursor_position.column > terminal->columns || new_cursor_position.row > terminal->rows)
+//        return;
+//
+//    terminal->logical_cursor_position.column = new_cursor_position.column;
+//    terminal->logical_cursor_position.row = new_cursor_position.row;
+//}
+//
+//void advanceLogicalCursorLinearPosition( TextTerminal terminal, unsigned int number_of_columns_to_advance )
+//{
+//    terminal->logical_cursor_position.column += number_of_columns_to_advance;
+//
+//    if (terminal->logical_cursor_position.column >= terminal->columns) {
+//        terminal->logical_cursor_position.column -= terminal->columns;
+//        advanceLogicalCursorToNextRow( TextTerminal terminal );
+//    }
+//}
+//
+//uint32_t* advancePixelPointerToNextRuneBitmapRow( TextTerminal terminal, uint32_t* current_pixel_position )
+//{
+//    return current_pixel_position + (terminal->hrez - terminal->font_hrez);
+//}
+//
+//
+//void renderRunePositionedByStartPixel( TextTerminal terminal, uint8_t* rune_bitmap, uint32_t* next_pixel )
+//{
+//    for (unsigned int i = 0; i < terminal->font_vrez; i++) {
+//        uint8_t next_rune_pixel_row = rune_bitmap[i];
+//        for (unsigned int j = 0; j < terminal->font_hrez; j++) {
+//            if (next_rune_pixel_row & 0x80)
+//                *next_pixel++ = (uint32_t)terminal->fg_color;
+//            else
+//                *next_pixel++ = (uint32_t)terminal->bg_color;
+//    
+//            next_rune_pixel_row <<= 1;
+//        }
+//    
+//        next_pixel += (terminal->hrez - terminal->font_hrez);
+//    }
+//}
+//
+//
+//void FrameBuffer::TextTerminal::DrawRune(char32_t rune)
+//{
+//    switch (rune) {
+//        case U'\n':
+//            AdvanceLogicalCursorToNextRow();
+//            MoveLogicalCursorToStartOfCurrentRow();
+//            break;
+//        
+//        case U'\b':
+//            BackupOneSpaceWithRuneRemovalWithoutRowChange();
+//            break;
+//
+//        case U'\t':
+//            InsertTabWithPossibleRowChange();
+//            break;
+//
+//        case U'\r':
+//            MoveLogicalCursorToStartOfCurrentRow();
+//            break;
+//
+//        default:
+//            uint8_t *char_bitmap = (uint8_t *)m_active_font->bitmapFor(rune);
+//
+//            if (char_bitmap == (void*)0)
+//                return;
+//
+//            uint32_t *next_pixel = getRuneStartPixel(m_logical_cursor_position);
+//            renderRunePositionedByStartPixel(char_bitmap, next_pixel);
+//            AdvanceLogicalCursorLinearPosition(1);
+//    }
+//
+//}
+//
+//void FrameBuffer::TextTerminal::WriteRuneString(const char32_t* rune_string)
+//{
+//    for ( ; *rune_string ; rune_string++) {
+//        DrawRune(*rune_string);
+//    }
+//}
+//
+//
+//void FrameBuffer::TextTerminal::AdvanceLogicalCursorToNextRow()
+//{
+//    if (++m_logical_cursor_position.row == m_rows) {
+//        m_logical_cursor_position.row--;
+//        ScrollRenderingArea();
+//    }
+//}
+//
+//void FrameBuffer::TextTerminal::BackupOneSpaceWithRuneRemovalWithoutRowChange()
+//{
+//    if (m_logical_cursor_position.column == 0)
+//        return;
+//
+//    m_logical_cursor_position.column--;
+//
+//    DrawRuneAt(U' ', m_logical_cursor_position.row, m_logical_cursor_position.column);
+//}
+//
+//void FrameBuffer::TextTerminal::InsertTabWithPossibleRowChange()
+//{
+//    AdvanceLogicalCursorLinearPosition(4);
+//}
+//
+//void FrameBuffer::TextTerminal::MoveLogicalCursorToStartOfCurrentRow()
+//{
+//    m_logical_cursor_position.column = 0;
+//}
+//
+//void FrameBuffer::TextTerminal::MoveLogicalCursorToSpecificPoint(RenderingAreaPoint new_cursor_position)
+//{
+//    if (new_cursor_position.column > m_columns || new_cursor_position.row > m_rows)
+//        return;
+//
+//    m_logical_cursor_position.column = new_cursor_position.column;
+//    m_logical_cursor_position.row = new_cursor_position.row;
+//}
+//
+//void FrameBuffer::TextTerminal::AdvanceLogicalCursorLinearPosition(unsigned int number_of_columns_to_advance)
+//{
+//    m_logical_cursor_position.column += number_of_columns_to_advance;
+//
+//    if (m_logical_cursor_position.column >= m_columns) {
+//        m_logical_cursor_position.column -= m_columns;
+//        AdvanceLogicalCursorToNextRow();
+//    }
+//}
+//
+////uint32_t* FrameBuffer::TextTerminal::getRuneStartPixel(RenderingAreaPoint rune_position)
+////{
+////    return (uint32_t *)m_fb_first_pixel_addr + (rune_position.row * m_pixels_per_row) + (m_font_hrez * rune_position.column);
+////}
+//
+//uint32_t* advancePixelPointerToNextRuneBitmapRow(uint32_t* current_pixel_position)
+//{
+//    return current_pixel_position + (m_hrez - m_font_hrez);
+//}
+//
+//
+//void renderRunePositionedByStartPixel(uint8_t* rune_bitmap, uint32_t* next_pixel)
+//{
+//    for (unsigned int i = 0; i < m_font_vrez; i++) {
+//        uint8_t next_rune_pixel_row = rune_bitmap[i];
+//        for (unsigned int j = 0; j < m_font_hrez; j++) {
+//            if (next_rune_pixel_row & 0x80)
+//                *next_pixel++ = (uint32_t)m_fg_color;
+//            else
+//                *next_pixel++ = (uint32_t)m_bg_color;
+//    
+//            next_rune_pixel_row <<= 1;
+//        }
+//    
+//        next_pixel += (m_hrez - m_font_hrez);
+//    }
+//}
+//}
