@@ -4,6 +4,9 @@ x86_64-obj
 x86_64-obj/*
 *.swp
 **/*.swp
+**/*.o
+**/*.elf
 .ycm_extra_conf.py
 **/.ycm_extra_conf.py
 src/disk.hdd
+src/TestSuite/TestSuite.h
