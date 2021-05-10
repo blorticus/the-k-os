@@ -1,4 +1,5 @@
 #include <FrameBuffer.h>
+#include <Memory.h>
 
 static Error bpp8BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
     if (fb == 0 || row > fb->VerticalPixels || column > fb->HorizontalPixels)
@@ -81,7 +82,7 @@ static Error bpp32BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, un
     if (fb == 0 || row > fb->VerticalPixels || column > fb->HorizontalPixels)
         return ErrorInvalidParameter;
 
-    uint32_t* addressOfPixel = (uint32_t*)fb->origin + (fb->VerticalPixels * row) + column;
+    uint32_t* addressOfPixel = (uint32_t*)fb->origin + (fb->HorizontalPixels * row) + column;
     *addressOfPixel = (uint32_t)(color & 0x00ffffff);
 
     return NoError;
@@ -92,6 +93,9 @@ static Error bpp32BitDrawLineAt( struct FrameBuffer_t* fb, unsigned int startRow
         return ErrorInvalidParameter;
 
     uint32_t offset = startRow * fb->HorizontalPixels + startColumn;
+    if (offset + length >= fb->HorizontalPixels * fb->VerticalPixels)
+        return ErrorWouldCauseOverflow;
+
     uint32_t* addressOfPixel = (uint32_t*)fb->origin + offset;
 
     for (unsigned int i = 0; i < length; i++)
@@ -100,34 +104,45 @@ static Error bpp32BitDrawLineAt( struct FrameBuffer_t* fb, unsigned int startRow
     return NoError;
 }
 
-static Error bpp32Draw2ColorBitmapAt( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn, FrameBuffer2ColorBitmap bitmapDefinition, FrameBufferColor foreroundColor, FrameBufferColor backgroundColor ) {
-    if (fb == 0 || startRow > fb->VerticalPixels || startColumn > fb->HorizontalPixels || bitmapDefinition->PixelsPerRow == 0 || bitmapDefinition->Rows == 0 || bitmapDefinition->BitmapDefinition == 0)
+static Error bpp32DrawAligned2ColorBitmapAt( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn, FrameBufferAligned2ColorBitmap bitmapDefinition, FrameBufferColor foreroundColor, FrameBufferColor backgroundColor ) {
+    if (startRow + bitmapDefinition->NumberOfRows > fb->VerticalPixels || startColumn + bitmapDefinition->PixelsPerRow > fb->HorizontalPixels || bitmapDefinition->PixelsPerRow & 0x0007)
         return ErrorInvalidParameter;
 
-    if (bitmapDefinition->BytesPerRow == 0)
-        bitmapDefinition->BytesPerRow = bitmapDefinition->PixelsPerRow / 8 + (bitmapDefinition->PixelsPerRow % 8 != 0 ? 1 : 0);
+    uint32_t* pixelAddress = fb->origin;
+    pixelAddress += (fb->HorizontalPixels * startRow) + startColumn;
 
-    uint32_t* frameBufferPixelArray = (uint32_t*)fb->origin;
-    uint8_t* addressOfBitmapByteBeingProcessed = bitmapDefinition->BitmapDefinition;
+    uint16_t bytesPerBitmapRow = bitmapDefinition->PixelsPerRow / 8;
+    uint8_t* bmDefinition = bitmapDefinition->BitmapDefinition;
 
-    for (unsigned int bitmapRow = 0; bitmapRow < bitmapDefinition->Rows; bitmapRow++) {
-        unsigned int frameBufferPixelOffset = (startRow + bitmapRow) * fb->HorizontalPixels + startColumn;
+    for (uint16_t bmRow = 0; bmRow < bitmapDefinition->NumberOfRows; bmRow++) {
+        for (uint16_t bmCol = 0; bmCol < bytesPerBitmapRow; bmCol++) {
+            uint8_t definitionByte = *bmDefinition++;
 
-        for (unsigned int bitsRemainingInThisRow = bitmapDefinition->PixelsPerRow; bitsRemainingInThisRow > 0; ) {
-            uint8_t nextByteOfBitmap = *addressOfBitmapByteBeingProcessed++;
-
-            for (unsigned int i = (bitsRemainingInThisRow >= 8 ? 8 : bitsRemainingInThisRow); i > 0; i--) {
-                if (nextByteOfBitmap & 0x01)
-                    frameBufferPixelArray[frameBufferPixelOffset++] = foreroundColor;
-                else
-                    frameBufferPixelArray[frameBufferPixelOffset++] = backgroundColor;
-
-                nextByteOfBitmap >>= 1;
+            for (int i = 0; i < 8; i++) {
+                *pixelAddress++ = (definitionByte & 0x01 ? foreroundColor : backgroundColor);
             }
         }
+
+        pixelAddress += (fb->HorizontalPixels - bitmapDefinition->PixelsPerRow);
     }
 
     return NoError;
+}
+
+static void fillWith( struct FrameBuffer_t* fb, FrameBufferColor color ) {
+    switch (fb->BitsPerPixel) {
+        case 8:
+            FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint8 );
+            break;
+
+        case 16:
+            FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint16 );
+            break;
+
+        case 32:
+            FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint32 );
+            break;
+    }
 }
 
 static FrameBufferAbstractPaletteColor bpp32BitColorPaletteTransform[] = {
@@ -153,6 +168,10 @@ Error PopulateFrameBuffer( FrameBuffer fb, unsigned int hrez, unsigned int vrez,
     fb->HorizontalPixels = hrez;
     fb->VerticalPixels   = vrez;
     fb->origin           = frameBufferStart;
+    fb->pixelsInFramebuffer = hrez * vrez;
+    fb->BitsPerPixel     = bpp;
+
+    fb->FillWith = fillWith;
 
     switch (bpp) {
         case 8:
@@ -170,7 +189,7 @@ Error PopulateFrameBuffer( FrameBuffer fb, unsigned int hrez, unsigned int vrez,
         case 32:
             fb->DrawPixelAt = bpp32BitDrawPixelAt;
             fb->DrawLineAt = bpp32BitDrawLineAt;
-            fb->Draw2ColorBitmapAt = bpp32Draw2ColorBitmapAt;
+            fb->DrawAligned2ColorBitmapAt = bpp32DrawAligned2ColorBitmapAt;
             fb->GenerateConcreteColorFromAbstractPalette = bpp32BitGenerateConcreteColorFromAbstractPalette;          
             break;
 

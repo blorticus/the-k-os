@@ -3,7 +3,15 @@ TARGET := stivale2.elf
 CC = $(HOME)/opt/cross/bin/x86_64-elf-gcc
 #CC = gcc
 
-CFLAGS = -Wall -Wextra -O2 -pipe
+WITH_DEBUGGING_SYMBOLS ?= no
+
+CFLAGS = -Wall -Wextra -pipe
+
+ifeq ($(WITH_DEBUGGING_SYMBOLS),yes)
+CFLAGS += -g
+else
+CFLAGS += -O2
+endif
 
 LDINTERNALFLAGS := \
 	-fno-pic -fpie \
@@ -21,7 +29,7 @@ INTERNALCFLAGS  :=       \
 	-mgeneral-regs-only  \
 	-mno-red-zone
 
-CFILES := $(shell find ./ -type f -name '*.c')
+CFILES := $(shell find ./ -not \( -path ./TestSuite -prune \) -not \( -path ./tests -prune \) -type f -name '*.c')
 OBJ    := $(CFILES:.c=.o)
 
 .PHONY: all clean run

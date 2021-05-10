@@ -1,6 +1,9 @@
 .PHONY: all clean
 
-all: TestSuite.o main
+all: libTestSuite.a main
+
+libTestSuite.a: TestSuite.o
+	ar rcs libTestSuite.a TestSuite.o
 
 TestSuite.o: TestSuite.c TestSuite.h
 	gcc -g -o TestSuite.o -c TestSuite.c -I. -static

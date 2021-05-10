@@ -43,37 +43,56 @@ typedef struct TestSuitePictureMapElement_t {
 // to understand the test (for humans) if the values are expressed in a visual format, rather
 // than as a stream of bytes (which is the thing actually being compared in the test).  The
 // constructor is:
-//   TestSuitePictureMap CreateTestSuitePictureMap( unsigned int numberOfBytesInConversion );
+//   TestSuitePictureMap CreateTestSuitePictureMap();
 //
 // A "picture map" consists of ASCII characters.  Each character is mapped to a fixed set of
-// bytes.  The number of bytes is the same for each character.  That is the
-// 'numberOfBytesInConversion'.  For example:
-//   map = CreateTestSuitePictureMap( 2 );
-//   map->AddCharConversion( map, '-', 0x01, 0x02 )
-//      ->AddCharConversion( map, '*', 0xaa, 0xbb );
+// bytes.  The number of bytes is the same for each character.  Before adding conversions or
+// converting an image, the encoding size should be declared (the default is 8Byte):
+//   map = CreateTestSuitePictureMap();
+//   map->Use2ByteEncoding( map );
+//
+// Each character in the map will be expanded to a series of bytes based on the encoding.  To
+// map a character to an encoding:
+//   map->AddCharConversion( map, '-', 0x1122 )
+//      ->AddCharConversion( map, '*', 0xaabb );
+//
+// The actual value will be cast according to the enconding.  For example, with 2Byte encoding,
+// the bytes values above will be cast as uint16s.
+//
+// The next step is to pass a picture.  For example:
 //   const char[] picture = "------"
 //                          "-*--*-"
 //                          "-*--*-"
 //                          "------"
-//   uint8_t* a = map->ConvertPictureToByteArray( map, picture, 24 );
+//   uint16_t* a = map->ConvertPictureToArray( map, picture, 24 );
 //
-// would produce the following byte array (as 'a'):
-//   { 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, 0x01, 0x02, // row 1
-//     0x01, 0x02, 0xaa, 0xbb, 0x01, 0x02, 0x01, 0x02, 0xaa, 0xbb, 0x01, 0x02, // row 2
+// would produce the following array (as 'a'):
+//   { 0x0102, 0x0102, 0x0102, 0x0102, 0x0102, 0x0102, // row 1
+//     0x0102, 0xaabb, 0x0102, 0x0102, 0xaabb, 0x0102, // row 2
 //     ... etc ... }
 //
+// It is up to you to ensure that you cast the pointer appropriately (i.e., uint8_t* for 1Byte,
+// uint16_t* for 2Byte, and so forth).  This mechanism allows sensible comparisons regardless of 
+// architecture endianness.
+//
 typedef struct TestSuitePictureMap_t {
-    uint8_t** mapOfAsciiToConversionBytes;
-    unsigned int numberOfBytesInCoversions;
+    uint64_t* mapOfAsciiToConversionBytes;
+    unsigned int numberOfBytesForEncoding;
 
-    uint8_t* (*ConvertPictureToByteArray)( struct TestSuitePictureMap_t* map, const char* picture, unsigned int pictureLength );
-    struct TestSuitePictureMap_t* (*AddCharConversion)( struct TestSuitePictureMap_t* map, char c, ... );
+    void* (*ConvertPictureToByteArray)( struct TestSuitePictureMap_t* map, const char* picture, unsigned int pictureLength );
+
+    struct TestSuitePictureMap_t* (*AddCharConversion)( struct TestSuitePictureMap_t* map, char c, uint64_t v );
+
+    struct TestSuitePictureMap_t* (*Use1ByteEncoding)( struct TestSuitePictureMap_t* map );
+    struct TestSuitePictureMap_t* (*Use2ByteEncoding)( struct TestSuitePictureMap_t* map );
+    struct TestSuitePictureMap_t* (*Use4ByteEncoding)( struct TestSuitePictureMap_t* map );
+    struct TestSuitePictureMap_t* (*Use8ByteEncoding)( struct TestSuitePictureMap_t* map );
 } *TestSuitePictureMap;
 
 // TestSuite is a pointer to a TestSuite instance.  The typical usage pattern is:
 //   TestSuite suite = CreateTestSuite( "FrameBuffer Tests" );
 //   // Do tests ...
-//   suite->Done( suite );
+//   return suite->Done( suite );
 //
 // The tests follow this pattern:
 //   suite->AssertEquals->Uint16( suite, expectedUint16Value, actualUint16Value, "some test name..." );
@@ -96,4 +115,5 @@ typedef struct TestSuite_t {
 
 
 TestSuite CreateTestSuite( char* suiteName );
-TestSuitePictureMap CreateTestSuitePictureMap( unsigned int numberOfBytesInConversion );
+TestSuitePictureMap CreateTestSuitePictureMap( );
+int TestSuiteAbort( const char* message );

@@ -4,35 +4,59 @@
 #include <stdio.h>
 
 static int TestSuite_AssertEqualsUint8( TestSuite ts, uint8_t expect, uint8_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%u / 0x%02x), got (%u / 0x%02x)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsUint16( TestSuite ts, uint16_t expect, uint16_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%u / 0x%04x), got (%u / 0x%04x)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsUint32( TestSuite ts, uint32_t expect, uint32_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%lu / 0x%08lx), got (%lu / 0x%08lx)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsUint64( TestSuite ts, uint64_t expect, uint64_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%llu / 0x%016llx), got (%lu / 0x%016llx)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsInt8( TestSuite ts, int8_t expect, int8_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%d / 0x%02x), got (%d / 0x%02x)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsInt16( TestSuite ts, int16_t expect, int16_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%d / 0x%04x), got (%d / 0x%04x)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsInt32( TestSuite ts, int32_t expect, int32_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%ld / %08lx), got (%ld / %08lx)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsInt64( TestSuite ts, int64_t expect, int64_t got, char* testName ) {
-    return 0;
+    if (expect == got)
+        return ts->TestSucceeded( ts, testName );
+    else
+        return ts->TestFailed( ts, testName, "Expected (%lld / %016llx), got (%lld / %016llx)", expect, expect, got, got );
 }
 
 static int TestSuite_AssertEqualsByteArray( TestSuite ts, void* expect, void* got, unsigned int byteCount, char* testName ) {
@@ -78,7 +102,7 @@ static int TestSuite_TestSucceeded( TestSuite ts, char* testName ) {
 
 static int TestSuite_Done( TestSuite ts ) {
     printf( "Ran [%i] Tests; [%i] Successful; [%i] Failed -- %s\n", ts->numberOfSuccessfulTests + ts->numberOfFailedTests, ts->numberOfSuccessfulTests, ts->numberOfFailedTests, (ts->numberOfFailedTests > 0 ? "NOT OK" : "OK") );
-    return ts->numberOfFailedTests == 0;
+    return ts->numberOfFailedTests;
 }
 
 TestSuite CreateTestSuite( char* suiteName ) {
@@ -86,7 +110,7 @@ TestSuite CreateTestSuite( char* suiteName ) {
     if (!ts) return 0;
 
     TestSuiteAssertEquals e = malloc( sizeof( struct TestSuiteAssertEquals_t ) );
-    if (!e) return 0;    
+    if (!e) return 0;
 
     e->Uint8  = TestSuite_AssertEqualsUint8;
     e->Uint16 = TestSuite_AssertEqualsUint16;
@@ -99,6 +123,7 @@ TestSuite CreateTestSuite( char* suiteName ) {
     e->ByteArray = TestSuite_AssertEqualsByteArray;
 
     ts->AssertEquals  = e;
+
     ts->TestSucceeded = TestSuite_TestSucceeded;
     ts->TestFailed    = TestSuite_TestFailed;
     ts->Done          = TestSuite_Done;
@@ -109,53 +134,98 @@ TestSuite CreateTestSuite( char* suiteName ) {
     return ts;
 }
 
-static uint8_t* TestSuitePictureMap_ConvertPictureToByteArray( TestSuitePictureMap map, const char* picture, unsigned int pictureLength ) {
-    uint8_t* byteArray = calloc( map->numberOfBytesInCoversions, pictureLength );
-    if (!byteArray)
-        return 0;
+static void* TestSuitePictureMap_ConvertPictureToByteArray( TestSuitePictureMap map, const char* picture, unsigned int pictureLength ) {
+    void* byteArray = calloc( map->numberOfBytesForEncoding, pictureLength );
+    if (!byteArray) return 0;
 
-    uint8_t* bac = byteArray;
+    uint8_t* p8;
+    uint16_t* p16;
+    uint32_t* p32;
+    uint64_t* p64;
 
-    for (unsigned int i = 0; i < pictureLength; i ++) {
-        uint8_t* correspondingBytes = map->mapOfAsciiToConversionBytes[picture[i]];
-        for (unsigned int j = 0; j < map->numberOfBytesInCoversions; j++)
-            *bac++ = correspondingBytes[j];
+    switch (map->numberOfBytesForEncoding) {
+        case 1:
+            p8 = byteArray;
+            for (unsigned int i = 0; i < pictureLength; i++) {
+                uint8_t b = (uint8_t)map->mapOfAsciiToConversionBytes[picture[i]];
+                *p8++ = b;
+            }
+            break;
+
+        case 2:
+            p16 = byteArray;
+            for (unsigned int i = 0; i < pictureLength; i++) {
+                uint16_t b = (uint16_t)map->mapOfAsciiToConversionBytes[picture[i]];
+                *p16++ = b;
+            }
+            break;
+
+        case 4:
+            p32 = byteArray;
+            for (unsigned int i = 0; i < pictureLength; i++) {
+                uint32_t b = (uint32_t)map->mapOfAsciiToConversionBytes[picture[i]];
+                *p32++ = b;
+            }
+            break;
+
+        case 8:
+            p64 = byteArray;
+            for (unsigned int i = 0; i < pictureLength; i++) {
+                uint64_t b = (uint64_t)map->mapOfAsciiToConversionBytes[picture[i]];
+                *p64++ = b;
+            }
+            break;
     }
 
     return byteArray;
 }
 
 
-static TestSuitePictureMap TestSuitePictureMap_AddCharConversion( TestSuitePictureMap map, char c, ... ) {
-    va_list byteSet;
+static TestSuitePictureMap TestSuitePictureMap_Use1ByteEncoding( TestSuitePictureMap map ) {
+    map->numberOfBytesForEncoding = 1;
+}
 
-    va_start(byteSet, c);
+static TestSuitePictureMap TestSuitePictureMap_Use2ByteEncoding( TestSuitePictureMap map ) {
+    map->numberOfBytesForEncoding = 2;
+}
 
-    uint8_t* store = calloc( 1, map->numberOfBytesInCoversions );
+static TestSuitePictureMap TestSuitePictureMap_Use4ByteEncoding( TestSuitePictureMap map ) {
+    map->numberOfBytesForEncoding = 4;
+}
 
-    for (unsigned int i = 0; i < map->numberOfBytesInCoversions; i++)
-        store[i] = va_arg(byteSet, unsigned int);
-        map->mapOfAsciiToConversionBytes[(uint8_t)c] = store;
+static TestSuitePictureMap TestSuitePictureMap_Use8ByteEncoding( TestSuitePictureMap map ) {
+    map->numberOfBytesForEncoding = 8;
+}
 
+static TestSuitePictureMap TestSuitePictureMap_AddCharConversion( TestSuitePictureMap map, char c, uint64_t encodedValue ) {
+    map->mapOfAsciiToConversionBytes[(uint8_t)c] = encodedValue;
     return map;
 }
 
-
-TestSuitePictureMap CreateTestSuitePictureMap( unsigned int numberOfBytesInConversion ) {
+TestSuitePictureMap CreateTestSuitePictureMap() {
     TestSuitePictureMap map;
 
     if (!(map = malloc( sizeof( struct TestSuitePictureMap_t ) )))
         return 0;
 
-    map->mapOfAsciiToConversionBytes = calloc( sizeof(uint8_t*), 256 );
+    map->mapOfAsciiToConversionBytes = calloc( sizeof(uint64_t), 256 );
     if (!map->mapOfAsciiToConversionBytes)
         return 0;
 
-    map->numberOfBytesInCoversions = numberOfBytesInConversion;
+    map->numberOfBytesForEncoding = 8;
 
     map->AddCharConversion = TestSuitePictureMap_AddCharConversion;
     map->ConvertPictureToByteArray = TestSuitePictureMap_ConvertPictureToByteArray;
 
+    map->Use1ByteEncoding = TestSuitePictureMap_Use1ByteEncoding;
+    map->Use2ByteEncoding = TestSuitePictureMap_Use2ByteEncoding;
+    map->Use4ByteEncoding = TestSuitePictureMap_Use4ByteEncoding;
+    map->Use8ByteEncoding = TestSuitePictureMap_Use8ByteEncoding;
+
     return map;
 }
 
+int TestSuiteAbort( const char* message ) {
+    fprintf( stderr, "TEST SUITE ABORTED: %s\n", message );
+    return (-1);
+}
