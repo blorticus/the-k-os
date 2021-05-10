@@ -2,6 +2,7 @@
 #include <FrameBuffer.h>
 #include <Error.h>
 #include <string.h>
+#include <stdio.h>
 
 #define FRAME_BUFFER_MEMORY_AREA_HREZ 12
 #define FRAME_BUFFER_MEMORY_AREA_VREZ 10
@@ -99,6 +100,13 @@ int main( void ) {
         "            ", FRAME_BUFFER_PIXEL_COUNT );
 
     suite->AssertEquals->ByteArray( suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "DrawAligned2ColorBitmapAt( 1, 1, 'square'...) byte comparison" );
+
+//    char* pictureToPrint = TestSuiteConvertByteArrayToPicture( frameBufferMemoryArea, 4, FRAME_BUFFER_MEMORY_AREA_HREZ, FRAME_BUFFER_MEMORY_AREA_VREZ, (TestSuitePictureMapElement_t[]){
+//        (TestSuitePictureMapElement_t){ ' ', 0x00000000 },
+//        (TestSuitePictureMapElement_t){ '*', 0x00223344 },
+//    }, 2 );
+//
+//    printf( "%s", pictureToPrint );
 
     return suite->Done( suite );
 }

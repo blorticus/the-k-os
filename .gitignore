@@ -5,6 +5,7 @@ x86_64-obj/*
 *.swp
 **/*.swp
 **/*.o
+**/*.t
 **/*.elf
 .ycm_extra_conf.py
 **/.ycm_extra_conf.py

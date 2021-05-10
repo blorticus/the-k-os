@@ -229,3 +229,115 @@ int TestSuiteAbort( const char* message ) {
     fprintf( stderr, "TEST SUITE ABORTED: %s\n", message );
     return (-1);
 }
+
+char* TestSuiteConvertByteArrayToPicture( void* byteArray, unsigned int bytesPerPixel, unsigned int pixelsPerRow, unsigned int rowsInPicture, TestSuitePictureMapElements mappings, unsigned int numberOfMappings ) {
+    uint8_t*  p8;
+    uint16_t* p16;
+    uint32_t* p32;
+    uint64_t* p64;
+
+    char* _picture = calloc( (pixelsPerRow + 1) * rowsInPicture + 1, bytesPerPixel );
+    char* picture = _picture;
+
+    switch (bytesPerPixel) {
+        case 1:
+            p8 = (uint8_t*)byteArray;
+
+            for (unsigned int row = 0; row < rowsInPicture; row++) {
+                for (unsigned int pixelInRow = 0; pixelInRow < pixelsPerRow; pixelInRow++) {
+                    uint8_t b = *p8++;
+
+                    char printChar = '?';
+                    for (unsigned int i = 0; i < numberOfMappings; i++) {
+                        if (b == (uint8_t)(mappings[i].CorrespondingBytes)) {
+                            printChar = mappings[i].PictureCharacter;
+                            break;
+                        }
+                    }
+
+                    *picture++ = printChar;
+                }
+
+                *picture++ = '\n';
+            }
+
+            break;
+
+        case 2:
+            p16 = (uint16_t*)byteArray;
+
+            for (unsigned int row = 0; row < rowsInPicture; row++) {
+                for (unsigned int pixelInRow = 0; pixelInRow < pixelsPerRow; pixelInRow++) {
+                    uint16_t b = *p16++;
+
+                    char printChar = '?';
+                    for (unsigned int i = 0; i < numberOfMappings; i++) {
+                        if (b == (uint16_t)(mappings[i].CorrespondingBytes)) {
+                            printChar = mappings[i].PictureCharacter;
+                            break;
+                        }
+                    }
+
+                    *picture++ = printChar;
+                }
+
+                *picture++ = '\n';
+            }
+
+            break;
+
+
+        case 4:
+            p32 = (uint32_t*)byteArray;
+
+            for (unsigned int row = 0; row < rowsInPicture; row++) {
+                for (unsigned int pixelInRow = 0; pixelInRow < pixelsPerRow; pixelInRow++) {
+                    uint32_t b = *p32++;
+
+                    char printChar = '?';
+                    for (unsigned int i = 0; i < numberOfMappings; i++) {
+                        if (b == (uint32_t)(mappings[i].CorrespondingBytes)) {
+                            printChar = mappings[i].PictureCharacter;
+                            break;
+                        }
+                    }
+
+                    *picture++ = printChar;
+                }
+
+                *picture++ = '\n';
+            }
+
+            break;
+
+
+        case 8:
+            p64 = (uint64_t*)byteArray;
+
+            for (unsigned int row = 0; row < rowsInPicture; row++) {
+                for (unsigned int pixelInRow = 0; pixelInRow < pixelsPerRow; pixelInRow++) {
+                    uint64_t b = *p64++;
+
+                    char printChar = '?';
+                    for (unsigned int i = 0; i < numberOfMappings; i++) {
+                        if (b == (uint64_t)(mappings[i].CorrespondingBytes)) {
+                            printChar = mappings[i].PictureCharacter;
+                            break;
+                        }
+                    }
+
+                    *picture++ = printChar;
+                }
+
+                *picture++ = '\n';
+            }
+
+            break;
+
+
+        default:
+            return 0;
+    }
+
+    return _picture;
+}

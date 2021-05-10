@@ -35,7 +35,7 @@ typedef struct TestSuiteAssertEquals_t {
 
 typedef struct TestSuitePictureMapElement_t {
     char PictureCharacter;
-    uint8_t* CorrespondingBytes;
+    uint64_t CorrespondingBytes;
 } *TestSuitePictureMapElement, *TestSuitePictureMapElements, TestSuitePictureMapElement_t;
 
 // TestSuitePictureMap is a pointer to a object used to create byte arrays from an ASCII
@@ -79,14 +79,14 @@ typedef struct TestSuitePictureMap_t {
     uint64_t* mapOfAsciiToConversionBytes;
     unsigned int numberOfBytesForEncoding;
 
-    void* (*ConvertPictureToByteArray)( struct TestSuitePictureMap_t* map, const char* picture, unsigned int pictureLength );
-
     struct TestSuitePictureMap_t* (*AddCharConversion)( struct TestSuitePictureMap_t* map, char c, uint64_t v );
 
     struct TestSuitePictureMap_t* (*Use1ByteEncoding)( struct TestSuitePictureMap_t* map );
     struct TestSuitePictureMap_t* (*Use2ByteEncoding)( struct TestSuitePictureMap_t* map );
     struct TestSuitePictureMap_t* (*Use4ByteEncoding)( struct TestSuitePictureMap_t* map );
     struct TestSuitePictureMap_t* (*Use8ByteEncoding)( struct TestSuitePictureMap_t* map );
+
+    void* (*ConvertPictureToByteArray)( struct TestSuitePictureMap_t* map, const char* picture, unsigned int pictureLength );
 } *TestSuitePictureMap;
 
 // TestSuite is a pointer to a TestSuite instance.  The typical usage pattern is:
@@ -117,3 +117,5 @@ typedef struct TestSuite_t {
 TestSuite CreateTestSuite( char* suiteName );
 TestSuitePictureMap CreateTestSuitePictureMap( );
 int TestSuiteAbort( const char* message );
+
+char* TestSuiteConvertByteArrayToPicture( void* byteArray, unsigned int bytesPerPixel, unsigned int pixelsPerRow, unsigned int rowsInPicture, TestSuitePictureMapElements mapping, unsigned int numberOfMappings );
