@@ -59,7 +59,7 @@ static int TestSuite_AssertEqualsInt64( TestSuite ts, int64_t expect, int64_t go
         return ts->TestFailed( ts, testName, "Expected (%lld / %016llx), got (%lld / %016llx)", expect, expect, got, got );
 }
 
-static int TestSuite_AssertEqualsByteArray( TestSuite ts, void* expect, void* got, unsigned int byteCount, char* testName ) {
+static int TestSuite_AssertEqualsByteArray( TestSuite ts, const void* expect, const void* got, unsigned int byteCount, char* testName ) {
     if (expect == 0)
         if (got == 0)
             return ts->TestSucceeded( ts, testName );

@@ -30,7 +30,7 @@ typedef struct TestSuiteAssertEquals_t {
     int (*Int32)( TestSuite ts, int32_t expect, int32_t got, char* testName );
     int (*Int64)( TestSuite ts, int64_t expect, int64_t got, char* testName );
 
-    int (*ByteArray)( TestSuite ts, void* expect, void* got, unsigned int byteCount, char* testName );
+    int (*ByteArray)( TestSuite ts, const void* expect, const void* got, unsigned int byteCount, char* testName );
 } *TestSuiteAssertEquals;
 
 typedef struct TestSuitePictureMapElement_t {

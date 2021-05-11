@@ -12,4 +12,4 @@ main: TestSuite.o main.c
 	gcc -g -o main main.c TestSuite.o -I. -static
 
 clean:
-	rm *.o main
+	rm -f *.a *.o main

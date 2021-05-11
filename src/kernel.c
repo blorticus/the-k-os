@@ -3,13 +3,11 @@
 #include <stivale2.h>
 #include <FrameBuffer.h>
 #include <Error.h>
+#include <TextTerminal.h>
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
 static uint8_t stack[4096];
-
-static struct FrameBuffer_t _primaryFrameBuffer;
-static FrameBuffer primaryFrameBuffer = &_primaryFrameBuffer;
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -77,17 +75,10 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
     }
 }
 
-//static uint8_t testBitmap[] = { 0x00, 0x2c, 0x2c, 0x2c, 0x7e, 0x2c, 0xc3, 0xc3 };
-//static uint8_t testBitmap[] = { 0xff, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xff };
-
-static struct FrameBuffer2ColorBitmap_t testBitmap = {
-    .PixelsPerRow = 8,
-    .Rows = 8,
-    .BytesPerRow = 1,
-    .BitmapDefinition = { 0xff, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xc3, 0xff }
-};
-
-static FrameBuffer2ColorBitmap testBitmap_p = &testBitmap;
+static struct FrameBuffer_t _fb;
+static FrameBuffer fb = &_fb;
+static struct TextTerminal_t _term;
+static TextTerminal term = &_term;
 
 // The following will be our kernel's entry point.
 void _start(struct stivale2_struct *stivale2_struct) {
@@ -103,12 +94,10 @@ void _start(struct stivale2_struct *stivale2_struct) {
         }
     }
 
-    Error e = PopulateFrameBuffer( primaryFrameBuffer, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
-    
-    FrameBufferColor white = primaryFrameBuffer->GenerateConcreteColorFromAbstractPalette( FBAP_White );
-    FrameBufferColor black = primaryFrameBuffer->GenerateConcreteColorFromAbstractPalette( FBAP_Black );
+    PopulateFrameBuffer( fb, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
+    PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
 
-    e = primaryFrameBuffer->Draw2ColorBitmapAt( primaryFrameBuffer, 5, 5, testBitmap_p, white, black );
+    term->PutRune( term, 'A' );
 
     // We're done, just hang...
     for (;;) {

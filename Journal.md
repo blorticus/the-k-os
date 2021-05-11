@@ -46,3 +46,12 @@ for (uint row = 10; row > 20; row++)
     for (uint col = 10; col < 20; col++)
         fb->DrawPixelAt( row, col, white );
 ```
+
+## 10 May 2021
+
+I've been working over the last week on getting the FrameBuffer working.  As a
+side-effect, I built a simplistic assertion based unit testing suite.  It
+allowed me to debug some rendering routines.  I am now switching to building a
+basic TextTerminal that uses the FrameBuffer.
+
+And completed write of a single letter (A) in the terminal.
