@@ -4,12 +4,7 @@
 #include <FrameBuffer.h>
 
 typedef uint32_t Rune;
-typedef Rune* RawRuneString;
-
-typedef struct RuneString_t {
-    Rune* String;
-    unsigned int Length;
-} *RuneString;
+typedef Rune* RuneString;
 
 typedef struct TextTerminalFixedFont_t {
     unsigned int BytesPerGlyphRow;
@@ -36,10 +31,9 @@ typedef struct TextTerminal_t {
     FrameBufferAligned2ColorBitmap glyphRenderingDefinition;
 
     Error (*PutRune)( struct TextTerminal_t* term, Rune rune );
-    Error (*PutRawRuneString)( struct TextTerminal_t* term, RawRuneString string );
-    Error (*PutRuneString)( struct TextTerminal_t* term, RuneString string );
+    Error (*PutRuneString)( struct TextTerminal_t* term, const RuneString string );
     Error (*Clear)( struct TextTerminal_t* term );
-    Error (*PutFormattedRuneString)( struct TextTerminal_t* term, RuneString format, ... );
+    Error (*PutFormattedRuneString)( struct TextTerminal_t* term, const RuneString format, ... );
 } *TextTerminal;
 
 Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, TextTerminalFixedFont usingFont );

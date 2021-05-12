@@ -97,7 +97,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
     PopulateFrameBuffer( fb, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
     PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
 
-    term->PutRune( term, 'A' );
+    term->PutRuneString( term, U"The K-OS!" );
 
     // We're done, just hang...
     for (;;) {

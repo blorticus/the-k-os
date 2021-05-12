@@ -119,8 +119,8 @@ static Error bpp32DrawAligned2ColorBitmapAt( struct FrameBuffer_t* fb, unsigned 
             uint8_t definitionByte = *bmDefinition++;
 
             for (int i = 0; i < 8; i++) {
-                *pixelAddress++ = (definitionByte & 0x01 ? foreroundColor : backgroundColor);
-                definitionByte >>= 1;
+                *pixelAddress++ = (definitionByte & 0x80 ? foreroundColor : backgroundColor);
+                definitionByte <<= 1;
             }
         }
 

@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 typedef struct RuneRetrievalExpected_t {
     Rune rune;
@@ -56,68 +57,135 @@ int main( void ) {
     suite->AssertEquals->Int32( suite, NoError, e, "First PutRune to term01 ('A') return value" );
 
     TestSuitePictureMap pictureMap = CreateTestSuitePictureMap();
-    pictureMap->AddCharConversion( pictureMap, ' ', 0 )
+    pictureMap->AddCharConversion( pictureMap, '-', 0 )
               ->AddCharConversion( pictureMap, '*', 0x00ffffff )
               ->Use4ByteEncoding( pictureMap );
 
-    uint8_t* expectedBuffer = pictureMap->ConvertPictureToByteArray( pictureMap,
-        "                        "
-        "                        "
-        "    *                   "
-        "   ***                  "
-        "  ** **                 "
-        " **   **                "
-        " **   **                "
-        " *******                "
-        " **   **                "
-        " **   **                "
-        " **   **                "
-        " **   **                "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        "                        "
-        , 24 * 48 );
+    char* expectPicture = calloc( 24 * 48 + 1, 1 );
+    sprintf( expectPicture, "%s",
+                "------------------------"
+                "------------------------"
+                "---*--------------------"
+                "--***-------------------"
+                "-**-**------------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "*******-----------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------" );
+    memset( expectPicture + 24 * 16, '-', 24 * 32 );    // After the pixel rows with the 'A', there are 24 pixel rows that are background color
+
+    uint8_t* expectedBuffer = pictureMap->ConvertPictureToByteArray( pictureMap, expectPicture, 24 * 48 );
 
     suite->AssertEquals->ByteArray( suite, expectedBuffer, frameBuffer01_buffer, 24 * 48 * 4, "First PutRune to term01 ('A') frame buffer" );
 
-    char* pictureToPrint = TestSuiteConvertByteArrayToPicture( frameBuffer01_buffer, 4, 24, 48, (TestSuitePictureMapElement_t[]){
-        (TestSuitePictureMapElement_t){ '-', 0x00000000 },
-        (TestSuitePictureMapElement_t){ '*', 0x00ffffff },
-    }, 2 );
+    e = term01->PutRune( term01, '!' );
 
-    printf( "%s", pictureToPrint );
+    suite->AssertEquals->Int32( suite, NoError, e, "Second PutRune to term01 ('!') return value" );
+
+    sprintf( expectPicture, "%s",
+                "------------------------"
+                "------------------------"
+                "---*-------**-----------"
+                "--***-----****----------"
+                "-**-**----****----------"
+                "**---**---****----------"
+                "**---**----**-----------"
+                "*******----**-----------"
+                "**---**----**-----------"
+                "**---**-----------------"
+                "**---**----**-----------"
+                "**---**----**-----------"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------" );
+
+    expectedBuffer = pictureMap->ConvertPictureToByteArray( pictureMap, expectPicture, 24 * 48 );
+
+    suite->AssertEquals->ByteArray( suite, expectedBuffer, frameBuffer01_buffer, 24 * 48 * 4, "Second PutRune to term01 ('!') frame buffer" );
+
+    e = term01->PutRune( term01, 'E' );
+
+    suite->AssertEquals->Int32( suite, NoError, e, "Third PutRune to term01 ('E') return value" );
+
+    sprintf( expectPicture, "%s",
+                "------------------------"
+                "------------------------"
+                "---*-------**---*******-"
+                "--***-----****---**--**-"
+                "-**-**----****---**---*-"
+                "**---**---****---**-*---"
+                "**---**----**----****---"
+                "*******----**----**-*---"
+                "**---**----**----**-----"
+                "**---**----------**---*-"
+                "**---**----**----**--**-"
+                "**---**----**---*******-"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------" );
+
+    expectedBuffer = pictureMap->ConvertPictureToByteArray( pictureMap, expectPicture, 24 * 48 );
+
+    suite->AssertEquals->ByteArray( suite, expectedBuffer, frameBuffer01_buffer, 24 * 48 * 4, "Third PutRune to term01 ('E') frame buffer" );
+
+    e = term01->PutRune( term01, 'A' );
+
+    suite->AssertEquals->Int32( suite, NoError, e, "Second row first PutRune to term01 ('A') return value" );
+
+    sprintf( expectPicture, "%s",
+                "------------------------"
+                "------------------------"
+                "---*-------**---*******-"
+                "--***-----****---**--**-"
+                "-**-**----****---**---*-"
+                "**---**---****---**-*---"
+                "**---**----**----****---"
+                "*******----**----**-*---"
+                "**---**----**----**-----"
+                "**---**----------**---*-"
+                "**---**----**----**--**-"
+                "**---**----**---*******-"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "---*--------------------"
+                "--***-------------------"
+                "-**-**------------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "*******-----------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "**---**-----------------"
+                "------------------------"
+                "------------------------"
+                "------------------------"
+                "------------------------" );
+
+    expectedBuffer = pictureMap->ConvertPictureToByteArray( pictureMap, expectPicture, 24 * 48 );
+
+    suite->AssertEquals->ByteArray( suite, expectedBuffer, frameBuffer01_buffer, 24 * 48 * 4, "First PutRune to term01 ('A') frame buffer" );
+
+
+//    char* pictureToPrint = TestSuiteConvertByteArrayToPicture( frameBuffer01_buffer, 4, 24, 48, (TestSuitePictureMapElement_t[]){
+//        (TestSuitePictureMapElement_t){ '-', 0x00000000 },
+//        (TestSuitePictureMapElement_t){ '*', 0x00ffffff },
+//    }, 2 );
+//
+//    printf( "%s", pictureToPrint );
 
 
     return suite->Done( suite );

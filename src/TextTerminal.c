@@ -1,4 +1,5 @@
 #include <TextTerminal.h>
+#include <stdarg.h>
 
 static void TextTerminal_scrollOneLine( TextTerminal term ) {
 
@@ -35,28 +36,39 @@ static Error TextTerminal_PutRune( TextTerminal term, Rune rune ) {
             if (glyphBitmap) {
                 term->glyphRenderingDefinition->BitmapDefinition = (uint8_t*)glyphBitmap;
                 term->frameBuffer->DrawAligned2ColorBitmapAt( term->frameBuffer, term->cursorY * term->glyphPixelHeight, term->cursorX * term->glyphPixelWidth, term->glyphRenderingDefinition, term->foregroundColor, term->backgroundColor );
+
+                TextTerminal_advanceCursorOneColumn( term );
             }
+
+            
     }
 
     return NoError;
 }
 
-static Error TextTerminal_PutRawRuneString( TextTerminal term, RawRuneString string ) {
-    return NoError;
+static Error TextTerminal_PutRuneString( TextTerminal term, const RuneString string ) {
+    RuneString r = (RuneString)string;
 
-}
+    while (*r)
+        TextTerminal_PutRune( term, *r++ );
 
-static Error TextTerminal_PutRuneString( TextTerminal term, RuneString string ) {
     return NoError;
 
 }
 
 static Error TextTerminal_Clear( TextTerminal term ) {
+    term->frameBuffer->FillWith( term->frameBuffer, term->backgroundColor );
+    term->cursorX = term->cursorY = 0;
+
     return NoError;
 
 }
 
-static Error TextTerminal_PutFormattedRuneString( TextTerminal term, RuneString format, ... ) {
+static Error TextTerminal_PutFormattedRuneString( TextTerminal term, const RuneString format, ... ) {
+    va_list fp;
+
+    va_start( fp, format );
+
     return NoError;
 }
 
@@ -81,9 +93,8 @@ Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, Tex
 
     term->Clear = TextTerminal_Clear;
     term->PutFormattedRuneString = TextTerminal_PutFormattedRuneString;
-    term->PutRawRuneString = TextTerminal_PutRawRuneString;
-    term->PutRune = TextTerminal_PutRune;
     term->PutRuneString = TextTerminal_PutRuneString;
+    term->PutRune = TextTerminal_PutRune;
 
     return NoError;
 }
