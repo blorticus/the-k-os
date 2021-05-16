@@ -31,14 +31,17 @@ typedef struct FrameBuffer_t {
     unsigned int VerticalPixels;
     void* origin;
     unsigned int pixelsInFramebuffer;
+    unsigned int bytesPerPixel;
 
 
-    void (*FillWith)( struct FrameBuffer_t* fb, FrameBufferColor color );
+    void (*FillAllWith)( struct FrameBuffer_t* fb, FrameBufferColor color );
+    Error (*FillRowsWith)( struct FrameBuffer_t* fb, unsigned int firstRowToFill, unsigned int numberOfRowsToFill, FrameBufferColor color );
     Error (*DrawPixelAt)( struct FrameBuffer_t* fb, unsigned int row, unsigned int column, FrameBufferColor color );
     Error (*DrawLineAt)( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn, unsigned int length, FrameBufferColor color );
     Error (*DrawAligned2ColorBitmapAt)( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn,
                                         FrameBufferAligned2ColorBitmap bitmapDefinition, FrameBufferColor foreroundColor, FrameBufferColor backgroundColor );
     FrameBufferColor (*GenerateConcreteColorFromAbstractPalette)( FrameBufferAbstractPaletteColor color );
+    Error (*ShiftPixelRowsUp)(struct FrameBuffer_t *fb, unsigned int firstRowToShift, unsigned int numberOfRowsToShift, unsigned int numberOfRowsByWhichToShift );
 } *FrameBuffer;
 
 Error PopulateFrameBuffer( FrameBuffer fb, unsigned int hrez, unsigned int vrez, unsigned int bpp, void* frameBufferStart );

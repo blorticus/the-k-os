@@ -5,4 +5,8 @@ typedef enum Error_t {
     ErrorInvalidParameter,
     ErrorValueUndefined,
     ErrorWouldCauseOverflow,
+    ErrorInvalidFormat,
+    ErrorNotANumber,
+    ErrorNullValue,
+    ErrorBufferTooSmall,
 } Error;

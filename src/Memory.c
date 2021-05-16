@@ -34,3 +34,14 @@ void* FillArrayWithRepeatingValue( void* startOfArray, uint64_t numberOfValuesTo
 
     return startOfArray;
 }
+
+void *MoveArrayOfBytes( void *startOfArrayToMove, void *destination, uint64_t numberOfBytesToMove ) {
+    // XXX: this needs to be optimized
+    uint8_t* s = startOfArrayToMove;
+    uint8_t* d = destination;
+
+    while (numberOfBytesToMove--)
+        *d++ = *s++;
+
+    return destination;
+}

@@ -1,7 +1,7 @@
 #include <FrameBuffer.h>
 #include <Memory.h>
 
-static Error bpp8BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
+static Error bpp8BitDrawPixelAt( FrameBuffer fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
     if (fb == 0 || row > fb->VerticalPixels || column > fb->HorizontalPixels)
         return ErrorInvalidParameter;
 
@@ -11,7 +11,7 @@ static Error bpp8BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, uns
     return NoError;
 }
 
-static Error bpp8BitDrawLineAt( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startCol, unsigned int length, FrameBufferColor color ) {
+static Error bpp8BitDrawLineAt( FrameBuffer fb, unsigned int startRow, unsigned int startCol, unsigned int length, FrameBufferColor color ) {
     uint8_t offset = startRow * fb->HorizontalPixels + startCol;
     uint8_t* addressOfPixel = (uint8_t*)fb->origin + offset;
 
@@ -38,7 +38,7 @@ static FrameBufferColor bpp8BitGenerateConcreteColorFromAbstractPalette( FrameBu
     return (FrameBufferColor)bpp8BitColorPaletteTransform[color];
 }
 
-static Error bpp16BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
+static Error bpp16BitDrawPixelAt( FrameBuffer fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
     if (fb == 0 || row > fb->VerticalPixels || column > fb->HorizontalPixels)
         return ErrorInvalidParameter;
 
@@ -48,7 +48,7 @@ static Error bpp16BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, un
     return NoError;
 }
 
-static Error bpp16BitDrawLineAt( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn, unsigned int length, FrameBufferColor color ) {
+static Error bpp16BitDrawLineAt( FrameBuffer fb, unsigned int startRow, unsigned int startColumn, unsigned int length, FrameBufferColor color ) {
     if (fb == 0 || startRow > fb->VerticalPixels || startColumn > fb->HorizontalPixels)
         return ErrorInvalidParameter;
 
@@ -78,7 +78,7 @@ static FrameBufferColor bpp16BitGenerateConcreteColorFromAbstractPalette( FrameB
     return (FrameBufferColor)bpp16BitColorPaletteTransform[color];
 }
 
-static Error bpp32BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
+static Error bpp32BitDrawPixelAt( FrameBuffer fb, unsigned int row, unsigned int column, FrameBufferColor color ) {
     if (fb == 0 || row > fb->VerticalPixels || column > fb->HorizontalPixels)
         return ErrorInvalidParameter;
 
@@ -88,7 +88,7 @@ static Error bpp32BitDrawPixelAt( struct FrameBuffer_t* fb, unsigned int row, un
     return NoError;
 }
 
-static Error bpp32BitDrawLineAt( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn, unsigned int length, FrameBufferColor color ) {
+static Error bpp32BitDrawLineAt( FrameBuffer fb, unsigned int startRow, unsigned int startColumn, unsigned int length, FrameBufferColor color ) {
     if (fb == 0 || startRow > fb->VerticalPixels || startColumn > fb->HorizontalPixels)
         return ErrorInvalidParameter;
 
@@ -104,7 +104,7 @@ static Error bpp32BitDrawLineAt( struct FrameBuffer_t* fb, unsigned int startRow
     return NoError;
 }
 
-static Error bpp32DrawAligned2ColorBitmapAt( struct FrameBuffer_t* fb, unsigned int startRow, unsigned int startColumn, FrameBufferAligned2ColorBitmap bitmapDefinition, FrameBufferColor foreroundColor, FrameBufferColor backgroundColor ) {
+static Error bpp32DrawAligned2ColorBitmapAt( FrameBuffer fb, unsigned int startRow, unsigned int startColumn, FrameBufferAligned2ColorBitmap bitmapDefinition, FrameBufferColor foreroundColor, FrameBufferColor backgroundColor ) {
     if (startRow + bitmapDefinition->NumberOfRows > fb->VerticalPixels || startColumn + bitmapDefinition->PixelsPerRow > fb->HorizontalPixels || bitmapDefinition->PixelsPerRow & 0x0007)
         return ErrorInvalidParameter;
 
@@ -130,20 +130,55 @@ static Error bpp32DrawAligned2ColorBitmapAt( struct FrameBuffer_t* fb, unsigned 
     return NoError;
 }
 
-static void fillWith( struct FrameBuffer_t* fb, FrameBufferColor color ) {
+static void fillAllWith( FrameBuffer fb, FrameBufferColor color ) {
     switch (fb->BitsPerPixel) {
-        case 8:
-            FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint8 );
-            break;
+    case 8:
+        FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint8 );
+        break;
 
-        case 16:
-            FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint16 );
-            break;
+    case 16:
+        FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint16 );
+        break;
 
-        case 32:
-            FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint32 );
-            break;
+    case 32:
+        FillArrayWithRepeatingValue( fb->origin, fb->pixelsInFramebuffer, color, Uint32 );
+        break;
     }
+}
+
+Error fillRowsWith( FrameBuffer fb, unsigned int firstRowToFill, unsigned int numberOfRowsToFill, FrameBufferColor color) {
+    if (firstRowToFill + numberOfRowsToFill >= fb->VerticalPixels)
+        return ErrorWouldCauseOverflow;
+
+    switch (fb->BitsPerPixel) {
+    case 8:
+        FillArrayWithRepeatingValue((uint8_t *)fb->origin + firstRowToFill * fb->HorizontalPixels, fb->HorizontalPixels * numberOfRowsToFill, color, Uint8);
+        break;
+
+    case 16:
+        FillArrayWithRepeatingValue((uint16_t *)fb->origin + firstRowToFill * fb->HorizontalPixels, fb->HorizontalPixels * numberOfRowsToFill * 2, color, Uint16);
+        break;
+
+    case 32:
+        FillArrayWithRepeatingValue((uint32_t *)fb->origin + firstRowToFill * fb->HorizontalPixels, fb->HorizontalPixels * numberOfRowsToFill * 4, color, Uint32);
+        break;
+    };
+
+    return NoError;
+}
+
+Error shiftPixelRowsUp(FrameBuffer fb, unsigned int firstRowToShift, unsigned int numberOfRowsToShift, unsigned int numberOfRowsByWhichToShift )
+{
+    if (firstRowToShift + numberOfRowsToShift >= fb->VerticalPixels || numberOfRowsByWhichToShift > firstRowToShift)
+        return ErrorWouldCauseOverflow;
+
+    uint8_t* addrOfFirstRowToCopy       = (uint8_t *)fb->origin + firstRowToShift * fb->HorizontalPixels * fb->bytesPerPixel;
+    uint8_t *addrOfDestinationStartRow  = (uint8_t *)fb->origin + (firstRowToShift - numberOfRowsByWhichToShift) * fb->HorizontalPixels * fb->bytesPerPixel;
+    uint64_t numberOfBytesToCopy        = (fb->VerticalPixels - numberOfRowsByWhichToShift) * fb->HorizontalPixels * fb->bytesPerPixel;
+
+    MoveArrayOfBytes( addrOfFirstRowToCopy, addrOfDestinationStartRow, numberOfBytesToCopy );
+
+    return NoError;
 }
 
 static FrameBufferAbstractPaletteColor bpp32BitColorPaletteTransform[] = {
@@ -163,6 +198,7 @@ static FrameBufferColor bpp32BitGenerateConcreteColorFromAbstractPalette( FrameB
     return (FrameBufferColor)bpp32BitColorPaletteTransform[color];
 }
 
+
 Error PopulateFrameBuffer( FrameBuffer fb, unsigned int hrez, unsigned int vrez, unsigned int bpp, void* frameBufferStart ) {
     if (fb == 0) return ErrorInvalidParameter;
 
@@ -172,26 +208,31 @@ Error PopulateFrameBuffer( FrameBuffer fb, unsigned int hrez, unsigned int vrez,
     fb->pixelsInFramebuffer = hrez * vrez;
     fb->BitsPerPixel     = bpp;
 
-    fb->FillWith = fillWith;
+    fb->FillAllWith = fillAllWith;
+    fb->FillRowsWith = fillRowsWith;
+    fb->ShiftPixelRowsUp = shiftPixelRowsUp;
 
     switch (bpp) {
         case 8:
             fb->DrawPixelAt = bpp8BitDrawPixelAt;
             fb->DrawLineAt = bpp8BitDrawLineAt;
             fb->GenerateConcreteColorFromAbstractPalette = bpp8BitGenerateConcreteColorFromAbstractPalette;
+            fb->bytesPerPixel = 1;
             break;
 
         case 16:
             fb->DrawPixelAt = bpp16BitDrawPixelAt;
             fb->DrawLineAt = bpp16BitDrawLineAt;
             fb->GenerateConcreteColorFromAbstractPalette = bpp16BitGenerateConcreteColorFromAbstractPalette;
+            fb->bytesPerPixel = 2;
             break;
-        
+
         case 32:
             fb->DrawPixelAt = bpp32BitDrawPixelAt;
             fb->DrawLineAt = bpp32BitDrawLineAt;
             fb->DrawAligned2ColorBitmapAt = bpp32DrawAligned2ColorBitmapAt;
-            fb->GenerateConcreteColorFromAbstractPalette = bpp32BitGenerateConcreteColorFromAbstractPalette;          
+            fb->GenerateConcreteColorFromAbstractPalette = bpp32BitGenerateConcreteColorFromAbstractPalette;
+            fb->bytesPerPixel = 4;
             break;
 
         default:

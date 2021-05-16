@@ -31,6 +31,9 @@ typedef struct TestSuiteAssertEquals_t {
     int (*Int64)( TestSuite ts, int64_t expect, int64_t got, char* testName );
 
     int (*ByteArray)( TestSuite ts, const void* expect, const void* got, unsigned int byteCount, char* testName );
+
+    int (*Rune)( TestSuite ts, uint32_t expect, uint32_t got, char* testname );
+    int (*RuneString)( TestSuite ts, const uint32_t* expect, const uint32_t *got, unsigned int maximumAllowLength, char* testName );
 } *TestSuiteAssertEquals;
 
 typedef struct TestSuitePictureMapElement_t {

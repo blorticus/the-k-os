@@ -8,13 +8,13 @@ import:
 struct TestSuite:
     a uint8
     b int
-    s *char
+    s string
 
-CreateTestSuite( a uint8 ) (*TestSuite, error):
+func CreateTestSuite( a uint8 ) (*TestSuite, error):
     s := &TestSuite{ a: a, b: 10, s: "" }
     return s, nil
 
-(*TestSuite suite) SetATo( newval uint8 ):
+func (*TestSuite suite) SetATo( newval uint8 ):
     suite->a = newval
 
 DEST:---
@@ -26,7 +26,7 @@ DEST:---
 typedef struct {
     uint8_t a;
     int b;
-    char* s;
+    char32_t* s;
 } _kl_Ax45Z_TestSuite;
 
 struct _kl_Ax45Z_CreateTestSuite__return {
@@ -39,7 +39,7 @@ _kl_Ax45Z_CreateTestSuite__return* _kl_Ax45_CreateTestSuite( uint8_t a );
 --- _kl_Ax45Z_TestSuite.c
 
 _kl_Ax45Z_CreateTestSuite__return* _kl_Ax45_CreateTestSuite( uint8_t a ) {
-    _kl_Ax45Z_TestSuite* s = make( TestSuite, a, 10, "" );
+    _kl_Ax45Z_TestSuite* s = make( TestSuite, a, 10, U"" );
     _kl_Ax45Z_CreateTestSuite__return _retval;
     _retval._a = s;
     _retval._b = NULL;
@@ -61,3 +61,32 @@ GlyphForRune( r rune ) ( g Glyph, exists bool ):
     ...
 
 ---
+
+switch someValue:
+    case 10:
+        doA()
+
+    case 20:
+        doesNotFallThrough()
+
+    case 30:
+        unless()
+        fallthrough
+
+    default:
+        int a = 10
+
+---
+
+klangcc -c somefile.k -o somefile.o
+klangcc -C somefile.k -D some/temp/dir/for/c/files  # no compilation
+klangcc -c somefile.k -o somefile.o -D some/dir/for/c/files
+
+---
+
+Calling:
+
+func SomeFunc( a uint, b int8, c string ) Error { ... }
+
+e := SomeFunc( b: 3, a: 100, c: "hello" );
+e := SomeFunc( 100, 3, "hello" );

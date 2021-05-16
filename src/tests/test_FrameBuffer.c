@@ -63,7 +63,7 @@ int main( void ) {
 
     suite->AssertEquals->ByteArray( suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "DrawLineAt(8, 5, 10) byte comparison");
 
-    fb->FillWith( fb, 0x00000000 );
+    fb->FillAllWith( fb, 0x00000000 );
 
     byteArray = pictureMap->ConvertPictureToByteArray( pictureMap,
         "            "
@@ -77,7 +77,7 @@ int main( void ) {
         "            "
         "            ", FRAME_BUFFER_PIXEL_COUNT );
 
-    suite->AssertEquals->ByteArray( suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "FillWith() byte comparison");
+    suite->AssertEquals->ByteArray( suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "FilAlllWith() byte comparison");
 
     e = fb->DrawAligned2ColorBitmapAt( fb, 1, 1, &(struct FrameBufferAligned2ColorBitmap_t){ 
         .PixelsPerRow = 8,
@@ -101,12 +101,48 @@ int main( void ) {
 
     suite->AssertEquals->ByteArray( suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "DrawAligned2ColorBitmapAt( 1, 1, 'square'...) byte comparison" );
 
-//    char* pictureToPrint = TestSuiteConvertByteArrayToPicture( frameBufferMemoryArea, 4, FRAME_BUFFER_MEMORY_AREA_HREZ, FRAME_BUFFER_MEMORY_AREA_VREZ, (TestSuitePictureMapElement_t[]){
-//        (TestSuitePictureMapElement_t){ ' ', 0x00000000 },
-//        (TestSuitePictureMapElement_t){ '*', 0x00223344 },
-//    }, 2 );
-//
-//    printf( "%s", pictureToPrint );
+    e = fb->ShiftPixelRowsUp( fb, 2, 2, 2 );
+
+    suite->AssertEquals->Int32(suite, NoError, e, "First ShiftPixelRowsUp() return value");
+
+    byteArray = pictureMap->ConvertPictureToByteArray(pictureMap,
+        " **    **   "
+        " ********   "
+        "            "
+        "            "
+        "            "
+        "            "
+        "            "
+        "            "
+        "            "
+        "            ",
+        FRAME_BUFFER_PIXEL_COUNT);
+
+    suite->AssertEquals->ByteArray(suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "First ShiftPixelRowsUp() byte comparison");
+
+    fb->FillAllWith(fb, 0x00223344);
+
+    byteArray = pictureMap->ConvertPictureToByteArray(pictureMap,
+        "************"
+        "************"
+        "************"
+        "************"
+        "************"
+        "************"
+        "************"
+        "************"
+        "************"
+        "************",
+        FRAME_BUFFER_PIXEL_COUNT);
+
+    suite->AssertEquals->ByteArray(suite, byteArray, frameBufferMemoryArea, FRAME_BUFFER_BYTE_COUNT, "First FillAllWith() byte comparison");
+
+    //    char* pictureToPrint = TestSuiteConvertByteArrayToPicture( frameBufferMemoryArea, 4, FRAME_BUFFER_MEMORY_AREA_HREZ, FRAME_BUFFER_MEMORY_AREA_VREZ, (TestSuitePictureMapElement_t[]){
+    //        (TestSuitePictureMapElement_t){ ' ', 0x00000000 },
+    //        (TestSuitePictureMapElement_t){ '*', 0x00223344 },
+    //    }, 2 );
+    //
+    //    printf( "%s", pictureToPrint );
 
     return suite->Done( suite );
 }

@@ -79,6 +79,32 @@ static int TestSuite_AssertEqualsByteArray( TestSuite ts, const void* expect, co
     return ts->TestSucceeded( ts, testName );
 }
 
+static int TestSuite_AssertEqualsRune( TestSuite ts, uint32_t expect, uint32_t got, char* testname ) {
+    return TestSuite_AssertEqualsUint64( ts, expect, got, testname );
+}
+
+static int TestSuite_AssertEqualsRuneString( TestSuite ts, const uint32_t* expect, const uint32_t* got, unsigned int maximumAllowLength, char* testName ) {
+    if (expect == 0)
+        if (got == 0)
+            return ts->TestSucceeded( ts, testName );
+        else
+            return ts->TestFailed( ts, testName, "expected null, got RuneString" );
+    
+    if (got == 0)
+        return ts->TestFailed( ts, testName, "expected RuneString, got null" );
+
+    unsigned int i;
+    for (i = 0; i < maximumAllowLength && expect[i] && got[i]; i++)
+        if (expect[i] != got[i])
+            return ts->TestFailed( ts, testName, "At char index (%i), expect = (%lx), got = (%lx)", i, expect[i], got[i] );
+ 
+    if (expect[i] != 0 || got[i] != 0)
+        return ts->TestFailed( ts, testName, "RuneStrings begin differing at char index (%i)", i );
+
+    return ts->TestSucceeded( ts, testName );
+}
+
+
 static int TestSuite_TestFailed( TestSuite ts, char* testName, char* msg, ... ) {
     va_list messageArgs;
     va_start( messageArgs, msg );
@@ -120,7 +146,9 @@ TestSuite CreateTestSuite( char* suiteName ) {
     e->Int16  = TestSuite_AssertEqualsInt16;
     e->Int32  = TestSuite_AssertEqualsInt32;
     e->Int64  = TestSuite_AssertEqualsInt64;
-    e->ByteArray = TestSuite_AssertEqualsByteArray;
+    e->ByteArray  = TestSuite_AssertEqualsByteArray;
+    e->RuneString = TestSuite_AssertEqualsRuneString;
+    e->Rune       = TestSuite_AssertEqualsRune;
 
     ts->AssertEquals  = e;
 

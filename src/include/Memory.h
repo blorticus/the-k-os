@@ -10,3 +10,4 @@ typedef enum {
 } StorageSize;
 
 void* FillArrayWithRepeatingValue( void* startOfArray, uint64_t numberOfValuesToWrite, uint64_t valueOfFill, StorageSize sizeOfArrayElements );
+void* MoveArrayOfBytes( void* startOfArrayToMove, void* destination, uint64_t numberOfBytesToMove );
