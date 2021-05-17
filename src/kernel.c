@@ -4,6 +4,7 @@
 #include <FrameBuffer.h>
 #include <Error.h>
 #include <TextTerminal.h>
+#include <Interrupts.h>
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -80,6 +81,12 @@ static FrameBuffer fb = &_fb;
 static struct TextTerminal_t _term;
 static TextTerminal term = &_term;
 
+static InterruptDescriptor_t InterruptDescriptorTable[256];
+
+static void trivialExceptionHandler() {
+    term->PutRuneString( term, U"Exception Handler\n" );
+}
+
 // The following will be our kernel's entry point.
 void _start(struct stivale2_struct *stivale2_struct) {
     // Let's get the framebuffer tag.
@@ -96,6 +103,9 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     PopulateFrameBuffer( fb, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
     PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
+
+    for (int i = 0; i < 256; i++)
+        PopulateInterruptDescriptor( &InterruptDescriptorTable[i], trivialExceptionHandler, CPL0, 0 );
 
     term->PutRuneString( term, U"The K-OS!" );
 

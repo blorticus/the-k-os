@@ -3,7 +3,9 @@ export WITH_DEBUGGING_SYMBOLS
 
 CFLAGS := -Wall -Wextra -g	-std=gnu11
 
-TESTS := FrameBuffer.t TextTerminal.t String.t
+TESTS := FrameBuffer.t TextTerminal.t String.t Interrupts.t
+
+.DEFAULT_GOAL := runall
 
 all: $(TESTS)
 
@@ -15,6 +17,9 @@ TextTerminal.t: libTestSuite.a FrameBuffer.o TextTerminal.o Memory.o String.o te
 
 String.t: libTestSuite.a String.o test_String.c
 	$(CC) $(CFLAGS) -o String.t ../String.o test_String.c -I../include -I../TestSuite -L../TestSuite -lTestSuite
+
+Interrupts.t: libTestSuite.a Interrupts.o test_Interrupts.c
+	$(CC) $(CFLAGS) -o Interrupts.t ../Interrupts.o test_Interrupts.c -I../include -I../TestSuite -L../TestSuite -lTestSuite
 
 
 libTestSuite.a:
@@ -32,12 +37,16 @@ Memory.o:
 String.o:
 	$(MAKE) -C .. String.o
 
+Interrupts.o:
+	$(MAKE) -C .. Interrupts.o
+
 .PHONY: clean runall
 
 runall: all
 	./FrameBuffer.t
 	./TextTerminal.t
 	./String.t
+	./Interrupts.t
 
 clean:
 	rm -f *.t *.o

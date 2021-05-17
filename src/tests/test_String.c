@@ -174,6 +174,5 @@ void testUint64ToHexStringPadded( TestSuite suite ) {
 
         snprintf( testname, 1024, "(testUint64ToHexStringPadded) Test (%lu) value check", i + 1 );
         suite->AssertEquals->RuneString( suite, t.expectedString, (const RuneString)inBuffer.String, inBuffer.Size, testname );
-
     }
 }
