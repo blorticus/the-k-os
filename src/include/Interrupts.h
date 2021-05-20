@@ -19,6 +19,8 @@ typedef enum SegmentGateType {
    TrapGate64Bit      = 0xf,
 } SegmentGateType;
 
+typedef void (*InterruptVectorCallback)( uint8_t interruptNumber );
+
 typedef struct InterruptDescriptor_t {
    uint16_t HandlerAddressLow;
    uint16_t CodeSegementSelector;
@@ -29,4 +31,21 @@ typedef struct InterruptDescriptor_t {
    uint32_t Reserved;
 }__attribute__ ((packed)) InterruptDescriptor_t, *InterruptDescriptor;
 
+typedef struct InterruptDescriptorTable_t {
+   InterruptDescriptor Descriptors;
+   uint16_t NumberOfDescriptorsInTable;
+} InterruptDescriptorTable_t, *InterruptDescriptorTable;
+
+typedef struct InterruptDescriptorTableRegister_t {
+   uint16_t ByteCountForAllDescriptorsInTable;
+   uint64_t AddressOfFirstEntry;
+}__attribute__ ((packed)) InterruptDescriptorTableRegister_t, *InterruptDescriptorTableRegister;
+
+typedef struct InterruptDescriptorTableBuilder_t {
+   void (*InitializeBaseVectorCallback)();
+   Error (*SetInterruptVectorCallback)( uint8_t interruptNumber, InterruptVectorCallback callback );   
+   void (*ActivateTable)();
+} InterruptDescriptorTableBuilder_t, *InterruptDescriptorTableBuilder;
+
+Error PopulateInterruptDescriptorTableBuilder(InterruptDescriptorTableBuilder b);
 Error PopulateInterruptDescriptor( InterruptDescriptor d, void* handlerAddress, CpuPrivilegeLevel cpl, int isTrapGate );

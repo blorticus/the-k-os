@@ -5,6 +5,7 @@
 #include <Error.h>
 #include <TextTerminal.h>
 #include <Interrupts.h>
+#include <String.h>
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
@@ -81,10 +82,19 @@ static FrameBuffer fb = &_fb;
 static struct TextTerminal_t _term;
 static TextTerminal term = &_term;
 
-static InterruptDescriptor_t InterruptDescriptorTable[256];
+static InterruptDescriptorTableBuilder_t _idtBuilder;
+static InterruptDescriptorTableBuilder idtBuilder = &_idtBuilder;
 
-static void trivialExceptionHandler() {
-    term->PutRuneString( term, U"Exception Handler\n" );
+static Rune runeBuffer[256];
+static RuneStringBuffer_t runeStringBuffer = {
+    .String = runeBuffer,
+    .Size = 256,
+};
+
+static void trivialExceptionHandler( uint8_t interruptNumber ) {
+     term->PutRuneString( term, U"Handler for " );
+     Uint64ToDecimalString( &runeStringBuffer, interruptNumber );
+     term->PutRuneString( term, runeStringBuffer.String );
 }
 
 // The following will be our kernel's entry point.
@@ -92,6 +102,12 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // Let's get the framebuffer tag.
     struct stivale2_struct_tag_framebuffer *fb_str_tag;
     fb_str_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+
+    Rune buffer[256];
+    struct RuneStringBuffer_t _rb;
+    RuneStringBuffer rb = &_rb;
+    rb->String = buffer;
+    rb->Size = 256;
 
     // Check if the tag was actually found.
     if (fb_str_tag == NULL) {
@@ -104,10 +120,21 @@ void _start(struct stivale2_struct *stivale2_struct) {
     PopulateFrameBuffer( fb, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
     PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
 
-    for (int i = 0; i < 256; i++)
-        PopulateInterruptDescriptor( &InterruptDescriptorTable[i], trivialExceptionHandler, CPL0, 0 );
+    PopulateInterruptDescriptorTableBuilder( idtBuilder );
+    idtBuilder->InitializeBaseVectorCallback();
+    idtBuilder->ActivateTable();
 
-    term->PutRuneString( term, U"The K-OS!" );
+    for (int i = 0; i < 256; i++)
+        idtBuilder->SetInterruptVectorCallback( i, trivialExceptionHandler );
+    //     PopulateInterruptDescriptor( &InterruptDescriptorTableEntries[i], trivialExceptionHandler, CPL0, 0 );
+
+    // ActivateInterruptDescriptorTable( InterruptDescriptorTableEntries, 256 );
+
+    asm volatile ( "int $100" );
+
+    term->PutRuneString( term, U"The K-OS!\n" );
+    term->PutRuneString( term, rb->String );
+
 
     // We're done, just hang...
     for (;;) {

@@ -1,0 +1,5 @@
+#!/usr/bin/env perl
+
+for my $i (1..255) {
+    print qq|PopulateInterruptDescriptor( &staticDefaultInterruptDescriptors[$i], baseInterruptVectorRoutine_Int$i, CPL0, 0 );\n|;
+}
