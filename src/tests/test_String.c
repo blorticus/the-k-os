@@ -6,14 +6,18 @@
 void testDecimalIntegerAsStringToInt64( TestSuite suite );
 void testUint64ToHexString( TestSuite suite );
 void testUint64ToHexStringPadded( TestSuite suite );
+void testFormatIterativelyIntoBuffer( TestSuite suite );
+void testFormatIntoBuffer( TestSuite suite );
 
 int main(void)
 {
     TestSuite suite = CreateTestSuite( "String" );
 
-    testDecimalIntegerAsStringToInt64( suite );
     testUint64ToHexString( suite );
     testUint64ToHexStringPadded( suite );
+    testDecimalIntegerAsStringToInt64( suite );
+    testFormatIterativelyIntoBuffer( suite );
+    testFormatIntoBuffer( suite );
 
     return suite->Done( suite );
 }
@@ -175,4 +179,175 @@ void testUint64ToHexStringPadded( TestSuite suite ) {
         snprintf( testname, 1024, "(testUint64ToHexStringPadded) Test (%lu) value check", i + 1 );
         suite->AssertEquals->RuneString( suite, t.expectedString, (const RuneString)inBuffer.String, inBuffer.Size, testname );
     }
+}
+
+typedef struct formatIterativelyIntoBufferExpectSet_t {
+    Error ExpectedError;
+    RuneString ExpectedBufferString;
+    int ExpectThisToBeLastChunk;
+} formatIterativelyIntoBufferExpectSet_t;
+
+typedef struct formatIterativelyIntoBufferTest_t {
+    formatIterativelyIntoBufferExpectSet_t* ExpectedChunkResults;
+    unsigned int NumberOfExpectedChunkResults;
+    unsigned int IndexOfNextExpectedChunk;
+    unsigned int NumberOfChunksProduced;
+    int AllChunksMatchExpectedValues;
+    int IndexOfFirstChunkThatDoesNotMatch;
+    char additionalFailureDiagnosticMessage[256];
+} formatIterativelyIntoBufferTest_t;
+
+static void resetFormatIterativelyIntoBufferTest( formatIterativelyIntoBufferTest_t* t, formatIterativelyIntoBufferExpectSet_t* expectedChunkResults, unsigned int numberOfExpectedChunkResults )
+{
+    t->ExpectedChunkResults = expectedChunkResults;
+    t->NumberOfExpectedChunkResults = numberOfExpectedChunkResults;
+    t->NumberOfChunksProduced = 0;
+    t->AllChunksMatchExpectedValues = 1;
+    t->IndexOfNextExpectedChunk = 0;
+    t->IndexOfFirstChunkThatDoesNotMatch = 0;
+    t->additionalFailureDiagnosticMessage[0] = 0;
+}
+
+static int setFormatIterativelyIntoBufferTestErrorValues( formatIterativelyIntoBufferTest_t* t, unsigned int indexOfFirstChunkThatDoesNotMatch, char* additionalFailureDiagnosticMessageFormat, ... )
+{
+    va_list varargs;
+    va_start( varargs, additionalFailureDiagnosticMessageFormat );
+    t->AllChunksMatchExpectedValues = 0;
+    t->IndexOfFirstChunkThatDoesNotMatch = indexOfFirstChunkThatDoesNotMatch;
+    vsnprintf( t->additionalFailureDiagnosticMessage, 256, additionalFailureDiagnosticMessageFormat, varargs );
+    va_end( varargs );
+    return 1;
+}
+
+static int strncmp32( RuneString left, RuneString right, unsigned int maximumLength )
+{
+    if (!left)
+    {
+        if (!right)
+            return 0;
+        else
+            return 1;
+    }
+
+    if (!right)
+        return -1;
+
+    for (unsigned int i = 0; i < maximumLength; i++)
+    {
+        if (left[i] < right[i])
+            return 1;
+
+        if (left[i] > right[i])
+            return -1;
+
+        if (!left[i])
+            return 0;
+    }
+
+    return 0;
+}
+
+int iteratingCallback( RuneStringBuffer inBuffer, Error e, int done, void* additionalArgs )
+{
+    formatIterativelyIntoBufferTest_t* testSet = (formatIterativelyIntoBufferTest_t*)additionalArgs;
+
+    testSet->NumberOfChunksProduced++;
+
+    if (testSet->NumberOfChunksProduced > testSet->NumberOfExpectedChunkResults)
+        return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->NumberOfChunksProduced, "Processed more chunks than expected" );
+
+    formatIterativelyIntoBufferExpectSet_t expectedResultsForThisChunk = testSet->ExpectedChunkResults[testSet->IndexOfNextExpectedChunk];
+
+    if (expectedResultsForThisChunk.ExpectThisToBeLastChunk)
+    {
+        if (!done)
+        {
+            return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "Expected to be done but not done" );
+        }
+    }
+    else if (done)
+    {
+        return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "Expected to not be done, but callback indicated done" );
+    }
+
+    if (expectedResultsForThisChunk.ExpectedError != e)
+        return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "Expected error = (%d), got error = (%d)", expectedResultsForThisChunk.ExpectedError, e );
+
+    if (strncmp32( expectedResultsForThisChunk.ExpectedBufferString, inBuffer->String, inBuffer->Size ))
+        return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "String does not match expected value" );
+
+    testSet->IndexOfNextExpectedChunk++;
+
+    return 0;
+}
+
+static int validateFormatIterativelyIntoBufferResults( TestSuite suite, formatIterativelyIntoBufferTest_t* testSet, char* testName )
+{
+
+    if (testSet->AllChunksMatchExpectedValues)
+    {
+        if (testSet->NumberOfChunksProduced < testSet->NumberOfExpectedChunkResults)
+            return suite->TestFailed( suite, testName, "Expected (%i) chunks but only (%i) chunks were generated", testSet->NumberOfExpectedChunkResults, testSet->NumberOfChunksProduced);
+
+        return suite->TestSucceeded( suite, testName );
+    }
+
+    return suite->TestFailed( suite, testName, "on chunk (%i) %s", testSet->IndexOfFirstChunkThatDoesNotMatch, testSet->additionalFailureDiagnosticMessage );
+}
+
+void testFormatIterativelyIntoBuffer( TestSuite suite )
+{
+    StringFormatter f = calloc( 1, sizeof( struct StringFormatter_t ) );
+    Error e = PopulateStringFormatter( f );
+
+    suite->AssertEquals->Int32( suite, NoError, e, "PopulateStringFormatter() return value" );
+
+    RuneStringBuffer inBuffer = calloc( 1, sizeof( RuneStringBuffer_t ) );
+    RuneString stringBuffer = calloc( 64, sizeof( Rune ) );
+    inBuffer->String = stringBuffer;
+    inBuffer->Size = 64;
+
+    formatIterativelyIntoBufferTest_t testSet;
+
+    formatIterativelyIntoBufferExpectSet_t expectedChunkResults01[] = {
+        { .ExpectedBufferString = U"", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 1 },
+    };
+    resetFormatIterativelyIntoBufferTest( &testSet, expectedChunkResults01, sizeof(expectedChunkResults01) / sizeof(formatIterativelyIntoBufferExpectSet_t) );
+
+    FormatBufferIteratingCallback callback = calloc( 1, sizeof( struct FormatBufferIteratingCallback_t ) );
+    callback->OnNextFormatChunk = iteratingCallback;
+    callback->AdditionalArgs = (void*)&testSet;
+
+    f->FormatIterativelyIntoBuffer( inBuffer, callback, U"" );
+    validateFormatIterativelyIntoBufferResults( suite, &testSet, "FormatIterativelyIntoBuffer('')" );
+
+    formatIterativelyIntoBufferExpectSet_t expectedChunkResults02[] = {
+        { .ExpectedBufferString = U"testing", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 1 },
+    };
+    resetFormatIterativelyIntoBufferTest( &testSet, expectedChunkResults02, sizeof(expectedChunkResults02) / sizeof(formatIterativelyIntoBufferExpectSet_t) );
+
+    f->FormatIterativelyIntoBuffer( inBuffer, callback, U"testing" );
+    validateFormatIterativelyIntoBufferResults( suite, &testSet, "FormatIterativelyIntoBuffer('testing')" );
+}
+
+void testFormatIntoBuffer( TestSuite suite )
+{
+    StringFormatter f = calloc( 1, sizeof( struct StringFormatter_t ) );
+    Error e = PopulateStringFormatter( f );
+
+    suite->AssertEquals->Int32( suite, NoError, e, "PopulateStringFormatter() return value" );
+
+    RuneStringBuffer inBuffer = calloc( 1, sizeof( RuneStringBuffer_t ) );
+    RuneString stringBuffer = calloc( 64, sizeof( Rune ) );
+    inBuffer->String = stringBuffer;
+    inBuffer->Size = 64;
+
+    e = f->FormatIntoBuffer( f, inBuffer, U"" );
+    suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('') return value" );
+    suite->AssertEquals->RuneString( suite, U"", inBuffer->String, 1, "FormatIntoBuffer('') string comparison" );
+
+    e = f->FormatIntoBuffer( f, inBuffer, U"testing" );
+    suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('testing') return value" );
+    suite->AssertEquals->RuneString( suite, U"testing", inBuffer->String, 8, "FormatIntoBuffer('testing') string comparison" );
+
 }

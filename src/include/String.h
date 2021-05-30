@@ -2,6 +2,7 @@
 
 #include <Error.h>
 #include <stdint.h>
+#include <stdarg.h>
 
 typedef uint32_t Rune;
 typedef Rune *RuneString;
@@ -51,9 +52,23 @@ typedef struct RuneStringBuffer_t {
 //      c=l|U       case of hex values, either "l"ower or "U"pper.  Can only be used with <type> x.  Everything else is an
 //                  error.
 //
-typedef struct StringFormatter_t {
-    Error (*FormatIntoBuffer)( struct StringFormatter_t* f, RuneStringBuffer inBuffer, const RuneString format, ... );
+// %bx, %sx, %ix, %qx, %0bx, %0sx, %0ix, %0qx
+// %bd, %sd, %id, %qd
+// %if, %qf
+// %r
+//
 
+typedef struct FormatBufferIteratingCallback_t {
+    int (*OnNextFormatChunk)( RuneStringBuffer inBuffer, Error e, int done, void* additionalArgs ); // return non-zero to terminate processing
+    void* AdditionalArgs;
+} FormatBufferIteratingCallback_t, *FormatBufferIteratingCallback;
+
+
+typedef struct StringFormatter_t {
+    Error errorFromIterativeToFormat;
+
+    void (*FormatIterativelyIntoBuffer)( RuneStringBuffer inBuffer, FormatBufferIteratingCallback, const RuneString format, ... );
+    Error (*FormatIntoBuffer)( struct StringFormatter_t* f, RuneStringBuffer inBuffer, const RuneString format, ... );
     Error (*Uint64ToDecimalString)( RuneStringBuffer inBuffer, uint64_t v );
     Error (*Int64ToDecimalString)( RuneStringBuffer inBuffer, int64_t v );
     Error (*Uint64ToHexString)( RuneStringBuffer inBuffer, uint64_t v );

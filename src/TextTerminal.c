@@ -183,7 +183,8 @@ static Error PutFormattedRuneString( TextTerminal term, const RuneString format,
                 case U'd':
                 case U'x':
                     term->processor->type = format[i];
-                    if (format[i + 1] == U'{')
+                    //if (format[i + 1] == U'{')
+                    break;
 
                 default:
                     return ErrorInvalidFormat;

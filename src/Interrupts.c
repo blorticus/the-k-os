@@ -1,4 +1,5 @@
 #include <Interrupts.h>
+#include <String.h>
 
 static InterruptDescriptorTableRegister_t staticInterruptDescriptorTableRegister;
 static InterruptDescriptor_t staticDefaultInterruptDescriptors[256];
@@ -35,266 +36,322 @@ static Error SetInterruptVectorCallback( uint8_t interruptNumber, InterruptVecto
 
 typedef struct InterruptFrame_t *InterruptFrame;
 
-static void baseInterruptVectorRoutine_Int0() { staticDefaultTableInterruptVectorCallbacks[0]( 0 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int1() { staticDefaultTableInterruptVectorCallbacks[1]( 1 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int2() { staticDefaultTableInterruptVectorCallbacks[2]( 2 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int3() { staticDefaultTableInterruptVectorCallbacks[3]( 3 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int4() { staticDefaultTableInterruptVectorCallbacks[4]( 4 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int5() { staticDefaultTableInterruptVectorCallbacks[5]( 5 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int6() { staticDefaultTableInterruptVectorCallbacks[6]( 6 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int7() { staticDefaultTableInterruptVectorCallbacks[7]( 7 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int8() { staticDefaultTableInterruptVectorCallbacks[8]( 8 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int9() { staticDefaultTableInterruptVectorCallbacks[9]( 9 ); asm volatile( "iretq" ); }   
-static void baseInterruptVectorRoutine_Int10() { staticDefaultTableInterruptVectorCallbacks[10]( 10 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int11() { staticDefaultTableInterruptVectorCallbacks[11]( 11 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int12() { staticDefaultTableInterruptVectorCallbacks[12]( 12 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int13() { staticDefaultTableInterruptVectorCallbacks[13]( 13 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int14() { staticDefaultTableInterruptVectorCallbacks[14]( 14 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int15() { staticDefaultTableInterruptVectorCallbacks[15]( 15 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int16() { staticDefaultTableInterruptVectorCallbacks[16]( 16 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int17() { staticDefaultTableInterruptVectorCallbacks[17]( 17 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int18() { staticDefaultTableInterruptVectorCallbacks[18]( 18 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int19() { staticDefaultTableInterruptVectorCallbacks[19]( 19 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int20() { staticDefaultTableInterruptVectorCallbacks[20]( 20 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int21() { staticDefaultTableInterruptVectorCallbacks[21]( 21 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int22() { staticDefaultTableInterruptVectorCallbacks[22]( 22 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int23() { staticDefaultTableInterruptVectorCallbacks[23]( 23 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int24() { staticDefaultTableInterruptVectorCallbacks[24]( 24 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int25() { staticDefaultTableInterruptVectorCallbacks[25]( 25 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int26() { staticDefaultTableInterruptVectorCallbacks[26]( 26 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int27() { staticDefaultTableInterruptVectorCallbacks[27]( 27 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int28() { staticDefaultTableInterruptVectorCallbacks[28]( 28 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int29() { staticDefaultTableInterruptVectorCallbacks[29]( 29 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int30() { staticDefaultTableInterruptVectorCallbacks[30]( 30 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int31() { staticDefaultTableInterruptVectorCallbacks[31]( 31 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int32() { staticDefaultTableInterruptVectorCallbacks[32]( 32 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int33() { staticDefaultTableInterruptVectorCallbacks[33]( 33 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int34() { staticDefaultTableInterruptVectorCallbacks[34]( 34 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int35() { staticDefaultTableInterruptVectorCallbacks[35]( 35 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int36() { staticDefaultTableInterruptVectorCallbacks[36]( 36 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int37() { staticDefaultTableInterruptVectorCallbacks[37]( 37 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int38() { staticDefaultTableInterruptVectorCallbacks[38]( 38 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int39() { staticDefaultTableInterruptVectorCallbacks[39]( 39 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int40() { staticDefaultTableInterruptVectorCallbacks[40]( 40 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int41() { staticDefaultTableInterruptVectorCallbacks[41]( 41 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int42() { staticDefaultTableInterruptVectorCallbacks[42]( 42 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int43() { staticDefaultTableInterruptVectorCallbacks[43]( 43 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int44() { staticDefaultTableInterruptVectorCallbacks[44]( 44 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int45() { staticDefaultTableInterruptVectorCallbacks[45]( 45 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int46() { staticDefaultTableInterruptVectorCallbacks[46]( 46 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int47() { staticDefaultTableInterruptVectorCallbacks[47]( 47 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int48() { staticDefaultTableInterruptVectorCallbacks[48]( 48 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int49() { staticDefaultTableInterruptVectorCallbacks[49]( 49 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int50() { staticDefaultTableInterruptVectorCallbacks[50]( 50 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int51() { staticDefaultTableInterruptVectorCallbacks[51]( 51 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int52() { staticDefaultTableInterruptVectorCallbacks[52]( 52 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int53() { staticDefaultTableInterruptVectorCallbacks[53]( 53 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int54() { staticDefaultTableInterruptVectorCallbacks[54]( 54 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int55() { staticDefaultTableInterruptVectorCallbacks[55]( 55 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int56() { staticDefaultTableInterruptVectorCallbacks[56]( 56 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int57() { staticDefaultTableInterruptVectorCallbacks[57]( 57 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int58() { staticDefaultTableInterruptVectorCallbacks[58]( 58 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int59() { staticDefaultTableInterruptVectorCallbacks[59]( 59 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int60() { staticDefaultTableInterruptVectorCallbacks[60]( 60 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int61() { staticDefaultTableInterruptVectorCallbacks[61]( 61 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int62() { staticDefaultTableInterruptVectorCallbacks[62]( 62 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int63() { staticDefaultTableInterruptVectorCallbacks[63]( 63 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int64() { staticDefaultTableInterruptVectorCallbacks[64]( 64 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int65() { staticDefaultTableInterruptVectorCallbacks[65]( 65 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int66() { staticDefaultTableInterruptVectorCallbacks[66]( 66 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int67() { staticDefaultTableInterruptVectorCallbacks[67]( 67 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int68() { staticDefaultTableInterruptVectorCallbacks[68]( 68 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int69() { staticDefaultTableInterruptVectorCallbacks[69]( 69 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int70() { staticDefaultTableInterruptVectorCallbacks[70]( 70 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int71() { staticDefaultTableInterruptVectorCallbacks[71]( 71 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int72() { staticDefaultTableInterruptVectorCallbacks[72]( 72 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int73() { staticDefaultTableInterruptVectorCallbacks[73]( 73 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int74() { staticDefaultTableInterruptVectorCallbacks[74]( 74 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int75() { staticDefaultTableInterruptVectorCallbacks[75]( 75 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int76() { staticDefaultTableInterruptVectorCallbacks[76]( 76 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int77() { staticDefaultTableInterruptVectorCallbacks[77]( 77 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int78() { staticDefaultTableInterruptVectorCallbacks[78]( 78 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int79() { staticDefaultTableInterruptVectorCallbacks[79]( 79 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int80() { staticDefaultTableInterruptVectorCallbacks[80]( 80 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int81() { staticDefaultTableInterruptVectorCallbacks[81]( 81 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int82() { staticDefaultTableInterruptVectorCallbacks[82]( 82 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int83() { staticDefaultTableInterruptVectorCallbacks[83]( 83 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int84() { staticDefaultTableInterruptVectorCallbacks[84]( 84 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int85() { staticDefaultTableInterruptVectorCallbacks[85]( 85 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int86() { staticDefaultTableInterruptVectorCallbacks[86]( 86 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int87() { staticDefaultTableInterruptVectorCallbacks[87]( 87 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int88() { staticDefaultTableInterruptVectorCallbacks[88]( 88 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int89() { staticDefaultTableInterruptVectorCallbacks[89]( 89 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int90() { staticDefaultTableInterruptVectorCallbacks[90]( 90 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int91() { staticDefaultTableInterruptVectorCallbacks[91]( 91 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int92() { staticDefaultTableInterruptVectorCallbacks[92]( 92 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int93() { staticDefaultTableInterruptVectorCallbacks[93]( 93 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int94() { staticDefaultTableInterruptVectorCallbacks[94]( 94 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int95() { staticDefaultTableInterruptVectorCallbacks[95]( 95 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int96() { staticDefaultTableInterruptVectorCallbacks[96]( 96 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int97() { staticDefaultTableInterruptVectorCallbacks[97]( 97 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int98() { staticDefaultTableInterruptVectorCallbacks[98]( 98 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int99() { staticDefaultTableInterruptVectorCallbacks[99]( 99 ); asm volatile( "iretq" ); }
-static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int100( InterruptFrame frame ) { staticDefaultTableInterruptVectorCallbacks[100]( 100 ); }
-static void baseInterruptVectorRoutine_Int101() { staticDefaultTableInterruptVectorCallbacks[101]( 101 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int102() { staticDefaultTableInterruptVectorCallbacks[102]( 102 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int103() { staticDefaultTableInterruptVectorCallbacks[103]( 103 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int104() { staticDefaultTableInterruptVectorCallbacks[104]( 104 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int105() { staticDefaultTableInterruptVectorCallbacks[105]( 105 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int106() { staticDefaultTableInterruptVectorCallbacks[106]( 106 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int107() { staticDefaultTableInterruptVectorCallbacks[107]( 107 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int108() { staticDefaultTableInterruptVectorCallbacks[108]( 108 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int109() { staticDefaultTableInterruptVectorCallbacks[109]( 109 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int110() { staticDefaultTableInterruptVectorCallbacks[110]( 110 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int111() { staticDefaultTableInterruptVectorCallbacks[111]( 111 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int112() { staticDefaultTableInterruptVectorCallbacks[112]( 112 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int113() { staticDefaultTableInterruptVectorCallbacks[113]( 113 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int114() { staticDefaultTableInterruptVectorCallbacks[114]( 114 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int115() { staticDefaultTableInterruptVectorCallbacks[115]( 115 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int116() { staticDefaultTableInterruptVectorCallbacks[116]( 116 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int117() { staticDefaultTableInterruptVectorCallbacks[117]( 117 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int118() { staticDefaultTableInterruptVectorCallbacks[118]( 118 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int119() { staticDefaultTableInterruptVectorCallbacks[119]( 119 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int120() { staticDefaultTableInterruptVectorCallbacks[120]( 120 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int121() { staticDefaultTableInterruptVectorCallbacks[121]( 121 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int122() { staticDefaultTableInterruptVectorCallbacks[122]( 122 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int123() { staticDefaultTableInterruptVectorCallbacks[123]( 123 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int124() { staticDefaultTableInterruptVectorCallbacks[124]( 124 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int125() { staticDefaultTableInterruptVectorCallbacks[125]( 125 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int126() { staticDefaultTableInterruptVectorCallbacks[126]( 126 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int127() { staticDefaultTableInterruptVectorCallbacks[127]( 127 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int128() { staticDefaultTableInterruptVectorCallbacks[128]( 128 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int129() { staticDefaultTableInterruptVectorCallbacks[129]( 129 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int130() { staticDefaultTableInterruptVectorCallbacks[130]( 130 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int131() { staticDefaultTableInterruptVectorCallbacks[131]( 131 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int132() { staticDefaultTableInterruptVectorCallbacks[132]( 132 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int133() { staticDefaultTableInterruptVectorCallbacks[133]( 133 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int134() { staticDefaultTableInterruptVectorCallbacks[134]( 134 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int135() { staticDefaultTableInterruptVectorCallbacks[135]( 135 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int136() { staticDefaultTableInterruptVectorCallbacks[136]( 136 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int137() { staticDefaultTableInterruptVectorCallbacks[137]( 137 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int138() { staticDefaultTableInterruptVectorCallbacks[138]( 138 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int139() { staticDefaultTableInterruptVectorCallbacks[139]( 139 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int140() { staticDefaultTableInterruptVectorCallbacks[140]( 140 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int141() { staticDefaultTableInterruptVectorCallbacks[141]( 141 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int142() { staticDefaultTableInterruptVectorCallbacks[142]( 142 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int143() { staticDefaultTableInterruptVectorCallbacks[143]( 143 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int144() { staticDefaultTableInterruptVectorCallbacks[144]( 144 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int145() { staticDefaultTableInterruptVectorCallbacks[145]( 145 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int146() { staticDefaultTableInterruptVectorCallbacks[146]( 146 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int147() { staticDefaultTableInterruptVectorCallbacks[147]( 147 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int148() { staticDefaultTableInterruptVectorCallbacks[148]( 148 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int149() { staticDefaultTableInterruptVectorCallbacks[149]( 149 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int150() { staticDefaultTableInterruptVectorCallbacks[150]( 150 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int151() { staticDefaultTableInterruptVectorCallbacks[151]( 151 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int152() { staticDefaultTableInterruptVectorCallbacks[152]( 152 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int153() { staticDefaultTableInterruptVectorCallbacks[153]( 153 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int154() { staticDefaultTableInterruptVectorCallbacks[154]( 154 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int155() { staticDefaultTableInterruptVectorCallbacks[155]( 155 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int156() { staticDefaultTableInterruptVectorCallbacks[156]( 156 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int157() { staticDefaultTableInterruptVectorCallbacks[157]( 157 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int158() { staticDefaultTableInterruptVectorCallbacks[158]( 158 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int159() { staticDefaultTableInterruptVectorCallbacks[159]( 159 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int160() { staticDefaultTableInterruptVectorCallbacks[160]( 160 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int161() { staticDefaultTableInterruptVectorCallbacks[161]( 161 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int162() { staticDefaultTableInterruptVectorCallbacks[162]( 162 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int163() { staticDefaultTableInterruptVectorCallbacks[163]( 163 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int164() { staticDefaultTableInterruptVectorCallbacks[164]( 164 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int165() { staticDefaultTableInterruptVectorCallbacks[165]( 165 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int166() { staticDefaultTableInterruptVectorCallbacks[166]( 166 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int167() { staticDefaultTableInterruptVectorCallbacks[167]( 167 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int168() { staticDefaultTableInterruptVectorCallbacks[168]( 168 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int169() { staticDefaultTableInterruptVectorCallbacks[169]( 169 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int170() { staticDefaultTableInterruptVectorCallbacks[170]( 170 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int171() { staticDefaultTableInterruptVectorCallbacks[171]( 171 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int172() { staticDefaultTableInterruptVectorCallbacks[172]( 172 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int173() { staticDefaultTableInterruptVectorCallbacks[173]( 173 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int174() { staticDefaultTableInterruptVectorCallbacks[174]( 174 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int175() { staticDefaultTableInterruptVectorCallbacks[175]( 175 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int176() { staticDefaultTableInterruptVectorCallbacks[176]( 176 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int177() { staticDefaultTableInterruptVectorCallbacks[177]( 177 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int178() { staticDefaultTableInterruptVectorCallbacks[178]( 178 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int179() { staticDefaultTableInterruptVectorCallbacks[179]( 179 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int180() { staticDefaultTableInterruptVectorCallbacks[180]( 180 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int181() { staticDefaultTableInterruptVectorCallbacks[181]( 181 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int182() { staticDefaultTableInterruptVectorCallbacks[182]( 182 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int183() { staticDefaultTableInterruptVectorCallbacks[183]( 183 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int184() { staticDefaultTableInterruptVectorCallbacks[184]( 184 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int185() { staticDefaultTableInterruptVectorCallbacks[185]( 185 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int186() { staticDefaultTableInterruptVectorCallbacks[186]( 186 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int187() { staticDefaultTableInterruptVectorCallbacks[187]( 187 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int188() { staticDefaultTableInterruptVectorCallbacks[188]( 188 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int189() { staticDefaultTableInterruptVectorCallbacks[189]( 189 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int190() { staticDefaultTableInterruptVectorCallbacks[190]( 190 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int191() { staticDefaultTableInterruptVectorCallbacks[191]( 191 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int192() { staticDefaultTableInterruptVectorCallbacks[192]( 192 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int193() { staticDefaultTableInterruptVectorCallbacks[193]( 193 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int194() { staticDefaultTableInterruptVectorCallbacks[194]( 194 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int195() { staticDefaultTableInterruptVectorCallbacks[195]( 195 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int196() { staticDefaultTableInterruptVectorCallbacks[196]( 196 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int197() { staticDefaultTableInterruptVectorCallbacks[197]( 197 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int198() { staticDefaultTableInterruptVectorCallbacks[198]( 198 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int199() { staticDefaultTableInterruptVectorCallbacks[199]( 199 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int200() { staticDefaultTableInterruptVectorCallbacks[200]( 200 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int201() { staticDefaultTableInterruptVectorCallbacks[201]( 201 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int202() { staticDefaultTableInterruptVectorCallbacks[202]( 202 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int203() { staticDefaultTableInterruptVectorCallbacks[203]( 203 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int204() { staticDefaultTableInterruptVectorCallbacks[204]( 204 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int205() { staticDefaultTableInterruptVectorCallbacks[205]( 205 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int206() { staticDefaultTableInterruptVectorCallbacks[206]( 206 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int207() { staticDefaultTableInterruptVectorCallbacks[207]( 207 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int208() { staticDefaultTableInterruptVectorCallbacks[208]( 208 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int209() { staticDefaultTableInterruptVectorCallbacks[209]( 209 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int210() { staticDefaultTableInterruptVectorCallbacks[210]( 210 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int211() { staticDefaultTableInterruptVectorCallbacks[211]( 211 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int212() { staticDefaultTableInterruptVectorCallbacks[212]( 212 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int213() { staticDefaultTableInterruptVectorCallbacks[213]( 213 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int214() { staticDefaultTableInterruptVectorCallbacks[214]( 214 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int215() { staticDefaultTableInterruptVectorCallbacks[215]( 215 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int216() { staticDefaultTableInterruptVectorCallbacks[216]( 216 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int217() { staticDefaultTableInterruptVectorCallbacks[217]( 217 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int218() { staticDefaultTableInterruptVectorCallbacks[218]( 218 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int219() { staticDefaultTableInterruptVectorCallbacks[219]( 219 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int220() { staticDefaultTableInterruptVectorCallbacks[220]( 220 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int221() { staticDefaultTableInterruptVectorCallbacks[221]( 221 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int222() { staticDefaultTableInterruptVectorCallbacks[222]( 222 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int223() { staticDefaultTableInterruptVectorCallbacks[223]( 223 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int224() { staticDefaultTableInterruptVectorCallbacks[224]( 224 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int225() { staticDefaultTableInterruptVectorCallbacks[225]( 225 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int226() { staticDefaultTableInterruptVectorCallbacks[226]( 226 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int227() { staticDefaultTableInterruptVectorCallbacks[227]( 227 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int228() { staticDefaultTableInterruptVectorCallbacks[228]( 228 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int229() { staticDefaultTableInterruptVectorCallbacks[229]( 229 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int230() { staticDefaultTableInterruptVectorCallbacks[230]( 230 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int231() { staticDefaultTableInterruptVectorCallbacks[231]( 231 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int232() { staticDefaultTableInterruptVectorCallbacks[232]( 232 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int233() { staticDefaultTableInterruptVectorCallbacks[233]( 233 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int234() { staticDefaultTableInterruptVectorCallbacks[234]( 234 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int235() { staticDefaultTableInterruptVectorCallbacks[235]( 235 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int236() { staticDefaultTableInterruptVectorCallbacks[236]( 236 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int237() { staticDefaultTableInterruptVectorCallbacks[237]( 237 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int238() { staticDefaultTableInterruptVectorCallbacks[238]( 238 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int239() { staticDefaultTableInterruptVectorCallbacks[239]( 239 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int240() { staticDefaultTableInterruptVectorCallbacks[240]( 240 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int241() { staticDefaultTableInterruptVectorCallbacks[241]( 241 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int242() { staticDefaultTableInterruptVectorCallbacks[242]( 242 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int243() { staticDefaultTableInterruptVectorCallbacks[243]( 243 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int244() { staticDefaultTableInterruptVectorCallbacks[244]( 244 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int245() { staticDefaultTableInterruptVectorCallbacks[245]( 245 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int246() { staticDefaultTableInterruptVectorCallbacks[246]( 246 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int247() { staticDefaultTableInterruptVectorCallbacks[247]( 247 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int248() { staticDefaultTableInterruptVectorCallbacks[248]( 248 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int249() { staticDefaultTableInterruptVectorCallbacks[249]( 249 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int250() { staticDefaultTableInterruptVectorCallbacks[250]( 250 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int251() { staticDefaultTableInterruptVectorCallbacks[251]( 251 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int252() { staticDefaultTableInterruptVectorCallbacks[252]( 252 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int253() { staticDefaultTableInterruptVectorCallbacks[253]( 253 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int254() { staticDefaultTableInterruptVectorCallbacks[254]( 254 ); asm volatile( "iretq" ); }
-static void baseInterruptVectorRoutine_Int255() { staticDefaultTableInterruptVectorCallbacks[255]( 255 ); asm volatile( "iretq" ); }
+static GenericGlyphStringOutputter defaultGlyphStringOutputter;
 
-static void InitializeBaseVectorCallback()
+RuneString StandardInterruptNames[] = {
+    U"Divide By Zero Error",
+    U"Debug",
+    U"Non-Maskable Interrupt",
+    U"Breakpoint",
+    U"Overflow",
+    U"Bound Range",
+    U"Invalid Opcode",
+    U"Device Not Available",
+    U"Double Fault",
+    U"Reserved",
+    U"Invalid TSS",
+    U"Segement Not Present",
+    U"Stack",
+    U"General Protection Fault",
+    U"Page Fault",
+    U"Reserved",
+    U"Floating Point Exception Pending",
+    U"Alignment Check",
+    U"Machine Check",
+    U"SIMD Floating Point",
+    U"Reserved",
+    U"Control-Protection Exception",
+    U"Reserved",
+    U"Reserved",
+    U"Reserved",
+    U"Reserved",
+    U"Reserved",
+    U"Reserved",
+    U"Hypervisor Injection Exception",
+    U"VMM Communication Exception",
+    U"Security Exception",
+    U"Reserved"
+};
+
+static Rune runeBuffer[256];
+static RuneStringBuffer_t runeStringBuffer = {
+    .String = runeBuffer,
+    .Size = 256,
+};
+
+static void staticDefaultInterruptRoutine( uint8_t interruptNumber ) {
+    defaultGlyphStringOutputter( U"ISR Routine for " );
+    if (interruptNumber < 32) 
+        defaultGlyphStringOutputter( StandardInterruptNames[interruptNumber] );
+    else {
+        Uint64ToDecimalString( &runeStringBuffer, interruptNumber );
+        defaultGlyphStringOutputter( runeStringBuffer.String );
+    }
+    defaultGlyphStringOutputter( U"\n" );
+}
+
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int0( InterruptFrame frame ) { staticDefaultInterruptRoutine( 0 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int1( InterruptFrame frame ) { staticDefaultInterruptRoutine( 1 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int2( InterruptFrame frame ) { staticDefaultInterruptRoutine( 2 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int3( InterruptFrame frame ) { staticDefaultInterruptRoutine( 3 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int4( InterruptFrame frame ) { staticDefaultInterruptRoutine( 4 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int5( InterruptFrame frame ) { staticDefaultInterruptRoutine( 5 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int6( InterruptFrame frame ) { staticDefaultInterruptRoutine( 6 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int7( InterruptFrame frame ) { staticDefaultInterruptRoutine( 7 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int8( InterruptFrame frame ) { staticDefaultInterruptRoutine( 8 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int9( InterruptFrame frame ) { staticDefaultInterruptRoutine( 9 ); }   
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int10( InterruptFrame frame ) { staticDefaultInterruptRoutine( 10 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int11( InterruptFrame frame ) { staticDefaultInterruptRoutine( 11 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int12( InterruptFrame frame ) { staticDefaultInterruptRoutine( 12 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int13( InterruptFrame frame ) { staticDefaultInterruptRoutine( 13 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int14( InterruptFrame frame ) { staticDefaultInterruptRoutine( 14 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int15( InterruptFrame frame ) { staticDefaultInterruptRoutine( 15 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int16( InterruptFrame frame ) { staticDefaultInterruptRoutine( 16 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int17( InterruptFrame frame ) { staticDefaultInterruptRoutine( 17 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int18( InterruptFrame frame ) { staticDefaultInterruptRoutine( 18 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int19( InterruptFrame frame ) { staticDefaultInterruptRoutine( 19 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int20( InterruptFrame frame ) { staticDefaultInterruptRoutine( 20 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int21( InterruptFrame frame ) { staticDefaultInterruptRoutine( 21 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int22( InterruptFrame frame ) { staticDefaultInterruptRoutine( 22 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int23( InterruptFrame frame ) { staticDefaultInterruptRoutine( 23 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int24( InterruptFrame frame ) { staticDefaultInterruptRoutine( 24 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int25( InterruptFrame frame ) { staticDefaultInterruptRoutine( 25 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int26( InterruptFrame frame ) { staticDefaultInterruptRoutine( 26 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int27( InterruptFrame frame ) { staticDefaultInterruptRoutine( 27 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int28( InterruptFrame frame ) { staticDefaultInterruptRoutine( 28 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int29( InterruptFrame frame ) { staticDefaultInterruptRoutine( 29 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int30( InterruptFrame frame ) { staticDefaultInterruptRoutine( 30 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int31( InterruptFrame frame ) { staticDefaultInterruptRoutine( 31 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int32( InterruptFrame frame ) { staticDefaultInterruptRoutine( 32 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int33( InterruptFrame frame ) { staticDefaultInterruptRoutine( 33 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int34( InterruptFrame frame ) { staticDefaultInterruptRoutine( 34 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int35( InterruptFrame frame ) { staticDefaultInterruptRoutine( 35 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int36( InterruptFrame frame ) { staticDefaultInterruptRoutine( 36 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int37( InterruptFrame frame ) { staticDefaultInterruptRoutine( 37 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int38( InterruptFrame frame ) { staticDefaultInterruptRoutine( 38 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int39( InterruptFrame frame ) { staticDefaultInterruptRoutine( 39 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int40( InterruptFrame frame ) { staticDefaultInterruptRoutine( 40 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int41( InterruptFrame frame ) { staticDefaultInterruptRoutine( 41 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int42( InterruptFrame frame ) { staticDefaultInterruptRoutine( 42 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int43( InterruptFrame frame ) { staticDefaultInterruptRoutine( 43 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int44( InterruptFrame frame ) { staticDefaultInterruptRoutine( 44 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int45( InterruptFrame frame ) { staticDefaultInterruptRoutine( 45 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int46( InterruptFrame frame ) { staticDefaultInterruptRoutine( 46 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int47( InterruptFrame frame ) { staticDefaultInterruptRoutine( 47 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int48( InterruptFrame frame ) { staticDefaultInterruptRoutine( 48 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int49( InterruptFrame frame ) { staticDefaultInterruptRoutine( 49 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int50( InterruptFrame frame ) { staticDefaultInterruptRoutine( 50 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int51( InterruptFrame frame ) { staticDefaultInterruptRoutine( 51 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int52( InterruptFrame frame ) { staticDefaultInterruptRoutine( 52 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int53( InterruptFrame frame ) { staticDefaultInterruptRoutine( 53 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int54( InterruptFrame frame ) { staticDefaultInterruptRoutine( 54 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int55( InterruptFrame frame ) { staticDefaultInterruptRoutine( 55 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int56( InterruptFrame frame ) { staticDefaultInterruptRoutine( 56 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int57( InterruptFrame frame ) { staticDefaultInterruptRoutine( 57 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int58( InterruptFrame frame ) { staticDefaultInterruptRoutine( 58 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int59( InterruptFrame frame ) { staticDefaultInterruptRoutine( 59 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int60( InterruptFrame frame ) { staticDefaultInterruptRoutine( 60 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int61( InterruptFrame frame ) { staticDefaultInterruptRoutine( 61 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int62( InterruptFrame frame ) { staticDefaultInterruptRoutine( 62 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int63( InterruptFrame frame ) { staticDefaultInterruptRoutine( 63 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int64( InterruptFrame frame ) { staticDefaultInterruptRoutine( 64 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int65( InterruptFrame frame ) { staticDefaultInterruptRoutine( 65 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int66( InterruptFrame frame ) { staticDefaultInterruptRoutine( 66 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int67( InterruptFrame frame ) { staticDefaultInterruptRoutine( 67 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int68( InterruptFrame frame ) { staticDefaultInterruptRoutine( 68 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int69( InterruptFrame frame ) { staticDefaultInterruptRoutine( 69 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int70( InterruptFrame frame ) { staticDefaultInterruptRoutine( 70 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int71( InterruptFrame frame ) { staticDefaultInterruptRoutine( 71 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int72( InterruptFrame frame ) { staticDefaultInterruptRoutine( 72 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int73( InterruptFrame frame ) { staticDefaultInterruptRoutine( 73 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int74( InterruptFrame frame ) { staticDefaultInterruptRoutine( 74 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int75( InterruptFrame frame ) { staticDefaultInterruptRoutine( 75 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int76( InterruptFrame frame ) { staticDefaultInterruptRoutine( 76 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int77( InterruptFrame frame ) { staticDefaultInterruptRoutine( 77 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int78( InterruptFrame frame ) { staticDefaultInterruptRoutine( 78 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int79( InterruptFrame frame ) { staticDefaultInterruptRoutine( 79 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int80( InterruptFrame frame ) { staticDefaultInterruptRoutine( 80 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int81( InterruptFrame frame ) { staticDefaultInterruptRoutine( 81 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int82( InterruptFrame frame ) { staticDefaultInterruptRoutine( 82 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int83( InterruptFrame frame ) { staticDefaultInterruptRoutine( 83 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int84( InterruptFrame frame ) { staticDefaultInterruptRoutine( 84 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int85( InterruptFrame frame ) { staticDefaultInterruptRoutine( 85 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int86( InterruptFrame frame ) { staticDefaultInterruptRoutine( 86 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int87( InterruptFrame frame ) { staticDefaultInterruptRoutine( 87 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int88( InterruptFrame frame ) { staticDefaultInterruptRoutine( 88 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int89( InterruptFrame frame ) { staticDefaultInterruptRoutine( 89 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int90( InterruptFrame frame ) { staticDefaultInterruptRoutine( 90 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int91( InterruptFrame frame ) { staticDefaultInterruptRoutine( 91 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int92( InterruptFrame frame ) { staticDefaultInterruptRoutine( 92 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int93( InterruptFrame frame ) { staticDefaultInterruptRoutine( 93 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int94( InterruptFrame frame ) { staticDefaultInterruptRoutine( 94 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int95( InterruptFrame frame ) { staticDefaultInterruptRoutine( 95 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int96( InterruptFrame frame ) { staticDefaultInterruptRoutine( 96 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int97( InterruptFrame frame ) { staticDefaultInterruptRoutine( 97 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int98( InterruptFrame frame ) { staticDefaultInterruptRoutine( 98 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int99( InterruptFrame frame ) { staticDefaultInterruptRoutine( 99 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int100( InterruptFrame frame ) { staticDefaultInterruptRoutine( 100 ); }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int101( InterruptFrame frame ) { staticDefaultInterruptRoutine( 101 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int102( InterruptFrame frame ) { staticDefaultInterruptRoutine( 102 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int103( InterruptFrame frame ) { staticDefaultInterruptRoutine( 103 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int104( InterruptFrame frame ) { staticDefaultInterruptRoutine( 104 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int105( InterruptFrame frame ) { staticDefaultInterruptRoutine( 105 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int106( InterruptFrame frame ) { staticDefaultInterruptRoutine( 106 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int107( InterruptFrame frame ) { staticDefaultInterruptRoutine( 107 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int108( InterruptFrame frame ) { staticDefaultInterruptRoutine( 108 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int109( InterruptFrame frame ) { staticDefaultInterruptRoutine( 109 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int110( InterruptFrame frame ) { staticDefaultInterruptRoutine( 110 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int111( InterruptFrame frame ) { staticDefaultInterruptRoutine( 111 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int112( InterruptFrame frame ) { staticDefaultInterruptRoutine( 112 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int113( InterruptFrame frame ) { staticDefaultInterruptRoutine( 113 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int114( InterruptFrame frame ) { staticDefaultInterruptRoutine( 114 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int115( InterruptFrame frame ) { staticDefaultInterruptRoutine( 115 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int116( InterruptFrame frame ) { staticDefaultInterruptRoutine( 116 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int117( InterruptFrame frame ) { staticDefaultInterruptRoutine( 117 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int118( InterruptFrame frame ) { staticDefaultInterruptRoutine( 118 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int119( InterruptFrame frame ) { staticDefaultInterruptRoutine( 119 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int120( InterruptFrame frame ) { staticDefaultInterruptRoutine( 120 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int121( InterruptFrame frame ) { staticDefaultInterruptRoutine( 121 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int122( InterruptFrame frame ) { staticDefaultInterruptRoutine( 122 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int123( InterruptFrame frame ) { staticDefaultInterruptRoutine( 123 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int124( InterruptFrame frame ) { staticDefaultInterruptRoutine( 124 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int125( InterruptFrame frame ) { staticDefaultInterruptRoutine( 125 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int126( InterruptFrame frame ) { staticDefaultInterruptRoutine( 126 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int127( InterruptFrame frame ) { staticDefaultInterruptRoutine( 127 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int128( InterruptFrame frame ) { staticDefaultInterruptRoutine( 128 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int129( InterruptFrame frame ) { staticDefaultInterruptRoutine( 129 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int130( InterruptFrame frame ) { staticDefaultInterruptRoutine( 130 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int131( InterruptFrame frame ) { staticDefaultInterruptRoutine( 131 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int132( InterruptFrame frame ) { staticDefaultInterruptRoutine( 132 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int133( InterruptFrame frame ) { staticDefaultInterruptRoutine( 133 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int134( InterruptFrame frame ) { staticDefaultInterruptRoutine( 134 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int135( InterruptFrame frame ) { staticDefaultInterruptRoutine( 135 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int136( InterruptFrame frame ) { staticDefaultInterruptRoutine( 136 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int137( InterruptFrame frame ) { staticDefaultInterruptRoutine( 137 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int138( InterruptFrame frame ) { staticDefaultInterruptRoutine( 138 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int139( InterruptFrame frame ) { staticDefaultInterruptRoutine( 139 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int140( InterruptFrame frame ) { staticDefaultInterruptRoutine( 140 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int141( InterruptFrame frame ) { staticDefaultInterruptRoutine( 141 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int142( InterruptFrame frame ) { staticDefaultInterruptRoutine( 142 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int143( InterruptFrame frame ) { staticDefaultInterruptRoutine( 143 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int144( InterruptFrame frame ) { staticDefaultInterruptRoutine( 144 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int145( InterruptFrame frame ) { staticDefaultInterruptRoutine( 145 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int146( InterruptFrame frame ) { staticDefaultInterruptRoutine( 146 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int147( InterruptFrame frame ) { staticDefaultInterruptRoutine( 147 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int148( InterruptFrame frame ) { staticDefaultInterruptRoutine( 148 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int149( InterruptFrame frame ) { staticDefaultInterruptRoutine( 149 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int150( InterruptFrame frame ) { staticDefaultInterruptRoutine( 150 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int151( InterruptFrame frame ) { staticDefaultInterruptRoutine( 151 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int152( InterruptFrame frame ) { staticDefaultInterruptRoutine( 152 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int153( InterruptFrame frame ) { staticDefaultInterruptRoutine( 153 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int154( InterruptFrame frame ) { staticDefaultInterruptRoutine( 154 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int155( InterruptFrame frame ) { staticDefaultInterruptRoutine( 155 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int156( InterruptFrame frame ) { staticDefaultInterruptRoutine( 156 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int157( InterruptFrame frame ) { staticDefaultInterruptRoutine( 157 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int158( InterruptFrame frame ) { staticDefaultInterruptRoutine( 158 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int159( InterruptFrame frame ) { staticDefaultInterruptRoutine( 159 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int160( InterruptFrame frame ) { staticDefaultInterruptRoutine( 160 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int161( InterruptFrame frame ) { staticDefaultInterruptRoutine( 161 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int162( InterruptFrame frame ) { staticDefaultInterruptRoutine( 162 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int163( InterruptFrame frame ) { staticDefaultInterruptRoutine( 163 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int164( InterruptFrame frame ) { staticDefaultInterruptRoutine( 164 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int165( InterruptFrame frame ) { staticDefaultInterruptRoutine( 165 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int166( InterruptFrame frame ) { staticDefaultInterruptRoutine( 166 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int167( InterruptFrame frame ) { staticDefaultInterruptRoutine( 167 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int168( InterruptFrame frame ) { staticDefaultInterruptRoutine( 168 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int169( InterruptFrame frame ) { staticDefaultInterruptRoutine( 169 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int170( InterruptFrame frame ) { staticDefaultInterruptRoutine( 170 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int171( InterruptFrame frame ) { staticDefaultInterruptRoutine( 171 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int172( InterruptFrame frame ) { staticDefaultInterruptRoutine( 172 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int173( InterruptFrame frame ) { staticDefaultInterruptRoutine( 173 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int174( InterruptFrame frame ) { staticDefaultInterruptRoutine( 174 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int175( InterruptFrame frame ) { staticDefaultInterruptRoutine( 175 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int176( InterruptFrame frame ) { staticDefaultInterruptRoutine( 176 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int177( InterruptFrame frame ) { staticDefaultInterruptRoutine( 177 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int178( InterruptFrame frame ) { staticDefaultInterruptRoutine( 178 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int179( InterruptFrame frame ) { staticDefaultInterruptRoutine( 179 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int180( InterruptFrame frame ) { staticDefaultInterruptRoutine( 180 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int181( InterruptFrame frame ) { staticDefaultInterruptRoutine( 181 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int182( InterruptFrame frame ) { staticDefaultInterruptRoutine( 182 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int183( InterruptFrame frame ) { staticDefaultInterruptRoutine( 183 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int184( InterruptFrame frame ) { staticDefaultInterruptRoutine( 184 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int185( InterruptFrame frame ) { staticDefaultInterruptRoutine( 185 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int186( InterruptFrame frame ) { staticDefaultInterruptRoutine( 186 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int187( InterruptFrame frame ) { staticDefaultInterruptRoutine( 187 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int188( InterruptFrame frame ) { staticDefaultInterruptRoutine( 188 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int189( InterruptFrame frame ) { staticDefaultInterruptRoutine( 189 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int190( InterruptFrame frame ) { staticDefaultInterruptRoutine( 190 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int191( InterruptFrame frame ) { staticDefaultInterruptRoutine( 191 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int192( InterruptFrame frame ) { staticDefaultInterruptRoutine( 192 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int193( InterruptFrame frame ) { staticDefaultInterruptRoutine( 193 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int194( InterruptFrame frame ) { staticDefaultInterruptRoutine( 194 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int195( InterruptFrame frame ) { staticDefaultInterruptRoutine( 195 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int196( InterruptFrame frame ) { staticDefaultInterruptRoutine( 196 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int197( InterruptFrame frame ) { staticDefaultInterruptRoutine( 197 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int198( InterruptFrame frame ) { staticDefaultInterruptRoutine( 198 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int199( InterruptFrame frame ) { staticDefaultInterruptRoutine( 199 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int200( InterruptFrame frame ) { staticDefaultInterruptRoutine( 200 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int201( InterruptFrame frame ) { staticDefaultInterruptRoutine( 201 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int202( InterruptFrame frame ) { staticDefaultInterruptRoutine( 202 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int203( InterruptFrame frame ) { staticDefaultInterruptRoutine( 203 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int204( InterruptFrame frame ) { staticDefaultInterruptRoutine( 204 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int205( InterruptFrame frame ) { staticDefaultInterruptRoutine( 205 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int206( InterruptFrame frame ) { staticDefaultInterruptRoutine( 206 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int207( InterruptFrame frame ) { staticDefaultInterruptRoutine( 207 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int208( InterruptFrame frame ) { staticDefaultInterruptRoutine( 208 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int209( InterruptFrame frame ) { staticDefaultInterruptRoutine( 209 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int210( InterruptFrame frame ) { staticDefaultInterruptRoutine( 210 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int211( InterruptFrame frame ) { staticDefaultInterruptRoutine( 211 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int212( InterruptFrame frame ) { staticDefaultInterruptRoutine( 212 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int213( InterruptFrame frame ) { staticDefaultInterruptRoutine( 213 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int214( InterruptFrame frame ) { staticDefaultInterruptRoutine( 214 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int215( InterruptFrame frame ) { staticDefaultInterruptRoutine( 215 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int216( InterruptFrame frame ) { staticDefaultInterruptRoutine( 216 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int217( InterruptFrame frame ) { staticDefaultInterruptRoutine( 217 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int218( InterruptFrame frame ) { staticDefaultInterruptRoutine( 218 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int219( InterruptFrame frame ) { staticDefaultInterruptRoutine( 219 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int220( InterruptFrame frame ) { staticDefaultInterruptRoutine( 220 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int221( InterruptFrame frame ) { staticDefaultInterruptRoutine( 221 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int222( InterruptFrame frame ) { staticDefaultInterruptRoutine( 222 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int223( InterruptFrame frame ) { staticDefaultInterruptRoutine( 223 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int224( InterruptFrame frame ) { staticDefaultInterruptRoutine( 224 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int225( InterruptFrame frame ) { staticDefaultInterruptRoutine( 225 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int226( InterruptFrame frame ) { staticDefaultInterruptRoutine( 226 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int227( InterruptFrame frame ) { staticDefaultInterruptRoutine( 227 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int228( InterruptFrame frame ) { staticDefaultInterruptRoutine( 228 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int229( InterruptFrame frame ) { staticDefaultInterruptRoutine( 229 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int230( InterruptFrame frame ) { staticDefaultInterruptRoutine( 230 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int231( InterruptFrame frame ) { staticDefaultInterruptRoutine( 231 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int232( InterruptFrame frame ) { staticDefaultInterruptRoutine( 232 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int233( InterruptFrame frame ) { staticDefaultInterruptRoutine( 233 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int234( InterruptFrame frame ) { staticDefaultInterruptRoutine( 234 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int235( InterruptFrame frame ) { staticDefaultInterruptRoutine( 235 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int236( InterruptFrame frame ) { staticDefaultInterruptRoutine( 236 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int237( InterruptFrame frame ) { staticDefaultInterruptRoutine( 237 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int238( InterruptFrame frame ) { staticDefaultInterruptRoutine( 238 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int239( InterruptFrame frame ) { staticDefaultInterruptRoutine( 239 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int240( InterruptFrame frame ) { staticDefaultInterruptRoutine( 240 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int241( InterruptFrame frame ) { staticDefaultInterruptRoutine( 241 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int242( InterruptFrame frame ) { staticDefaultInterruptRoutine( 242 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int243( InterruptFrame frame ) { staticDefaultInterruptRoutine( 243 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int244( InterruptFrame frame ) { staticDefaultInterruptRoutine( 244 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int245( InterruptFrame frame ) { staticDefaultInterruptRoutine( 245 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int246( InterruptFrame frame ) { staticDefaultInterruptRoutine( 246 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int247( InterruptFrame frame ) { staticDefaultInterruptRoutine( 247 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int248( InterruptFrame frame ) { staticDefaultInterruptRoutine( 248 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int249( InterruptFrame frame ) { staticDefaultInterruptRoutine( 249 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int250( InterruptFrame frame ) { staticDefaultInterruptRoutine( 250 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int251( InterruptFrame frame ) { staticDefaultInterruptRoutine( 251 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int252( InterruptFrame frame ) { staticDefaultInterruptRoutine( 252 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int253( InterruptFrame frame ) { staticDefaultInterruptRoutine( 253 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int254( InterruptFrame frame ) { staticDefaultInterruptRoutine( 254 );  }
+static __attribute__ ((interrupt)) void baseInterruptVectorRoutine_Int255( InterruptFrame frame ) { staticDefaultInterruptRoutine( 255 );  }
+
+static void InitializeBaseVectorCallback( GenericGlyphStringOutputter outputter )
 {
-    PopulateInterruptDescriptor( &staticDefaultInterruptDescriptors[0], baseInterruptVectorRoutine_Int0, 0, 0 );
+    defaultGlyphStringOutputter = outputter;
+
+    PopulateInterruptDescriptor( &staticDefaultInterruptDescriptors[0], baseInterruptVectorRoutine_Int0, CPL0, 0 );
     PopulateInterruptDescriptor( &staticDefaultInterruptDescriptors[1], baseInterruptVectorRoutine_Int1, CPL0, 0 );
     PopulateInterruptDescriptor( &staticDefaultInterruptDescriptors[2], baseInterruptVectorRoutine_Int2, CPL0, 0 );
     PopulateInterruptDescriptor( &staticDefaultInterruptDescriptors[3], baseInterruptVectorRoutine_Int3, CPL0, 0 );

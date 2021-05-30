@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <Error.h>
+#include <String.h>
 
 typedef enum CpuPrivilegeLevel {
    CPL0    = 0,
@@ -20,6 +21,7 @@ typedef enum SegmentGateType {
 } SegmentGateType;
 
 typedef void (*InterruptVectorCallback)( uint8_t interruptNumber );
+typedef void (*GenericGlyphStringOutputter)( RuneString outputString );
 
 typedef struct InterruptDescriptor_t {
    uint16_t HandlerAddressLow;
@@ -42,7 +44,7 @@ typedef struct InterruptDescriptorTableRegister_t {
 }__attribute__ ((packed)) InterruptDescriptorTableRegister_t, *InterruptDescriptorTableRegister;
 
 typedef struct InterruptDescriptorTableBuilder_t {
-   void (*InitializeBaseVectorCallback)();
+   void (*InitializeBaseVectorCallback)( GenericGlyphStringOutputter outputter );
    Error (*SetInterruptVectorCallback)( uint8_t interruptNumber, InterruptVectorCallback callback );   
    void (*ActivateTable)();
 } InterruptDescriptorTableBuilder_t, *InterruptDescriptorTableBuilder;

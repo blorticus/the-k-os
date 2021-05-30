@@ -9,7 +9,7 @@
 
 // We need to tell the stivale bootloader where we want our stack to be.
 // We are going to allocate our stack as an uninitialised array in .bss.
-static uint8_t stack[4096];
+static uint8_t stack[16384];
 
 // stivale2 uses a linked list of tags for both communicating TO the
 // bootloader, or receiving info FROM it. More information about these tags
@@ -91,10 +91,8 @@ static RuneStringBuffer_t runeStringBuffer = {
     .Size = 256,
 };
 
-static void trivialExceptionHandler( uint8_t interruptNumber ) {
-     term->PutRuneString( term, U"Handler for " );
-     Uint64ToDecimalString( &runeStringBuffer, interruptNumber );
-     term->PutRuneString( term, runeStringBuffer.String );
+static void outputter( RuneString string ) {
+    term->PutRuneString( term, string );
 }
 
 // The following will be our kernel's entry point.
@@ -121,20 +119,13 @@ void _start(struct stivale2_struct *stivale2_struct) {
     PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
 
     PopulateInterruptDescriptorTableBuilder( idtBuilder );
-    idtBuilder->InitializeBaseVectorCallback();
+    idtBuilder->InitializeBaseVectorCallback( outputter );
     idtBuilder->ActivateTable();
-
-    for (int i = 0; i < 256; i++)
-        idtBuilder->SetInterruptVectorCallback( i, trivialExceptionHandler );
-    //     PopulateInterruptDescriptor( &InterruptDescriptorTableEntries[i], trivialExceptionHandler, CPL0, 0 );
-
-    // ActivateInterruptDescriptorTable( InterruptDescriptorTableEntries, 256 );
 
     asm volatile ( "int $100" );
 
     term->PutRuneString( term, U"The K-OS!\n" );
     term->PutRuneString( term, rb->String );
-
 
     // We're done, just hang...
     for (;;) {

@@ -39,6 +39,9 @@ all: $(TARGET)
 $(TARGET): $(OBJ)
 	$(CC) $(LDINTERNALFLAGS) $(OBJ) -o $@
 
+Interrupts.o: Interrupts.c
+	$(CC) $(CFLAGS) -Wno-unused-parameter -Wno-unused-function -mgeneral-regs-only $(INTERNALCFLAGS) -c $< -o $@
+
 %.o: %.c
 	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
 
