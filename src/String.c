@@ -427,12 +427,108 @@ static void formatIterativelyIntoBufferUsingExplicitVarags( RuneStringBuffer inB
     unsigned int glyphsWrittenToBufferForThisChunk = 0;
     RuneString fmt = (RuneString)format;
 
+    RuneString runeStringArgument, rp;
+    Rune numberArgumentString[24];
+    RuneStringBuffer_t numberArgumentStringBuffer = {
+        .Size = 24,
+        .String = numberArgumentString,
+    };
+
+    uint64_t integerArgument;
 
     while (*fmt)
     {
         switch (*fmt)
         {
         case U'%':
+            switch (*++fmt) {
+            case 0:
+                break;
+
+            case U'%':
+                inBuffer->String[glyphsWrittenToBufferForThisChunk++] = *fmt;
+                if (glyphsWrittenToBufferForThisChunk >= inBuffer->Size - 1)
+                {
+                    inBuffer->String[inBuffer->Size - 1] = 0;
+                    if (callback->OnNextFormatChunk( inBuffer, NoError, fmt[1] == 0 ? 1 : 0, callback->AdditionalArgs ))
+                        return;
+                    glyphsWrittenToBufferForThisChunk = 0;
+                }
+                fmt++;
+                break;
+
+            case U'r':
+                runeStringArgument = va_arg( varargs, RuneString );
+                while (*runeStringArgument)
+                {
+                    inBuffer->String[glyphsWrittenToBufferForThisChunk++] = *runeStringArgument++;
+                    if (glyphsWrittenToBufferForThisChunk >= inBuffer->Size - 1)
+                    {
+                        inBuffer->String[inBuffer->Size - 1] = 0;
+                        if (callback->OnNextFormatChunk( inBuffer, NoError, fmt[1] == 0 ? 1 : 0, callback->AdditionalArgs ))
+                            return;
+                        glyphsWrittenToBufferForThisChunk = 0;
+                    }
+                }
+                fmt++;
+                break;
+
+            case U'b':
+                integerArgument = (uint64_t)va_arg( varargs, int );
+                goto INTEGER_STRING_REPRESENTATION;
+
+            case U's':
+                integerArgument = (uint64_t)va_arg( varargs, int );
+                goto INTEGER_STRING_REPRESENTATION;
+
+            case U'i':
+                integerArgument = (uint64_t)va_arg( varargs, uint32_t );
+                goto INTEGER_STRING_REPRESENTATION;
+
+            case U'q':
+                integerArgument = va_arg( varargs, uint64_t );
+
+                INTEGER_STRING_REPRESENTATION:
+                switch (*++fmt)
+                {
+                case U'x':
+                    Uint64ToHexString( &numberArgumentStringBuffer, integerArgument );
+                    goto COPY_INTEGER_STRING;
+
+                case U'd':
+                    Uint64ToDecimalString( &numberArgumentStringBuffer, integerArgument );
+                    
+                    COPY_INTEGER_STRING:
+                    rp = numberArgumentString;
+                    while (*rp)
+                    {
+                        inBuffer->String[glyphsWrittenToBufferForThisChunk++] = *rp++;
+
+                        if (glyphsWrittenToBufferForThisChunk >= inBuffer->Size - 1)
+                        {
+                            inBuffer->String[inBuffer->Size - 1] = 0;
+                            if (callback->OnNextFormatChunk( inBuffer, NoError, fmt[1] == 0 ? 1 : 0, callback->AdditionalArgs ))
+                                return;
+                            glyphsWrittenToBufferForThisChunk = 0;
+                        }
+                    }
+                    fmt++;
+                    break;
+
+                default:
+                    inBuffer->String[glyphsWrittenToBufferForThisChunk++] = 0;
+                    callback->OnNextFormatChunk( inBuffer, ErrorInvalidFormat, 1, callback->AdditionalArgs );
+                    return;
+                }
+
+                break;
+
+            default:
+                inBuffer->String[glyphsWrittenToBufferForThisChunk++] = 0;
+                callback->OnNextFormatChunk( inBuffer, ErrorInvalidFormat, 1, callback->AdditionalArgs );
+                return;
+            }
+
             break;
 
         default:

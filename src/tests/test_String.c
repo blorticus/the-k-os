@@ -350,4 +350,17 @@ void testFormatIntoBuffer( TestSuite suite )
     suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('testing') return value" );
     suite->AssertEquals->RuneString( suite, U"testing", inBuffer->String, 8, "FormatIntoBuffer('testing') string comparison" );
 
+    e = f->FormatIntoBuffer( f, inBuffer, U"%r", U"from %r string" );
+    suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('%r', 'from $r string') return value" );
+    suite->AssertEquals->RuneString( suite, U"from %r string", inBuffer->String, 15, "FormatIntoBuffer('%r', 'from %r string') string comparison" );
+
+    e = f->FormatIntoBuffer( f, inBuffer, U"%qd%%", (uint64_t)10293844 );
+    suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('%qd%%', 10293844) return value" );
+    suite->AssertEquals->RuneString( suite, U"10293844%", inBuffer->String, 10, "FormatIntoBuffer('%qd%%', 10294844) string comparison" );
+
+    uint16_t u16 = 65535;
+    e = f->FormatIntoBuffer( f, inBuffer, U"-%sx is %r %sd-", u16, U"certainly", u16 );
+    suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('-%sx is %r %sd-', u16, 'certainly', u16) return value" );
+    suite->AssertEquals->RuneString( suite, U"-ffff is certainly 65535-", inBuffer->String, 26, "FormatIntoBuffer('-%sx is %r %sd-', u16, 'certainly', u16) string comparison" );
+
 }
