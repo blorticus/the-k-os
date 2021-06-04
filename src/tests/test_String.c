@@ -258,6 +258,9 @@ int iteratingCallback( RuneStringBuffer inBuffer, Error e, int done, void* addit
 
     formatIterativelyIntoBufferExpectSet_t expectedResultsForThisChunk = testSet->ExpectedChunkResults[testSet->IndexOfNextExpectedChunk];
 
+    if (expectedResultsForThisChunk.ExpectedError != e)
+        return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "Expected error = (%d), got error = (%d)", expectedResultsForThisChunk.ExpectedError, e );
+
     if (expectedResultsForThisChunk.ExpectThisToBeLastChunk)
     {
         if (!done)
@@ -269,9 +272,6 @@ int iteratingCallback( RuneStringBuffer inBuffer, Error e, int done, void* addit
     {
         return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "Expected to not be done, but callback indicated done" );
     }
-
-    if (expectedResultsForThisChunk.ExpectedError != e)
-        return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "Expected error = (%d), got error = (%d)", expectedResultsForThisChunk.ExpectedError, e );
 
     if (strncmp32( expectedResultsForThisChunk.ExpectedBufferString, inBuffer->String, inBuffer->Size ))
         return setFormatIterativelyIntoBufferTestErrorValues( testSet, testSet->IndexOfNextExpectedChunk, "String does not match expected value" );
@@ -297,6 +297,8 @@ static int validateFormatIterativelyIntoBufferResults( TestSuite suite, formatIt
 
 void testFormatIterativelyIntoBuffer( TestSuite suite )
 {
+    formatIterativelyIntoBufferExpectSet_t* expectedResults;
+
     StringFormatter f = calloc( 1, sizeof( struct StringFormatter_t ) );
     Error e = PopulateStringFormatter( f );
 
@@ -328,6 +330,30 @@ void testFormatIterativelyIntoBuffer( TestSuite suite )
 
     f->FormatIterativelyIntoBuffer( inBuffer, callback, U"testing" );
     validateFormatIterativelyIntoBufferResults( suite, &testSet, "FormatIterativelyIntoBuffer('testing')" );
+
+    inBuffer->Size = 10;
+
+    expectedResults = (formatIterativelyIntoBufferExpectSet_t[]){
+        { .ExpectedBufferString = U"This is l", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 0 },
+        { .ExpectedBufferString = U"onger tha", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 0 },
+        { .ExpectedBufferString = U"n 10 rune", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 0 },
+        { .ExpectedBufferString = U"s", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 1 },
+    };
+    resetFormatIterativelyIntoBufferTest( &testSet, expectedResults, 4 );
+
+    f->FormatIterativelyIntoBuffer( inBuffer, callback, U"This is longer than 10 runes" );
+    validateFormatIterativelyIntoBufferResults( suite, &testSet, "FormatIterativelyIntoBuffer('This is longer than 10 runes')" );
+
+    expectedResults = (formatIterativelyIntoBufferExpectSet_t[]){
+        { .ExpectedBufferString = U"This is l", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 0 },
+        { .ExpectedBufferString = U"onger tha", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 0 },
+        { .ExpectedBufferString = U"n 10 (0xa", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 0 },
+        { .ExpectedBufferString = U") runes", .ExpectedError = NoError, .ExpectThisToBeLastChunk = 1 },
+    };
+    resetFormatIterativelyIntoBufferTest( &testSet, expectedResults, 4 );
+
+    f->FormatIterativelyIntoBuffer( inBuffer, callback, U"This is %r than %id (0x%sx) runes", U"longer", 10, 10 );
+    validateFormatIterativelyIntoBufferResults( suite, &testSet, "FormatIterativelyIntoBuffer('This is %r than %id (0x%sx) runes', U'longer', 10, 10)" );
 }
 
 void testFormatIntoBuffer( TestSuite suite )
@@ -362,5 +388,4 @@ void testFormatIntoBuffer( TestSuite suite )
     e = f->FormatIntoBuffer( f, inBuffer, U"-%sx is %r %sd-", u16, U"certainly", u16 );
     suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('-%sx is %r %sd-', u16, 'certainly', u16) return value" );
     suite->AssertEquals->RuneString( suite, U"-ffff is certainly 65535-", inBuffer->String, 26, "FormatIntoBuffer('-%sx is %r %sd-', u16, 'certainly', u16) string comparison" );
-
 }
