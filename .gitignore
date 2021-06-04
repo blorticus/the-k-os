@@ -12,3 +12,4 @@ x86_64-obj/*
 **/.ycm_extra_conf.py
 src/disk.hdd
 src/TextTerminal.c
+.vscode/**
