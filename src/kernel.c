@@ -85,11 +85,11 @@ static TextTerminal term = &_term;
 static InterruptDescriptorTableBuilder_t _idtBuilder;
 static InterruptDescriptorTableBuilder idtBuilder = &_idtBuilder;
 
-static Rune runeBuffer[256];
-static RuneStringBuffer_t runeStringBuffer = {
-    .String = runeBuffer,
-    .Size = 256,
-};
+// static Rune runeBuffer[256];
+// static RuneStringBuffer_t runeStringBuffer = {
+//     .String = runeBuffer,
+//     .Size = 256,
+// };
 
 static void outputter( RuneString string ) {
     term->PutRuneString( term, string );
@@ -118,13 +118,13 @@ void _start(struct stivale2_struct *stivale2_struct) {
     PopulateFrameBuffer( fb, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
     PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
 
-    PopulateInterruptDescriptorTableBuilder( idtBuilder );
-    idtBuilder->InitializeBaseVectorCallback( outputter );
-    idtBuilder->ActivateTable();
+    // PopulateInterruptDescriptorTableBuilder( idtBuilder );
+    // idtBuilder->InitializeBaseVectorCallback( outputter );
+    // idtBuilder->ActivateTable();
 
-    asm volatile ( "int $100" );
+    // asm volatile ( "int $100" );
 
-    term->PutRuneString( term, U"The K-OS!\n" );
+    term->PutFormattedRuneString( term, U"%r\n", U"The K-OS!" );
     term->PutRuneString( term, rb->String );
 
     // We're done, just hang...

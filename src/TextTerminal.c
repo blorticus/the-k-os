@@ -1,96 +1,6 @@
 #include <TextTerminal.h>
 #include <stdarg.h>
 
-// Returns the number of Runes consumed from 'startOfFormatString' (including Rune at 'startOfFormatString').
-// Returns 0 if the format string contains an errant value or is not terminated before the end of the string
-// or before consuming 'maximumNumberOfRunesThatIMayConsume';
-unsigned int consumeFormatString(struct TextTerminal_formatProcessor_t *fp, const RuneString startOfFormatString) {
-    RuneString formatString = startOfFormatString;
-    unsigned int runesConsumed;
-    Rune currentFlag = U' ';
-    int nextRuneShouldBeEqualSign = 0;
-    unsigned int i;
-
-    for (runesConsumed = 0; runesConsumed < fp->maximumNumberOfRunesThatIMayConsume && *formatString && *formatString != U'}'; runesConsumed++, formatString++) {
-        switch (*formatString)
-        {
-            case U',':
-                if (currentFlag == U' ')
-                    return 0;
-                else
-                {
-                    currentFlag = U' ';
-                    continue;
-                }
-
-            case U'=':
-                if (!nextRuneShouldBeEqualSign)
-                    return 0;
-
-                nextRuneShouldBeEqualSign = 0;
-        }
-
-        switch (currentFlag)
-        {
-            case U'l':
-                fp->mostRecentFormatString.flags |= PF_LENGTH;
-                for (i = 0; i < fp->optionProcessingBufferLength && runesConsumed < fp->maximumNumberOfRunesThatIMayConsume && *formatString && *formatString != U'}' && *formatString != U','; runesConsumed++, formatString++, i++)
-                    if (*formatString >= U'0' && *formatString <= U'9') {
-                        fp->optionProcessingBuffer[i] = *formatString;
-                    } else {
-                        if (*formatString != U'}' && *formatString != U',')
-                            return 0;
-
-                        fp->optionProcessingBuffer[i] = 0;
-                        DecimalIntegerAsStringToInt64( fp->optionProcessingBuffer, fp->optionProcessingBufferLength, (int64_t*)&(fp->mostRecentFormatString.length) );
-                    }
-
-                break;
-
-            case U't':
-                fp->mostRecentFormatString.flags |= PF_TRUNCATE;
-                break;
-
-            case U'f':
-                fp->mostRecentFormatString.flags |= PF_FILL;
-                break;
-
-            case U's':
-                fp->mostRecentFormatString.flags |= PF_INT_STORAGE_SIZE;
-                break;
-
-            case U'c':
-                fp->mostRecentFormatString.flags |= PF_CASE;
-                break;
-
-            case U' ':
-                switch (*formatString)
-                {
-                    case U'l':
-                    case U't':
-                    case U'f':
-                    case U's':
-                    case U'c':
-                        if (formatString[1] != U'=')
-                            return 0;
-                        
-                        nextRuneShouldBeEqualSign = 1;
-                        currentFlag = *formatString;
-                        break;
-
-                    default:
-                        return  0;
-                }
-            }
-    }
-
-    if (*formatString != U'}')
-        return 0;
-
-    return runesConsumed;
-}
-
-
 static void scrollOneLine( TextTerminal term ) {
     term->frameBuffer->ShiftPixelRowsUp( term->frameBuffer, term->glyphPixelHeight, term->frameBuffer->VerticalPixels - term->glyphPixelHeight, term->glyphPixelHeight );
     term->frameBuffer->FillRowsWith( term->frameBuffer, term->frameBuffer->VerticalPixels - term->glyphPixelHeight - 1, term->glyphPixelHeight, term->backgroundColor );
@@ -161,39 +71,17 @@ static Error Clear( TextTerminal term ) {
 
 }
 
+static int stringIterativeFormatCallback( RuneStringBuffer inBuffer, __attribute__((unused)) Error e, __attribute__((unused)) int done, void* additionalArgs )
+{
+    TextTerminal term = (TextTerminal)additionalArgs;
+    PutRuneString( term, inBuffer->String );
+    return done;
+}
+
 static Error PutFormattedRuneString( TextTerminal term, const RuneString format, ... ) {
     va_list fp;
-
     va_start( fp, format );
-
-    for (unsigned int i = 0; format[i]; i++) {
-        if (format[i] == U'%') {
-            i++;
-            switch (format[i]) {
-                case 0:
-                    term->PutRune( term, U'%' );
-                    va_end( fp );
-                    return NoError;
-
-                case U'%':
-                    term->PutRune( term, U'%' );
-                    break;
-
-                case U'r':
-                case U'd':
-                case U'x':
-                    term->processor->type = format[i];
-                    //if (format[i + 1] == U'{')
-                    break;
-
-                default:
-                    return ErrorInvalidFormat;
-            }
-        } else {
-            term->PutRune( term, format[i] );
-        }
-    }
-
+    term->stringFormatter->FormatIterativelyIntoBufferUsingExplicitVarags( term->runeStringBuffer, &(term->formatBufferIteratingCallback), format, fp );
     va_end( fp );
     return NoError;
 }
@@ -218,6 +106,15 @@ Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, Tex
     term->glyphRenderingDefinition->BitmapDefinition = 0;
 
     term->processor = &(term->_processor);
+
+    term->stringFormatter = &(term->_stringFormatter);
+    PopulateStringFormatter( term->stringFormatter );
+
+    term->runeStringBuffer->String = term->_buffer;
+    term->runeStringBuffer->Size   = TextTerminalInteralStringBufferCapacity;
+
+    term->formatBufferIteratingCallback.OnNextFormatChunk = stringIterativeFormatCallback;
+    term->formatBufferIteratingCallback.AdditionalArgs = (void*)term;
 
     term->Clear = Clear;
     term->PutFormattedRuneString = PutFormattedRuneString;

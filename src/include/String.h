@@ -68,12 +68,13 @@ typedef struct StringFormatter_t {
     Error errorFromIterativeToFormat;
 
     void (*FormatIterativelyIntoBuffer)( RuneStringBuffer inBuffer, FormatBufferIteratingCallback, const RuneString format, ... );
+    void (*FormatIterativelyIntoBufferUsingExplicitVarags)( RuneStringBuffer inBuffer, FormatBufferIteratingCallback callback, const RuneString format, va_list varargs );
     Error (*FormatIntoBuffer)( struct StringFormatter_t* f, RuneStringBuffer inBuffer, const RuneString format, ... );
     Error (*Uint64ToDecimalString)( RuneStringBuffer inBuffer, uint64_t v );
     Error (*Int64ToDecimalString)( RuneStringBuffer inBuffer, int64_t v );
     Error (*Uint64ToHexString)( RuneStringBuffer inBuffer, uint64_t v );
     Error (*Uint64ToZeroPaddedHexString)( RuneStringBuffer inBuffer, uint64_t v, unsigned int outputFieldLength );
-} *StringFormatter;
+} StringFormatter_t, *StringFormatter;
 
 Error PopulateStringFormatter( StringFormatter f );
 
