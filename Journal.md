@@ -55,3 +55,9 @@ allowed me to debug some rendering routines.  I am now switching to building a
 basic TextTerminal that uses the FrameBuffer.
 
 And completed write of a single letter (A) in the terminal.
+
+## 4 June 2021
+
+I've completed the StringFormatter and its attachment to the TextTerminal.
+Now working on CPUID functions.  All of this is working toward discovery of
+the APIC.

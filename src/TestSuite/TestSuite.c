@@ -131,6 +131,38 @@ static int TestSuite_Done( TestSuite ts ) {
     return ts->numberOfFailedTests;
 }
 
+static int AssertIs_True( TestSuite ts, uint64_t got, char *testName )
+{
+    if (got)
+        return ts->TestSucceeded( ts, testName );
+
+    return ts->TestFailed( ts, testName, "Expected true value, got false");
+}
+
+static int AssertIs_False( TestSuite ts, uint64_t got, char *testName )
+{
+    if (!got)
+        return ts->TestSucceeded(ts, testName);
+
+    return ts->TestFailed(ts, testName, "Expected false value, got true");
+}
+
+static int AssertIs_Null( TestSuite ts, void *got, char *testName )
+{
+    if (!got)
+        return ts->TestSucceeded(ts, testName);
+
+    return ts->TestFailed(ts, testName, "Expected null pointer; pointer is not null");
+}
+
+static int AssertIs_NotNull( TestSuite ts, void *got, char *testName )
+{
+    if (got)
+        return ts->TestSucceeded(ts, testName);
+
+    return ts->TestFailed(ts, testName, "Expected non-null pointer; pointer is null");
+}
+
 TestSuite CreateTestSuite( char* suiteName ) {
     TestSuite ts = malloc( sizeof( struct TestSuite_t ) );
     if (!ts) return 0;
@@ -151,6 +183,16 @@ TestSuite CreateTestSuite( char* suiteName ) {
     e->Rune       = TestSuite_AssertEqualsRune;
 
     ts->AssertEquals  = e;
+
+    TestSuiteAssertIs i = calloc( 1, sizeof( struct TestSuiteAssertIs_t ) );
+    if (!i) return 0;
+
+    i->True    = AssertIs_True;
+    i->False   = AssertIs_False;
+    i->Null    = AssertIs_Null;
+    i->NotNull = AssertIs_NotNull;
+
+    ts->AssertIs = i;
 
     ts->TestSucceeded = TestSuite_TestSucceeded;
     ts->TestFailed    = TestSuite_TestFailed;

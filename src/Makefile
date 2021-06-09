@@ -4,6 +4,7 @@ CC = $(HOME)/opt/cross/bin/x86_64-elf-gcc
 #CC = gcc
 
 WITH_DEBUGGING_SYMBOLS ?= no
+TESTING ?= no
 
 CFLAGS = -Wall -Wextra -pipe
 
@@ -11,6 +12,10 @@ ifeq ($(WITH_DEBUGGING_SYMBOLS),yes)
 CFLAGS += -g
 else
 CFLAGS += -O2
+endif
+
+ifeq ($(TESTING),yes)
+CFLAGS += -DTESTING
 endif
 
 LDINTERNALFLAGS := \

@@ -105,11 +105,10 @@ Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, Tex
     term->glyphRenderingDefinition->NumberOfRows = term->glyphPixelHeight;
     term->glyphRenderingDefinition->BitmapDefinition = 0;
 
-    term->processor = &(term->_processor);
-
     term->stringFormatter = &(term->_stringFormatter);
     PopulateStringFormatter( term->stringFormatter );
 
+    term->runeStringBuffer = &(term->_runeStringBuffer);
     term->runeStringBuffer->String = term->_buffer;
     term->runeStringBuffer->Size   = TextTerminalInteralStringBufferCapacity;
 

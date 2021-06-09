@@ -9,4 +9,5 @@ typedef enum Error_t {
     ErrorNotANumber,
     ErrorNullValue,
     ErrorBufferTooSmall,
+    ErrorFacilityNotPresent,
 } Error;

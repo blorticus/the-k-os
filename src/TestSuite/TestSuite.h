@@ -36,6 +36,13 @@ typedef struct TestSuiteAssertEquals_t {
     int (*RuneString)( TestSuite ts, const uint32_t* expect, const uint32_t *got, unsigned int maximumAllowLength, char* testName );
 } *TestSuiteAssertEquals;
 
+typedef struct TestSuiteAssertIs_t {
+    int (*True)( TestSuite ts, uint64_t got, char* testName );
+    int (*False)( TestSuite ts, uint64_t got, char* testName );
+    int (*Null)( TestSuite ts, void* got, char* testName );
+    int (*NotNull)( TestSuite ts, void* got, char* testName );
+} *TestSuiteAssertIs;
+
 typedef struct TestSuitePictureMapElement_t {
     char PictureCharacter;
     uint64_t CorrespondingBytes;
@@ -110,8 +117,9 @@ typedef struct TestSuite_t {
     unsigned int numberOfFailedTests;
 
     TestSuiteAssertEquals AssertEquals;
+    TestSuiteAssertIs AssertIs;
 
-    int (*TestSucceeded)( TestSuite ts, char* testName );
+    int (*TestSucceeded)(TestSuite ts, char *testName);
     int (*TestFailed)( TestSuite ts, char* testName, char* msg, ... );
     int (*Done)( TestSuite ts );
 } *TestSuite;
