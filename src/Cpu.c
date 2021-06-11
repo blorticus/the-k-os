@@ -19,14 +19,14 @@ static inline unsigned int getCpuid(unsigned int leaf, unsigned int *eax, unsign
 
 static int CpuSupports(CpuInformation c, CpuCapability capability)
 {
-    uint8_t capabilitiesRegisterValueIndex = capability & 0xff00 >> 8;
-    uint8_t bitstringIndex = 0x01 << capabilitiesRegisterValueIndex;
+    uint8_t theElementOfRegistersValueThatHoldsThisCapability = capability >> 8;
+    uint8_t bitstringIndexVerifyingThatThatRegisterIsAlreadyPopulated = 0x01 << theElementOfRegistersValueThatHoldsThisCapability;
 
-    if ((c->populatedCpuCapabilitiesRegisterValuesBitstring & bitstringIndex) == 0)
+    if ((c->bitstringOfWhichCapabilitiesRegistersAreAlreadyPopulated & bitstringIndexVerifyingThatThatRegisterIsAlreadyPopulated) == 0)
         return 0;
 
-    uint8_t capabilitiesRegisterValueBit = 1 << (capability & 0x00ff);
-    return (c->cpuCapabilitiesRegisterValues[capabilitiesRegisterValueIndex] & capabilitiesRegisterValueBit);
+    uint32_t bitInRegisterCorrespondingToThisCapability = 0x1 << (capability & 0x00ff);
+    return (c->cpuCapabilitiesRegisterValues[theElementOfRegistersValueThatHoldsThisCapability] & bitInRegisterCorrespondingToThisCapability);
 }
 
 Error PopulateCpuInformation( CpuInformation c )
@@ -58,7 +58,7 @@ Error PopulateCpuInformation( CpuInformation c )
     if (!getCpuid( 1, &eax, &ebx, &ecx, &edx))
         return ErrorFacilityNotPresent;
 
-    c->populatedCpuCapabilitiesRegisterValuesBitstring = 0x03;
+    c->bitstringOfWhichCapabilitiesRegistersAreAlreadyPopulated = 0x03;
     c->cpuCapabilitiesRegisterValues[0] = edx;
     c->cpuCapabilitiesRegisterValues[1] = ecx;
 

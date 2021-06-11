@@ -58,7 +58,7 @@ int main( void )
     cpuidRetvalMap = calloc( 1, sizeof( struct testCpuLeafRetval_t) );
     cpuidRetvalMap->map = (testCpuLeafRetval[]){
         {.leaf = 0, .eax = 0xd, .ebx = 0x74736554, .edx = 0x69755320, .ecx = 0x20206574}, // "Test Suite  "
-        {.leaf = 1, .eax = 0x000001110, .ebx = 0x01040801, .edx = 0x08ffdfff, .ecx = 0x0e56f049 }};
+        {.leaf = 1, .eax = 0x000001110, .ebx = 0x01040801, .edx = 0x178bfbff, .ecx = 0x83ba2223 }};
     cpuidRetvalMap->numberOfMapEntries = 2;
 
     CpuInformation c = calloc( 1, sizeof(CpuInformation_t) );
@@ -69,6 +69,7 @@ int main( void )
 
     suite->AssertIs->True(suite, c->CpuSupports(c, OnboardX87FPU), "Supports OnboardX87FPU");
     suite->AssertIs->False(suite, c->CpuSupports(c, IA64ProcessorEmulatingX86), "Supports IA64ProcessorEmulatingX86");
+    suite->AssertIs->True(suite, c->CpuSupports(c, X2APIC), "Supports X2APIC");
 
-    return suite->Done( suite );
+    return suite->Done(suite);
 }

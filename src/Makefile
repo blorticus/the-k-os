@@ -54,7 +54,7 @@ run: $(TARGET)
 	sudo mount -o loop disk.hdd /mnt
 	sudo cp $(TARGET) /mnt
 	sudo umount /mnt
-	qemu-system-x86_64 -M q35 -m 256M -hda disk.hdd -bios /usr/share/ovmf/OVMF.fd
+	qemu-system-x86_64 -M q35 -m 256M -hda disk.hdd -bios /usr/share/ovmf/OVMF.fd -cpu host -enable-kvm
 
 clean:
 	rm -rf $(TARGET) $(OBJ)
