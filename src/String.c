@@ -127,6 +127,7 @@ static void FormatIterativelyIntoBufferUsingExplicitVarags( RuneStringBuffer inB
     };
 
     uint64_t integerArgument;
+    unsigned int minimumHexLength = 0;
 
     while (*fmt)
     {
@@ -134,7 +135,32 @@ static void FormatIterativelyIntoBufferUsingExplicitVarags( RuneStringBuffer inB
         {
         case U'%':
             switch (*++fmt) {
-            case 0:
+            case U'0':
+                switch (*++fmt)
+                {
+                case U'b':
+                    integerArgument = (uint64_t)va_arg(varargs, int);
+                    minimumHexLength = 2;
+                    goto INTEGER_STRING_REPRESENTATION;
+
+                case U's':
+                    integerArgument = (uint64_t)va_arg(varargs, int);
+                    minimumHexLength = 4;
+                    goto INTEGER_STRING_REPRESENTATION;
+
+                case U'i':
+                    integerArgument = (uint64_t)va_arg(varargs, uint32_t);
+                    minimumHexLength = 8;
+                    goto INTEGER_STRING_REPRESENTATION;
+
+                case U'q':
+                    minimumHexLength = 16;
+                    integerArgument = va_arg(varargs, uint64_t);
+                    goto INTEGER_STRING_REPRESENTATION;
+
+                default:
+                    goto INVALID_FORMAT_ERROR;
+                }
                 break;
 
             case U'%':
@@ -184,10 +210,14 @@ static void FormatIterativelyIntoBufferUsingExplicitVarags( RuneStringBuffer inB
                 switch (*++fmt)
                 {
                 case U'x':
-                    Uint64ToHexString( &numberArgumentStringBuffer, integerArgument );
+                    Uint64ToZeroPaddedHexString( &numberArgumentStringBuffer, integerArgument, minimumHexLength );
+                    minimumHexLength = 0;
                     goto COPY_INTEGER_STRING;
 
                 case U'd':
+                    if (minimumHexLength > 0)
+                        goto INVALID_FORMAT_ERROR;
+
                     Uint64ToDecimalString( &numberArgumentStringBuffer, integerArgument );
                     
                     COPY_INTEGER_STRING:
@@ -208,14 +238,13 @@ static void FormatIterativelyIntoBufferUsingExplicitVarags( RuneStringBuffer inB
                     break;
 
                 default:
-                    inBuffer->String[glyphsWrittenToBufferForThisChunk++] = 0;
-                    callback->OnNextFormatChunk( inBuffer, ErrorInvalidFormat, 1, callback->AdditionalArgs );
-                    return;
+                    goto INVALID_FORMAT_ERROR;
                 }
 
                 break;
 
             default:
+                INVALID_FORMAT_ERROR:
                 inBuffer->String[glyphsWrittenToBufferForThisChunk++] = 0;
                 callback->OnNextFormatChunk( inBuffer, ErrorInvalidFormat, 1, callback->AdditionalArgs );
                 return;

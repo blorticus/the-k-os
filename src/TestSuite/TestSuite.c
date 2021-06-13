@@ -96,10 +96,15 @@ static int TestSuite_AssertEqualsRuneString( TestSuite ts, const uint32_t* expec
     unsigned int i;
     for (i = 0; i < maximumAllowLength && expect[i] && got[i]; i++)
         if (expect[i] != got[i])
-            return ts->TestFailed( ts, testName, "At char index (%i), expect = (%lx), got = (%lx)", i, expect[i], got[i] );
- 
-    if (expect[i] != 0 || got[i] != 0)
-        return ts->TestFailed( ts, testName, "RuneStrings begin differing at char index (%i)", i );
+            return ts->TestFailed( ts, testName, "At char index (%i), expect = (0x%lx), got = (0x%lx)", i, expect[i], got[i] );
+
+    if (i < maximumAllowLength)
+    {
+        if (expect[i] != 0)
+            return ts->TestFailed( ts, testName, "At char index (%i), expect = (0x%lx), got = (null)", i, expect[i] );
+        else if (got[i] != 0)
+            return ts->TestFailed(ts, testName, "At char index (%i), expect = (null), got = (0x%lx)", i, got[i]);
+    }
 
     return ts->TestSucceeded( ts, testName );
 }

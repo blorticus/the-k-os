@@ -123,8 +123,8 @@ void _start(struct stivale2_struct *stivale2_struct) {
     else
     {
         term->PutFormattedRuneString( term, U"CPUID highest leaf = (%ix); Manufacturer Id = (%r)\n", cpuInfo->HighestSupportedBaseLeaf, cpuInfo->CpuidManufacturerIdString );
-        term->PutFormattedRuneString(term, U"leaf 1 edx = %ix; ecx = %ix\n", cpuInfo->cpuCapabilitiesRegisterValues[0], cpuInfo->cpuCapabilitiesRegisterValues[1] );
-        term->PutFormattedRuneString(term, U"x2apic support = %r\n", (cpuInfo->CpuSupports( cpuInfo, X2APIC ) ? U"yes" : U"no") );
+        term->PutFormattedRuneString(term, U"leaf 1 edx = 0x%ix; ecx = 0x%0ix\n", cpuInfo->cpuCapabilitiesRegisterValues[0], cpuInfo->cpuCapabilitiesRegisterValues[1] );
+        term->PutFormattedRuneString(term, U"APIC present = %r\n", (cpuInfo->CpuSupports( cpuInfo, OnboardAPIC) ? U"yes" : U"no") );
     }
 
     // We're done, just hang...

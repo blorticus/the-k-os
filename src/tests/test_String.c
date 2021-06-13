@@ -364,9 +364,9 @@ void testFormatIntoBuffer( TestSuite suite )
     suite->AssertEquals->Int32( suite, NoError, e, "PopulateStringFormatter() return value" );
 
     RuneStringBuffer inBuffer = calloc( 1, sizeof( RuneStringBuffer_t ) );
-    RuneString stringBuffer = calloc( 64, sizeof( Rune ) );
+    RuneString stringBuffer = calloc( 96, sizeof( Rune ) );
     inBuffer->String = stringBuffer;
-    inBuffer->Size = 64;
+    inBuffer->Size = 96;
 
     e = f->FormatIntoBuffer( f, inBuffer, U"" );
     suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('') return value" );
@@ -388,4 +388,14 @@ void testFormatIntoBuffer( TestSuite suite )
     e = f->FormatIntoBuffer( f, inBuffer, U"-%sx is %r %sd-", u16, U"certainly", u16 );
     suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('-%sx is %r %sd-', u16, 'certainly', u16) return value" );
     suite->AssertEquals->RuneString( suite, U"-ffff is certainly 65535-", inBuffer->String, 26, "FormatIntoBuffer('-%sx is %r %sd-', u16, 'certainly', u16) string comparison" );
+
+    uint32_t u32 = 0x178bfbff;
+    e = f->FormatIntoBuffer( f, inBuffer, U"leaf 1 edx = %ix;", u32 );
+    suite->AssertEquals->Int32( suite, NoError, e, "FormatIntoBuffer('leaf 1 edx = %ix;', u32) return value" );
+    suite->AssertEquals->RuneString( suite, U"leaf 1 edx = 178bfbff;", inBuffer->String, 23, "FormatIntoBuffer('leaf 1 edx = %ix', u32) string comparison" );
+
+    u32 = 0x80fbff;
+    e = f->FormatIntoBuffer(f, inBuffer, U"The value in hex is (%ix), in padded hex is (%0ix), in hex again (%ix)", u32, u32, u32 );
+    suite->AssertEquals->Int32(suite, NoError, e, "FormatIntoBuffer('The value in hex is (%ix), in padded hex is (%0ix), in hex again (%x)', u32, u32, u32) return value");
+    suite->AssertEquals->RuneString(suite, U"The value in hex is (80fbff), in padded hex is (0080fbff), in hex again (80fbff)", inBuffer->String, 80, "The value in hex is (%ix), in padded hex is (%0ix), in hex again (%x)', u32, u32, u32) string comparison");
 }
