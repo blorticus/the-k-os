@@ -89,6 +89,9 @@ static InterruptDescriptorTableBuilder idtBuilder = &_idtBuilder;
 static CpuInformation_t _cpuInfo;
 static CpuInformation cpuInfo = &_cpuInfo;
 
+static PICsConfigurator_t _picsConfigurator;
+static PICsConfigurator picsConfigurator = &_picsConfigurator;
+
 static void outputter( RuneString string ) {
     term->PutRuneString( term, string );
 }
@@ -109,6 +112,10 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     PopulateFrameBuffer( fb, fb_str_tag->framebuffer_width, fb_str_tag->framebuffer_height, fb_str_tag->framebuffer_bpp, (void*)(fb_str_tag->framebuffer_addr) );
     PopulateTextTerminal( term, fb, RetrieveTextTerminalFixedFont8x16() );
+
+    PopulatePICsConfigurator( picsConfigurator );
+    picsConfigurator->Reinitalize( 0x20, 0x28 );
+    picsConfigurator->Disable();
 
     PopulateInterruptDescriptorTableBuilder( idtBuilder );
     idtBuilder->InitializeBaseVectorCallback( outputter );

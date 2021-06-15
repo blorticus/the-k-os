@@ -49,5 +49,11 @@ typedef struct InterruptDescriptorTableBuilder_t {
    void (*ActivateTable)();
 } InterruptDescriptorTableBuilder_t, *InterruptDescriptorTableBuilder;
 
+typedef struct PICsConfigurator_t {
+   void (*Reinitalize)( uint8_t remappedInterruptNumberForIRQ0, uint8_t remappedInterruptNumberForIRQ8 );
+   void (*Disable)();
+} PICsConfigurator_t, *PICsConfigurator;
+
 Error PopulateInterruptDescriptorTableBuilder(InterruptDescriptorTableBuilder b);
 Error PopulateInterruptDescriptor( InterruptDescriptor d, void* handlerAddress, CpuPrivilegeLevel cpl, int isTrapGate );
+Error PopulatePICsConfigurator( PICsConfigurator p );

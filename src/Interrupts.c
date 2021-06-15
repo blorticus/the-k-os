@@ -1,5 +1,17 @@
 #include <Interrupts.h>
 #include <String.h>
+#include <IOPorts.h>
+
+#define PIC_ICW1_IC4        0x01
+#define PIC_ICW1_INIT       0x01
+#define PIC_ICW3_ID0_IR2    0x04
+#define PIC_ICW4_IS_8086    0x01
+
+#define PIC1_COMMAND_PORT   0x20
+#define PIC1_DATA_PORT      0x21
+#define PIC2_COMMAND_PORT   0xA0
+#define PIC2_DATA_PORT      0xA1
+
 
 static InterruptDescriptorTableRegister_t staticInterruptDescriptorTableRegister;
 static InterruptDescriptor_t staticDefaultInterruptDescriptors[256];
@@ -614,4 +626,39 @@ Error PopulateInterruptDescriptorTableBuilder(InterruptDescriptorTableBuilder b)
     b->ActivateTable = ActivateTable;
     b->SetInterruptVectorCallback = SetInterruptVectorCallback;
     return NoError;
+}
+
+static void Reinitalize( uint8_t remappedInterruptNumberForIRQ0, uint8_t remappedInterruptNumberForIRQ8 )
+{
+    uint8_t pic1Mask, pic2Mask;
+
+    pic1Mask = ReadByteFromIOPort( PIC1_DATA_PORT );
+    pic2Mask = ReadByteFromIOPort( PIC2_DATA_PORT );
+
+    WriteByteToIOPort( PIC1_COMMAND_PORT, PIC_ICW1_INIT | PIC_ICW1_IC4 );
+    WriteByteToIOPort( PIC2_COMMAND_PORT, PIC_ICW1_INIT | PIC_ICW1_IC4 );
+
+    WriteByteToIOPort( PIC1_DATA_PORT, remappedInterruptNumberForIRQ0 );
+    WriteByteToIOPort( PIC2_DATA_PORT, remappedInterruptNumberForIRQ8 );
+
+    WriteByteToIOPort( PIC1_DATA_PORT, PIC_ICW3_ID0_IR2 ); // PIC1->PIC2 cascading IRQ is now 2
+    WriteByteToIOPort( PIC2_DATA_PORT, 2 );
+
+    WriteByteToIOPort( PIC1_DATA_PORT, PIC_ICW4_IS_8086 );
+    WriteByteToIOPort( PIC2_DATA_PORT, PIC_ICW4_IS_8086 );
+
+    WriteByteToIOPort( PIC1_DATA_PORT, pic1Mask );
+    WriteByteToIOPort( PIC2_DATA_PORT, pic2Mask );
+}
+
+static void Disable()
+{
+    WriteByteToIOPort( PIC2_DATA_PORT, 0xff );
+    WriteByteToIOPort( PIC1_DATA_PORT, 0xff );
+}
+
+Error PopulatePICsConfigurator( PICsConfigurator p )
+{
+    p->Reinitalize = Reinitalize;
+    p->Disable = Disable;
 }
