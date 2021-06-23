@@ -661,4 +661,6 @@ Error PopulatePICsConfigurator( PICsConfigurator p )
 {
     p->Reinitalize = Reinitalize;
     p->Disable = Disable;
+
+    return NoError;
 }

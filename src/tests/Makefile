@@ -20,7 +20,7 @@ String.t: libTestSuite.a String.o test_String.c
 	$(CC) $(CFLAGS) -o String.t ../String.o test_String.c -I../include -I../TestSuite -L../TestSuite -lTestSuite
 
 Interrupts.t: libTestSuite.a Interrupts.o test_Interrupts.c String.o
-	$(CC) $(CFLAGS) -o Interrupts.t ../Interrupts.o ../String.o test_Interrupts.c -I../include -I../TestSuite -L../TestSuite -lTestSuite
+	$(CC) $(CFLAGS) -o Interrupts.t ../Interrupts.o ../String.o ../IOPorts.o test_Interrupts.c -I../include -I../TestSuite -L../TestSuite -lTestSuite
 
 Cpu.t: libTestSuite.a Cpu.o test_Cpu.c
 	$(CC) $(CFLAGS) -o Cpu.t ../Cpu.o test_Cpu.c -I../include -I../TestSuite -L../TestSuite -lTestSuite
@@ -45,6 +45,7 @@ Interrupts.o:
 
 Cpu.o:
 	$(MAKE) -C .. Cpu.o
+
 
 .PHONY: clean cleanall runall
 

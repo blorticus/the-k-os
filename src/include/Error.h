@@ -10,4 +10,6 @@ typedef enum Error_t {
     ErrorNullValue,
     ErrorBufferTooSmall,
     ErrorFacilityNotPresent,
+    ErrorVersionNotImplemented,
+    ErrorIncorrectChecksum,
 } Error;

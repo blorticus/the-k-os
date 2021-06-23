@@ -45,3 +45,8 @@ void *MoveArrayOfBytes( void *startOfArrayToMove, void *destination, uint64_t nu
 
     return destination;
 }
+
+void *Make( unsigned int numberOfElements __attribute__((unused)), uint64_t sizeOfEachElement __attribute__((unused)), Error *errorOnFailure __attribute__((unused)) )
+{
+    return 0;
+}

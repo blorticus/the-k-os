@@ -42,6 +42,7 @@ typedef struct TextTerminal_t {
     Error (*PutRuneString)( struct TextTerminal_t* term, const RuneString string );
     Error (*Clear)( struct TextTerminal_t* term );
     Error (*PutFormattedRuneString)( struct TextTerminal_t* term, const RuneString format, ... );
+    Error (*PutFormattedRuneStringUsingVarargs)( struct TextTerminal_t *term, const RuneString format, va_list varargs );
 } * TextTerminal;
 
 Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, TextTerminalFixedFont usingFont );

@@ -71,7 +71,7 @@ static Error Clear( TextTerminal term ) {
 
 }
 
-static int stringIterativeFormatCallback( RuneStringBuffer inBuffer, __attribute__((unused)) Error e, __attribute__((unused)) int done, void* additionalArgs )
+static int stringIterativeFormatCallback( RuneStringBuffer inBuffer, __attribute__((unused)) Error e, int done, void* additionalArgs )
 {
     TextTerminal term = (TextTerminal)additionalArgs;
     PutRuneString( term, inBuffer->String );
@@ -86,7 +86,14 @@ static Error PutFormattedRuneString( TextTerminal term, const RuneString format,
     return NoError;
 }
 
-Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, TextTerminalFixedFont usingFont ) {
+static Error PutFormattedRuneStringUsingVarargs( TextTerminal term, const RuneString format, va_list varargs )
+{
+    term->stringFormatter->FormatIterativelyIntoBufferUsingExplicitVarags( term->runeStringBuffer, &(term->formatBufferIteratingCallback), format, varargs );
+    return NoError;
+}
+
+Error PopulateTextTerminal(TextTerminal term, FrameBuffer usingFrameBuffer, TextTerminalFixedFont usingFont)
+{
     term->frameBuffer = usingFrameBuffer;
     term->font = usingFont;
 
@@ -117,6 +124,7 @@ Error PopulateTextTerminal( TextTerminal term, FrameBuffer usingFrameBuffer, Tex
 
     term->Clear = Clear;
     term->PutFormattedRuneString = PutFormattedRuneString;
+    term->PutFormattedRuneStringUsingVarargs = PutFormattedRuneStringUsingVarargs;
     term->PutRuneString = PutRuneString;
     term->PutRune = PutRune;
 
